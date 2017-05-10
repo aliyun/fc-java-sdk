@@ -1,29 +1,52 @@
-# fc-java-sdk
+fc-java-sdk
+=======
+
+[![maven version][mvn-image]][mvn-url]
+[![build status][travis-image]][travis-url]
+
+[mvn-image]: https://img.shields.io/maven-central/v/com.aliyun/aliyun-java-sdk-fc.svg?style=flat-square
+[mvn-url]: http://search.maven.org/#search%7Cga%7C1%7Caliyun-java-sdk-fc
+[travis-image]: https://img.shields.io/travis/aliyun/fc-java-sdk/master.svg?style=flat-square
+[travis-url]: https://travis-ci.org/aliyun/fc-java-sdk.svg?branch=master
 
 ## Requirements
+
 - `Java 1.8+`
 
 ## License
+
 [MIT](LICENSE)
 
 ## Install
+
 Add Maven dependencies into pom.xml
+
 ```xml
 <dependency>
     <groupId>com.aliyun</groupId>
-    <artifactId>aliyun-fc-java-sdk</artifactId>
+    <artifactId>aliyun-java-sdk-fc</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
 
 ## Example
+
 Create the code directory and write hello world nodejs code
+
 ```bash
 mkdir /tmp/fc_code
-echo "'use strict'; module.exports.handler = function(event, context, callback) {console.log('hello world'); callback(null, 'hello world');};" > /tmp/fc_code/hello_world.js
+cat > /tmp/fc_test/hello_world.js <<EOF
+'use strict';
+
+exports.handler = function(event, context, callback) {
+  console.log('hello world');
+  callback(null, 'hello world');
+};
+EOF
 ```
 
 Run below with your own ENDPOINT, ACCESS_KEY/SECRET_KEY and ACCOUNT_ID environment variables
+
 ```Java
 public class FcSample {
     private static final String CODE_DIR = "/tmp/fc_code";
@@ -80,4 +103,5 @@ public class FcSample {
 ```
 
 ## API Spec
+
 See: https://help.aliyun.com/document_detail/52877.html
