@@ -73,10 +73,10 @@ public class DefaultFcClient {
     }
 
     /**
-     * concate query string parameters (e.g. &name=foo)
-     * @param parameters
+     * concate query string parameters (e.g. name=foo)
+     * @param parameters query parameters
      * @return concatenated query string
-     * @throws UnsupportedEncodingException
+     * @throws UnsupportedEncodingException exceptions
      */
     public String concatQueryString(Map<String, String> parameters)
         throws UnsupportedEncodingException {

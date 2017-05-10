@@ -35,7 +35,7 @@ Create the code directory and write hello world nodejs code
 
 ```bash
 mkdir /tmp/fc_code
-cat > /tmp/fc_test/hello_world.js <<EOF
+cat <<EOF > /tmp/fc_code/hello_world.js
 'use strict';
 
 exports.handler = function(event, context, callback) {
