@@ -107,7 +107,6 @@ public class DefaultFcClient {
         if (header == null) {
             header = new HashMap<String, String>();
         }
-        header.put("Host", config.getHost());
         header.put("User-Agent", config.getUserAgent());
         header.put("Accept", "application/json");
         header.put("Content-Type", form);
