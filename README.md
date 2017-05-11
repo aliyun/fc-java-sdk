@@ -11,7 +11,7 @@ fc-java-sdk
 
 ## Requirements
 
-- `Java 1.8+`
+- `Java 1.6 and above`
 
 ## License
 
