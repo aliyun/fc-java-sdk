@@ -4,9 +4,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * TODO: add javadoc
@@ -14,17 +18,18 @@ import java.util.Map;
 public class Config {
 
     private static final String ENDPOINT_FMT = "%s.fc.%s.aliyuncs.com";
+    private static final String PROPERTIES_FILE = "fc.properties";
     private String endpoint;
     private String apiVersion = "2016-08-15";
     private String accessKeyID;
     private String accessKeySecret;
     private String securityToken;
-    private String userAgent = "java-sdk-1.0.0";
     private Boolean isDebug = false;
     private String accountId;
     private String uid;
     private int timeout = 60;
     private String host;
+    private String userAgent;
 
     public Config(String region, String uid, String accessKeyID, String accessKeySecret,
         String securityToken, boolean isHttps) {
@@ -38,6 +43,17 @@ public class Config {
         this.accessKeySecret = accessKeySecret;
         this.uid = uid;
         this.securityToken = securityToken;
+        this.userAgent = "";
+        try {
+            Properties props = new Properties();
+            InputStream input = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE);
+            props.load(input);
+            if (props.get("useragent.version") != null ) {
+                this.userAgent = "java-sdk-" + props.get("useragent.version");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Properties file " + PROPERTIES_FILE + " is not found");
+        }
     }
 
     public String getUid() {
@@ -123,11 +139,6 @@ public class Config {
 
     public String getUserAgent() {
         return userAgent;
-    }
-
-    public Config setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
-        return this;
     }
 
     public String getSecurityToken() {
