@@ -103,7 +103,7 @@ public class DefaultFcClient {
         return urlBuilder.toString();
     }
 
-    public Map<String, String> getHeader(Map<String, String> header, byte[] Payload, String form) {
+    public Map<String, String> getHeader(Map<String, String> header, byte[] payload, String form) {
         if (header == null) {
             header = new HashMap<String, String>();
         }
@@ -111,8 +111,11 @@ public class DefaultFcClient {
         header.put("Accept", "application/json");
         header.put("Content-Type", form);
         header.put("x-fc-account-id", config.getUid());
-        if (Payload != null) {
-            header.put("Content-MD5", ParameterHelper.md5Sum(Payload));
+        if (payload != null) {
+            header.put("Content-MD5", ParameterHelper.md5Sum(payload));
+        }
+        if (!Strings.isNullOrEmpty(config.getSecurityToken())) {
+            header.put("x-fc-security-token", config.getSecurityToken());
         }
         return header;
     }
@@ -174,6 +177,9 @@ public class DefaultFcClient {
             } else if (response.getStatus() >= 300) {
                 String stringContent = response.getContent() == null ? "" : new String(response.getContent());
                 ClientException ce = new Gson().fromJson(stringContent, ClientException.class);
+                if (ce == null) {
+                    ce = new ClientException("Unknown error occurred");
+                }
                 ce.setStatusCode(response.getStatus());
                 ce.setRequestId(response.getHeaderValue(HeaderKeys.REQUEST_ID));
                 throw ce;

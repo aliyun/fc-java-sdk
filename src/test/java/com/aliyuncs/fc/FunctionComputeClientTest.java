@@ -5,9 +5,12 @@ import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.fc.client.FunctionComputeClient;
+import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
 import com.aliyuncs.fc.model.Code;
@@ -46,6 +49,13 @@ import com.aliyuncs.fc.response.ListTriggersResponse;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.response.UpdateTriggerResponse;
 import com.aliyuncs.fc.utils.ZipUtils;
+import com.aliyuncs.http.MethodType;
+import com.aliyuncs.http.ProtocolType;
+import com.aliyuncs.profile.DefaultProfile;
+import com.aliyuncs.profile.IClientProfile;
+import com.aliyuncs.sts.model.v20150401.AssumeRoleRequest;
+import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse;
+import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import java.io.File;
@@ -79,6 +89,7 @@ public class FunctionComputeClientTest {
     private static final String CODE_BUCKET = System.getenv("CODE_BUCKET");
     private static final String CODE_OBJECT = System.getenv("CODE_OBJECT");
     private static final String INVOCATION_ROLE = System.getenv("INVOCATION_ROLE");
+
     private static final String OSS_SOURCE_ARN =
         String.format("acs:oss:%s:%s:%s", REGION, ACCOUNT_ID, CODE_BUCKET);
     private static final String SERVICE_NAME = "testServiceJavaSDK";
@@ -89,6 +100,7 @@ public class FunctionComputeClientTest {
     private static final String FUNCTION_DESC_NEW = "function desc updated";
     private static final String TRIGGER_NAME = "testTrigger";
     private static final String TRIGGER_TYPE_OSS = "oss";
+    public static final String STS_API_VERSION = "2015-04-01";
 
     private FunctionComputeClient client;
 
@@ -108,6 +120,18 @@ public class FunctionComputeClientTest {
                 throw new RuntimeException("Service setup failed", e);
             }
         }
+    }
+
+    public FunctionComputeClient overrideFCClient(boolean useSts, boolean useHttps)
+        throws com.aliyuncs.exceptions.ClientException {
+        if (useSts) {
+            Credentials creds = getAssumeRoleCredentials(null);
+            return new FunctionComputeClient(new Config(REGION, ACCOUNT_ID,
+                creds.getAccessKeyId(), creds.getAccessKeySecret(), creds.getSecurityToken(),
+                useHttps));
+        }
+        return new FunctionComputeClient(new Config(REGION, ACCOUNT_ID,
+            ACCESS_KEY, SECRET_KEY, null, useHttps));
     }
 
     private void cleanupService(String serviceName) {
@@ -148,7 +172,8 @@ public class FunctionComputeClientTest {
         createFuncReq.setMemorySize(128);
         createFuncReq.setHandler("hello_world.handler");
         createFuncReq.setRuntime("nodejs4.4");
-        createFuncReq.setCode(new Code().setOssBucketName(CODE_BUCKET).setOssObjectName(CODE_OBJECT));
+        createFuncReq
+            .setCode(new Code().setOssBucketName(CODE_BUCKET).setOssObjectName(CODE_OBJECT));
         createFuncReq.setTimeout(10);
 
         return client.createFunction(createFuncReq);
@@ -176,178 +201,41 @@ public class FunctionComputeClientTest {
     @Test
     public void testCRUD()
         throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException {
+        testCRUDHelper(true);
+    }
 
-        // Create Service
-        CreateServiceResponse createSResp = createService(SERVICE_NAME);
-        assertFalse(Strings.isNullOrEmpty(createSResp.getRequestId()));
-        assertFalse(Strings.isNullOrEmpty(createSResp.getServiceId()));
-        assertEquals(SERVICE_NAME, createSResp.getServiceName());
-        assertEquals(SERVICE_DESC_OLD, createSResp.getDescription());
-        assertEquals(ROLE, createSResp.getRole());
-        GetServiceResponse svcOldResp = client.getService(new GetServiceRequest(SERVICE_NAME));
+    @Test
+    public void testCRUDStsToken() throws com.aliyuncs.exceptions.ClientException,
+        ParseException, InterruptedException {
+        client = overrideFCClient(true, false);
+        testCRUDHelper(false);
+    }
 
-        // Update Service
-        UpdateServiceRequest updateSReq = new UpdateServiceRequest(SERVICE_NAME);
-        updateSReq.setDescription(SERVICE_DESC_NEW);
-        Thread.sleep(1000L);
-        UpdateServiceResponse updateSResp = client.updateService(updateSReq);
-        verifyUpdate(svcOldResp.getServiceName(), updateSResp.getServiceName(),
-            svcOldResp.getServiceId(), updateSResp.getServiceId(),
-            svcOldResp.getLastModifiedTime(), updateSResp.getLastModifiedTime(),
-            svcOldResp.getCreatedTime(), updateSResp.getCreatedTime(),
-            svcOldResp.getDescription(), updateSResp.getDescription());
+    @Test
+    public void testCRUDStsTokenHttps() throws com.aliyuncs.exceptions.ClientException,
+        ParseException, InterruptedException {
+        client = overrideFCClient(true, true);
+        testCRUDHelper(false);
+    }
 
-        // Get Service
-        GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
-        GetServiceResponse getSResp = client.getService(getSReq);
-        assertEquals(SERVICE_NAME, getSResp.getServiceName());
-        assertEquals(svcOldResp.getServiceId(), getSResp.getServiceId());
-        assertEquals(ROLE, getSResp.getRole());
-
-        // Create Function
-        CreateFunctionResponse createFResp = createFunction(FUNCTION_NAME);
-        assertFalse(Strings.isNullOrEmpty(createFResp.getRequestId()));
-        assertFalse(Strings.isNullOrEmpty(createFResp.getFunctionId()));
-        assertEquals(FUNCTION_NAME, createFResp.getFunctionName());
-        assertEquals(FUNCTION_DESC_OLD, createFResp.getDescription());
-
-        // List Functions
-        ListFunctionsRequest listFReq = new ListFunctionsRequest(SERVICE_NAME);
-        ListFunctionsResponse listFResp = client.listFunctions(listFReq);
-        assertFalse(Strings.isNullOrEmpty(listFResp.getRequestId()));
-        assertEquals(1, listFResp.getFunctions().length);
-        FunctionMetadata funcOld = listFResp.getFunctions()[0];
-        assertEquals(FUNCTION_NAME, funcOld.getFunctionName());
-
-        // Update Function
-        UpdateFunctionRequest updateFReq = new UpdateFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
-        updateFReq.setDescription(FUNCTION_DESC_NEW);
-        Thread.sleep(1000L);
-        client.updateFunction(updateFReq);
-        listFResp = client.listFunctions(listFReq);
-        assertFalse(Strings.isNullOrEmpty(listFResp.getRequestId()));
-        assertEquals(1, listFResp.getFunctions().length);
-        FunctionMetadata funcNew = listFResp.getFunctions()[0];
-        verifyUpdate(funcOld.getFunctionName(), funcNew.getFunctionName(),
-            funcOld.getFunctionId(), funcNew.getFunctionId(),
-            funcOld.getLastModifiedTime(), funcNew.getLastModifiedTime(),
-            funcOld.getCreatedTime(), funcNew.getCreatedTime(),
-            funcOld.getDescription(), funcNew.getDescription());
-
-        // Get Function
-        GetFunctionRequest getFReq = new GetFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
-        GetFunctionResponse getFResp = client.getFunction(getFReq);
-        assertFalse(Strings.isNullOrEmpty(getFResp.getRequestId()));
-        assertEquals(FUNCTION_NAME, getFResp.getFunctionName());
-
-        // Invoke Function
-        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
-        InvokeFunctionResponse response = client.invokeFunction(request);
-        assertTrue(!Strings.isNullOrEmpty(response.getRequestId()));
-        assertEquals("hello world", new String(response.getContent()));
-
-        // Create Trigger
-        String tfPrefix = "prefix";
-        String tfSuffix = "suffix";
-
-        createTrigger(TRIGGER_NAME, tfPrefix, tfSuffix);
-
-        // List Triggers
-        ListTriggersRequest listTReq = new ListTriggersRequest(SERVICE_NAME, FUNCTION_NAME);
-        ListTriggersResponse listTResp = client.listTriggers(listTReq);
-        assertFalse(Strings.isNullOrEmpty(listTResp.getRequestId()));
-        assertEquals(1, listTResp.getTriggers().length);
-        TriggerMetadata triggerOld = listTResp.getTriggers()[0];
-        assertEquals(TRIGGER_NAME, triggerOld.getTriggerName());
-
-        // Update Trigger
-        String newInvocationRole = INVOCATION_ROLE + "_new";
-        String tfPrefixNew = "prefix_new";
-        String tfSuffixNew = "suffix_new";
-        String[] eventsNew = new String[]{"oss:ObjectCreated:PutObject"};
-        OSSTriggerConfig updateTriggerConfig = new OSSTriggerConfig(
-            new String[]{"oss:ObjectCreated:PutObject"}, tfPrefixNew, tfSuffixNew);
-
-        UpdateTriggerRequest updateTReq = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
-            TRIGGER_NAME);
-        updateTReq.setInvocationRole(newInvocationRole);
-        updateTReq.setTriggerConfig(updateTriggerConfig);
-        Thread.sleep(1000L);
-        UpdateTriggerResponse updateTResp = client.updateTrigger(updateTReq);
-        assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
-        assertNotEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
-        assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
-        Gson gson = new Gson();
-        OSSTriggerConfig tcOld = gson
-            .fromJson(gson.toJson(triggerOld.getTriggerConfig()), OSSTriggerConfig.class);
-        OSSTriggerConfig tcNew = gson
-            .fromJson(gson.toJson(updateTResp.getTriggerConfig()), OSSTriggerConfig.class);
-        assertFalse(Arrays.deepEquals(tcOld.getEvents(), tcNew.getEvents()));
-        assertNotEquals(tcOld.getFilter().getKey().getPrefix(),
-            tcNew.getFilter().getKey().getPrefix());
-        assertNotEquals(tcOld.getFilter().getKey().getSuffix(),
-            tcNew.getFilter().getKey().getSuffix());
-        assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
-        assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
-        assertNotEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
-
-        Date dateOld = DATE_FORMAT.parse(triggerOld.getLastModifiedTime());
-        Date dateNew = DATE_FORMAT.parse(updateTResp.getLastModifiedTime());
-        assertTrue(dateOld.before(dateNew));
-
-        // Get Trigger
-        GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
-            TRIGGER_NAME);
-        GetTriggerResponse getTResp = client.getTrigger(getTReq);
-        OSSTriggerConfig getTConfig = gson
-            .fromJson(gson.toJson(getTResp.getTriggerConfig()), OSSTriggerConfig.class);
-        assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
-        assertEquals(TRIGGER_NAME, getTResp.getTriggerName());
-        assertEquals(OSS_SOURCE_ARN, getTResp.getSourceARN());
-        assertEquals(TRIGGER_TYPE_OSS, getTResp.getTriggerType());
-        assertEquals(newInvocationRole, getTResp.getInvocationRole());
-        assertEquals(tfPrefixNew, getTConfig.getFilter().getKey().getPrefix());
-        assertEquals(tfSuffixNew, getTConfig.getFilter().getKey().getSuffix());
-        assertTrue(Arrays.deepEquals(eventsNew, getTConfig.getEvents()));
-
-        // Delete Trigger
-        client.deleteTrigger(new DeleteTriggerRequest(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME));
-
-        // Delete Function
-        DeleteFunctionRequest deleteFReq = new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
-        int numFunctionsOld = listFResp.getFunctions().length;
-        DeleteFunctionResponse deleteFResp = client.deleteFunction(deleteFReq);
-        assertFalse(Strings.isNullOrEmpty(deleteFResp.getRequestId()));
-        listFResp = client.listFunctions(listFReq);
+    @Test
+    public void testCreateServiceStsTokenNoPassRole()
+        throws com.aliyuncs.exceptions.ClientException {
+        // Use a policy that does not have ram:PassRole, this policy will intersect with the role policy
+        // Access denied is expected if using STS without PassRole allowed
+        // Policy intersection doc: https://help.aliyun.com/document_detail/31935.html
+        String policy = "{\"Version\": \"1\",\"Statement\": [{\"Effect\": \"Allow\",\"Action\": [\"fc:*\"],\"Resource\": [\"*\"]}]}";
+        Credentials creds = getAssumeRoleCredentials(policy);
+        client = new FunctionComputeClient(new Config(REGION, ACCOUNT_ID,
+            creds.getAccessKeyId(), creds.getAccessKeySecret(), creds.getSecurityToken(),
+            false));
 
         try {
-            getFunction(FUNCTION_NAME, listFResp.getFunctions());
-            fail("Function " + FUNCTION_NAME + " failed to be deleted");
-        } catch (RuntimeException e) {
-            int numFunctionsNew = (listFResp.getFunctions() == null) ? 0 :
-                listFResp.getFunctions().length;
-            assertEquals(numFunctionsOld, numFunctionsNew + 1);
-        }
-        GetFunctionResponse getFResp2 = null;
-        try {
-            getFResp2 = client.getFunction(getFReq);
-            fail(
-                "Get Function " + FUNCTION_NAME + " should have no function returned after delete");
+            createService(SERVICE_NAME);
+            fail("ClientException is expected");
         } catch (ClientException e) {
-            assertNull(getFResp2);
-        }
-
-        // Delete Service
-        DeleteServiceRequest deleteSReq = new DeleteServiceRequest(SERVICE_NAME);
-        DeleteServiceResponse deleteSResp = client.deleteService(deleteSReq);
-        assertFalse(Strings.isNullOrEmpty(deleteSResp.getRequestId()));
-
-        GetServiceResponse getSResp2 = null;
-        try {
-            getSResp2 = client.getService(getSReq);
-            fail("Get service " + FUNCTION_NAME + " should have no service returned after delete");
-        } catch (ClientException e) {
-            assertNull(getSResp2);
+            assertTrue(e.getErrorMessage()
+                .contains("the caller is not authorized to perform 'ram:PassRole'"));
         }
     }
 
@@ -432,8 +320,10 @@ public class FunctionComputeClientTest {
 
         // Create multiple trigger under the test function
         for (int i = 0; i < numTriggers; i++) {
+            String prefix = "prefix";
+            String suffix = "suffix";
             CreateTriggerResponse createTResp = createTrigger(TRIGGER_NAME + i,
-                "prefix" + i, "suffix" + i);
+                prefix + i, suffix + i);
             assertFalse(Strings.isNullOrEmpty(createTResp.getRequestId()));
         }
 
@@ -853,7 +743,8 @@ public class FunctionComputeClientTest {
         new File(tmpDir).mkdir();
 
         PrintWriter out = new PrintWriter(funcFilePath);
-        out.println("'use strict'; module.exports.handler = function(event, context, callback) {console.log('hello world'); callback(null, 'hello world');};");
+        out.println(
+            "'use strict'; module.exports.handler = function(event, context, callback) {console.log('hello world'); callback(null, 'hello world');};");
         out.close();
 
         Code code = new Code().setDir(tmpDir);
@@ -892,7 +783,8 @@ public class FunctionComputeClientTest {
         String funcFilePath = tmpDir + "/" + "hello_world.js";
         new File(tmpDir).mkdir();
         PrintWriter out = new PrintWriter(funcFilePath);
-        out.println("'use strict'; module.exports.handler = function(event, context, callback) {console.log('hello world'); callback(null, 'hello world');};");
+        out.println(
+            "'use strict'; module.exports.handler = function(event, context, callback) {console.log('hello world'); callback(null, 'hello world');};");
         out.close();
         String zipFilePath = tmpDir + "/" + "hello_world.zip";
         ZipUtils.zipDir(new File(tmpDir), zipFilePath);
@@ -920,6 +812,219 @@ public class FunctionComputeClientTest {
         new File(zipFilePath).delete();
         new File(funcFilePath).delete();
         new File(tmpDir).delete();
+    }
+
+    private Credentials getAssumeRoleCredentials(String policy)
+        throws com.aliyuncs.exceptions.ClientException {
+        IClientProfile profile = DefaultProfile
+            .getProfile(REGION, ACCESS_KEY, SECRET_KEY);
+        //DefaultProfile.addEndpoint("sts.us-west-1.aliyuncs.com", "us-west-1", "Sts", "sts.us-west-1.aliyuncs.com");
+        DefaultAcsClient client = new DefaultAcsClient(profile);
+
+        AssumeRoleRequest request = new AssumeRoleRequest();
+        request.setVersion(STS_API_VERSION);
+        request.setMethod(MethodType.POST);
+        request.setProtocol(ProtocolType.HTTPS);
+        request.setRoleArn(ROLE);
+        request.setRoleSessionName("test-session");
+        if (policy != null) {
+            request.setPolicy(policy);
+        }
+
+        AssumeRoleResponse stsResponse;
+        try {
+            stsResponse = client.getAcsResponse(request);
+        } catch (com.aliyuncs.exceptions.ClientException e) {
+            throw new RuntimeException(e);
+        }
+
+        String accessKey = stsResponse.getCredentials().getAccessKeyId();
+        String secretKey = stsResponse.getCredentials().getAccessKeySecret();
+        String stsToken = stsResponse.getCredentials().getSecurityToken();
+
+        assertNotNull(accessKey);
+        assertNotNull(secretKey);
+        assertNotNull(stsToken);
+
+        return stsResponse.getCredentials();
+    }
+
+    private void testCRUDHelper(boolean testTrigger) throws ParseException, InterruptedException {
+        // Create Service
+        CreateServiceResponse createSResp = createService(SERVICE_NAME);
+        assertFalse(Strings.isNullOrEmpty(createSResp.getRequestId()));
+        assertFalse(Strings.isNullOrEmpty(createSResp.getServiceId()));
+        assertEquals(SERVICE_NAME, createSResp.getServiceName());
+        assertEquals(SERVICE_DESC_OLD, createSResp.getDescription());
+        assertEquals(ROLE, createSResp.getRole());
+        GetServiceResponse svcOldResp = client.getService(new GetServiceRequest(SERVICE_NAME));
+
+        // Update Service
+        UpdateServiceRequest updateSReq = new UpdateServiceRequest(SERVICE_NAME);
+        updateSReq.setDescription(SERVICE_DESC_NEW);
+        Thread.sleep(1000L);
+        UpdateServiceResponse updateSResp = client.updateService(updateSReq);
+        verifyUpdate(svcOldResp.getServiceName(), updateSResp.getServiceName(),
+            svcOldResp.getServiceId(), updateSResp.getServiceId(),
+            svcOldResp.getLastModifiedTime(), updateSResp.getLastModifiedTime(),
+            svcOldResp.getCreatedTime(), updateSResp.getCreatedTime(),
+            svcOldResp.getDescription(), updateSResp.getDescription());
+
+        // Get Service
+        GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
+        GetServiceResponse getSResp = client.getService(getSReq);
+        assertEquals(SERVICE_NAME, getSResp.getServiceName());
+        assertEquals(svcOldResp.getServiceId(), getSResp.getServiceId());
+        assertEquals(ROLE, getSResp.getRole());
+
+        // Create Function
+        CreateFunctionResponse createFResp = createFunction(FUNCTION_NAME);
+        assertFalse(Strings.isNullOrEmpty(createFResp.getRequestId()));
+        assertFalse(Strings.isNullOrEmpty(createFResp.getFunctionId()));
+        assertEquals(FUNCTION_NAME, createFResp.getFunctionName());
+        assertEquals(FUNCTION_DESC_OLD, createFResp.getDescription());
+
+        // List Functions
+        ListFunctionsRequest listFReq = new ListFunctionsRequest(SERVICE_NAME);
+        ListFunctionsResponse listFResp = client.listFunctions(listFReq);
+        assertFalse(Strings.isNullOrEmpty(listFResp.getRequestId()));
+        assertEquals(1, listFResp.getFunctions().length);
+        FunctionMetadata funcOld = listFResp.getFunctions()[0];
+        assertEquals(FUNCTION_NAME, funcOld.getFunctionName());
+
+        // Update Function
+        UpdateFunctionRequest updateFReq = new UpdateFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        updateFReq.setDescription(FUNCTION_DESC_NEW);
+        Thread.sleep(1000L);
+        client.updateFunction(updateFReq);
+        listFResp = client.listFunctions(listFReq);
+        assertFalse(Strings.isNullOrEmpty(listFResp.getRequestId()));
+        assertEquals(1, listFResp.getFunctions().length);
+        FunctionMetadata funcNew = listFResp.getFunctions()[0];
+        verifyUpdate(funcOld.getFunctionName(), funcNew.getFunctionName(),
+            funcOld.getFunctionId(), funcNew.getFunctionId(),
+            funcOld.getLastModifiedTime(), funcNew.getLastModifiedTime(),
+            funcOld.getCreatedTime(), funcNew.getCreatedTime(),
+            funcOld.getDescription(), funcNew.getDescription());
+
+        // Get Function
+        GetFunctionRequest getFReq = new GetFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        GetFunctionResponse getFResp = client.getFunction(getFReq);
+        assertFalse(Strings.isNullOrEmpty(getFResp.getRequestId()));
+        assertEquals(FUNCTION_NAME, getFResp.getFunctionName());
+
+        // Invoke Function
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        InvokeFunctionResponse response = client.invokeFunction(request);
+        assertTrue(!Strings.isNullOrEmpty(response.getRequestId()));
+        assertEquals("hello world", new String(response.getContent()));
+
+        if (testTrigger) {
+            // Create Trigger
+            String tfPrefix = "prefix";
+            String tfSuffix = "suffix";
+
+            createTrigger(TRIGGER_NAME, tfPrefix, tfSuffix);
+
+            // List Triggers
+            ListTriggersRequest listTReq = new ListTriggersRequest(SERVICE_NAME, FUNCTION_NAME);
+            ListTriggersResponse listTResp = client.listTriggers(listTReq);
+            assertFalse(Strings.isNullOrEmpty(listTResp.getRequestId()));
+            assertEquals(1, listTResp.getTriggers().length);
+            TriggerMetadata triggerOld = listTResp.getTriggers()[0];
+            assertEquals(TRIGGER_NAME, triggerOld.getTriggerName());
+
+            // Update Trigger
+            String newInvocationRole = INVOCATION_ROLE + "_new";
+            String tfPrefixNew = "prefix_new";
+            String tfSuffixNew = "suffix_new";
+            String[] eventsNew = new String[]{"oss:ObjectCreated:PutObject"};
+            OSSTriggerConfig updateTriggerConfig = new OSSTriggerConfig(
+                new String[]{"oss:ObjectCreated:PutObject"}, tfPrefixNew, tfSuffixNew);
+
+            UpdateTriggerRequest updateTReq = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+                TRIGGER_NAME);
+            updateTReq.setInvocationRole(newInvocationRole);
+            updateTReq.setTriggerConfig(updateTriggerConfig);
+            Thread.sleep(1000L);
+            UpdateTriggerResponse updateTResp = client.updateTrigger(updateTReq);
+            assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+            assertNotEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
+            assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
+            Gson gson = new Gson();
+            OSSTriggerConfig tcOld = gson
+                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), OSSTriggerConfig.class);
+            OSSTriggerConfig tcNew = gson
+                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), OSSTriggerConfig.class);
+            assertFalse(Arrays.deepEquals(tcOld.getEvents(), tcNew.getEvents()));
+            assertNotEquals(tcOld.getFilter().getKey().getPrefix(),
+                tcNew.getFilter().getKey().getPrefix());
+            assertNotEquals(tcOld.getFilter().getKey().getSuffix(),
+                tcNew.getFilter().getKey().getSuffix());
+            assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
+            assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
+            assertNotEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
+
+            Date dateOld = DATE_FORMAT.parse(triggerOld.getLastModifiedTime());
+            Date dateNew = DATE_FORMAT.parse(updateTResp.getLastModifiedTime());
+            assertTrue(dateOld.before(dateNew));
+
+            // Get Trigger
+            GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+                TRIGGER_NAME);
+            GetTriggerResponse getTResp = client.getTrigger(getTReq);
+            OSSTriggerConfig getTConfig = gson
+                .fromJson(gson.toJson(getTResp.getTriggerConfig()), OSSTriggerConfig.class);
+            assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
+            assertEquals(TRIGGER_NAME, getTResp.getTriggerName());
+            assertEquals(OSS_SOURCE_ARN, getTResp.getSourceARN());
+            assertEquals(TRIGGER_TYPE_OSS, getTResp.getTriggerType());
+            assertEquals(newInvocationRole, getTResp.getInvocationRole());
+            assertEquals(tfPrefixNew, getTConfig.getFilter().getKey().getPrefix());
+            assertEquals(tfSuffixNew, getTConfig.getFilter().getKey().getSuffix());
+            assertTrue(Arrays.deepEquals(eventsNew, getTConfig.getEvents()));
+
+            // Delete Trigger
+            client
+                .deleteTrigger(new DeleteTriggerRequest(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME));
+
+        }
+        // Delete Function
+        DeleteFunctionRequest deleteFReq = new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        int numFunctionsOld = listFResp.getFunctions().length;
+        DeleteFunctionResponse deleteFResp = client.deleteFunction(deleteFReq);
+        assertFalse(Strings.isNullOrEmpty(deleteFResp.getRequestId()));
+        listFResp = client.listFunctions(listFReq);
+
+        try {
+            getFunction(FUNCTION_NAME, listFResp.getFunctions());
+            fail("Function " + FUNCTION_NAME + " failed to be deleted");
+        } catch (RuntimeException e) {
+            int numFunctionsNew = (listFResp.getFunctions() == null) ? 0 :
+                listFResp.getFunctions().length;
+            assertEquals(numFunctionsOld, numFunctionsNew + 1);
+        }
+        GetFunctionResponse getFResp2 = null;
+        try {
+            getFResp2 = client.getFunction(getFReq);
+            fail(
+                "Get Function " + FUNCTION_NAME + " should have no function returned after delete");
+        } catch (ClientException e) {
+            assertNull(getFResp2);
+        }
+
+        // Delete Service
+        DeleteServiceRequest deleteSReq = new DeleteServiceRequest(SERVICE_NAME);
+        DeleteServiceResponse deleteSResp = client.deleteService(deleteSReq);
+        assertFalse(Strings.isNullOrEmpty(deleteSResp.getRequestId()));
+
+        GetServiceResponse getSResp2 = null;
+        try {
+            getSResp2 = client.getService(getSReq);
+            fail("Get service " + FUNCTION_NAME + " should have no service returned after delete");
+        } catch (ClientException e) {
+            assertNull(getSResp2);
+        }
     }
 
     private void verifyUpdate(String nameOld, String nameNew, String idOld,

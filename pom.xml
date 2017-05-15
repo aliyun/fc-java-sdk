@@ -16,6 +16,18 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.aliyun</groupId>
+      <artifactId>aliyun-java-sdk-sts</artifactId>
+      <version>2.1.6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.aliyun</groupId>
+      <artifactId>aliyun-java-sdk-core</artifactId>
+      <version>2.1.7</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.2.4</version>
