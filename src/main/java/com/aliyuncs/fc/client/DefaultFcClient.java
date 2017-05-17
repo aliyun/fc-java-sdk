@@ -22,6 +22,7 @@ package com.aliyuncs.fc.client;
 import com.aliyuncs.fc.constants.HeaderKeys;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.gson.JsonParseException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
@@ -159,26 +160,41 @@ public class DefaultFcClient {
         try {
             PrepareUrl prepareUrl = signRequest(request, form, method);
             int retryTimes = 1;
-            HttpResponse response = HttpResponse
-                .getResponse(prepareUrl.getUrl(), prepareUrl.getHeader(), request, method);
+            HttpResponse response = HttpResponse.getResponse(prepareUrl.getUrl(),
+                prepareUrl.getHeader(), request, method, config.getConnectTimeoutMillis(),
+                config.getReadTimeoutMillis());
 
             while (500 <= response.getStatus() && AUTO_RETRY && retryTimes < MAX_RETRIES) {
                 prepareUrl = signRequest(request, form, method);
-                response = HttpResponse
-                    .getResponse(prepareUrl.getUrl(), prepareUrl.getHeader(), request, method);
+                response = HttpResponse.getResponse(prepareUrl.getUrl(), prepareUrl.getHeader(),
+                    request, method, config.getConnectTimeoutMillis(), config.getReadTimeoutMillis());
                 retryTimes++;
             }
             if (response.getStatus() >= 500) {
+                String requestId = response.getHeaderValue(HeaderKeys.REQUEST_ID);
                 String stringContent = response.getContent() == null ? "" : new String(response.getContent());
-                ServerException se = new Gson().fromJson(stringContent, ServerException.class);
+                ServerException se;
+                try {
+                    se = new Gson().fromJson(stringContent, ServerException.class);
+                } catch (JsonParseException e) {
+                    se = new ServerException("InternalServiceError", "Failed to parse response content", requestId);
+                }
                 se.setStatusCode(response.getStatus());
-                se.setRequestId(response.getHeaderValue(HeaderKeys.REQUEST_ID));
+                se.setRequestId(requestId);
                 throw se;
             } else if (response.getStatus() >= 300) {
-                String stringContent = response.getContent() == null ? "" : new String(response.getContent());
-                ClientException ce = new Gson().fromJson(stringContent, ClientException.class);
+                ClientException ce;
+                if (response.getContent() == null) {
+                    ce = new ClientException("SDK.ServerUnreachable", "Failed to get response content from server");
+                } else {
+                    try {
+                        ce = new Gson().fromJson(new String(response.getContent()), ClientException.class);
+                    } catch (JsonParseException e) {
+                        ce = new ClientException("SDK.ResponseNotParsable", "Failed to parse response content", e);
+                    }
+                }
                 if (ce == null) {
-                    ce = new ClientException("Unknown error occurred");
+                    ce = new ClientException("SDK.UnknownError", "Unknown client error");
                 }
                 ce.setStatusCode(response.getStatus());
                 ce.setRequestId(response.getHeaderValue(HeaderKeys.REQUEST_ID));

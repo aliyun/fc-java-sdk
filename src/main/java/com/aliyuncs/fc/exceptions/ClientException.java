@@ -52,6 +52,12 @@ public class ClientException extends RuntimeException {
         this.errorMessage = errMsg;
     }
 
+    public ClientException(String errCode, String errMsg, Throwable cause) {
+        super(errCode + " : " + errMsg, cause);
+        this.errorCode = errCode;
+        this.errorMessage = errMsg;
+    }
+
     public ClientException(String message) {
         super(message);
     }

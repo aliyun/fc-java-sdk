@@ -2,14 +2,8 @@ package com.aliyuncs.fc.config;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -27,7 +21,9 @@ public class Config {
     private Boolean isDebug = false;
     private String accountId;
     private String uid;
-    private int timeout = 60;
+    private int connectTimeoutMillis = 60000;
+    private int readTimeoutMillis = 60000;
+
     private String host;
     private String userAgent;
 
@@ -119,12 +115,41 @@ public class Config {
         return this;
     }
 
-    public int getTimeout() {
-        return timeout;
+    public int getConnectTimeoutMillis() {
+        return connectTimeoutMillis;
     }
 
-    public Config setTimeout(int timeout) {
-        this.timeout = timeout;
+    /**
+     * Sets a specified timeout value, in milliseconds, to be used when opening a communications
+     * link to the resource referenced by this URLConnection. If the timeout expires before the
+     * connection can be established, a java.net.SocketTimeoutException is raised.
+     * A timeout of zero is interpreted as an infinite timeout.
+     *
+     * Also see http://docs.oracle.com/javase/6/docs/api/java/net/URLConnection.html#setReadTimeout%28int%29
+     * @return
+     */
+    public Config setConnectTimeoutMillis(int connectTimeoutMillis) {
+        this.connectTimeoutMillis = connectTimeoutMillis;
+        return this;
+    }
+
+    public int getReadTimeoutMillis() {
+        return readTimeoutMillis;
+    }
+
+    /**
+     * Sets the read timeout to a specified timeout, in milliseconds.
+     * A non-zero value specifies the timeout when reading from Input stream when a connection
+     * is established to a resource. If the timeout expires before there is data available for read,
+     * a java.net.SocketTimeoutException is raised.
+     * A timeout of zero is interpreted as an infinite timeout.
+     *
+     * Also see http://docs.oracle.com/javase/6/docs/api/java/net/URLConnection.html#setReadTimeout%28int%29
+     * @param readTimeoutMillis
+     * @return
+     */
+    public Config setReadTimeoutMillis(int readTimeoutMillis) {
+        this.readTimeoutMillis = readTimeoutMillis;
         return this;
     }
 
