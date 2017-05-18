@@ -117,7 +117,7 @@ public class FunctionComputeClientTest {
             cleanupService(SERVICE_NAME);
         } catch (ClientException e) {
             if (!ErrorCodes.SERVICE_NOT_FOUND.equals(e.getErrorCode())) {
-                throw new RuntimeException("Service setup failed", e);
+                throw e;
             }
         }
     }
@@ -195,7 +195,14 @@ public class FunctionComputeClientTest {
         createTReq.setSourceArn(OSS_SOURCE_ARN);
         createTReq.setTriggerConfig(
             new OSSTriggerConfig(new String[]{"oss:ObjectCreated:*"}, prefix, suffix));
-        return client.createTrigger(createTReq);
+        CreateTriggerResponse resp = client.createTrigger(createTReq);
+        try {
+            // Add some sleep since OSS notifications create is not strongly consistent
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return resp;
     }
 
     @Test

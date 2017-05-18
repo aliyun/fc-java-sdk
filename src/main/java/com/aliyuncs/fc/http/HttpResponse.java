@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,12 +113,14 @@ public class HttpResponse {
 
     // 真的请求.
     public static HttpResponse getResponse(String urls, Map<String, String> header,
-        HttpRequest request, String method) throws IOException {
+        HttpRequest request, String method, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         OutputStream out = null;
         InputStream content = null;
         HttpResponse response = null;
         HttpURLConnection httpConn = request
             .getHttpConnection(urls, request.getPayload(), header, method);
+        httpConn.setConnectTimeout(connectTimeoutMillis);
+        httpConn.setReadTimeout(readTimeoutMillis);
 
         try {
             //这里面把context写进入request里面去, 在request里面自定getContent方法, 把getPayload改成
@@ -130,6 +133,8 @@ public class HttpResponse {
             response = new HttpResponse();
             pasrseHttpConn(response, httpConn, content);
             return response;
+        } catch (SocketTimeoutException e) {
+            throw e;
         } catch (IOException e) {
             content = httpConn.getErrorStream();
             response = new HttpResponse();
