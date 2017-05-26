@@ -6,6 +6,7 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ServerException;
 import com.aliyuncs.fc.http.HttpResponse;
 import com.aliyuncs.fc.model.FunctionMetadata;
+import com.aliyuncs.fc.model.FunctionCodeMetadata;
 import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.model.TriggerMetadata;
 import com.aliyuncs.fc.response.*;
@@ -15,7 +16,7 @@ import com.google.gson.Gson;
  * TODO: add javadoc
  */
 public class FunctionComputeClient {
-    
+
     private final static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
     private final static String CONTENT_TYPE_APPLICATION_STREAM = "application/octet-stream";
 
@@ -88,6 +89,19 @@ public class FunctionComputeClient {
         getFunctionResponse.setContent(response.getContent());
         getFunctionResponse.setStatus(response.getStatus());
         return getFunctionResponse;
+    }
+
+    public GetFunctionCodeResponse getFunctionCode(GetFunctionCodeRequest request)
+        throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        FunctionCodeMetadata functionCodeMetadata = GSON.fromJson(
+            new String(response.getContent()), FunctionCodeMetadata.class);
+        GetFunctionCodeResponse getFunctionCodeResponse = new GetFunctionCodeResponse();
+        getFunctionCodeResponse.setFunctionCodeMetadata(functionCodeMetadata);
+        getFunctionCodeResponse.setHeader(response.getHeaders());
+        getFunctionCodeResponse.setContent(response.getContent());
+        getFunctionCodeResponse.setStatus(response.getStatus());
+        return getFunctionCodeResponse;
     }
 
     public CreateServiceResponse createService(CreateServiceRequest request)
