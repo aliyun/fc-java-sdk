@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.fc.client.FunctionComputeClient;
 import com.aliyuncs.fc.config.Config;
+import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
 import com.aliyuncs.fc.model.Code;
@@ -983,10 +984,15 @@ public class FunctionComputeClientTest {
         assertEquals(crc64, getFCResp.getCodeChecksum());
 
         // Invoke Function
-        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
-        InvokeFunctionResponse response = client.invokeFunction(request);
-        assertTrue(!Strings.isNullOrEmpty(response.getRequestId()));
-        assertEquals("hello world", new String(response.getContent()));
+        InvokeFunctionRequest invkReq = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        InvokeFunctionResponse invkResp = client.invokeFunction(invkReq);
+        assertTrue(!Strings.isNullOrEmpty(invkResp.getRequestId()));
+        assertEquals("hello world", new String(invkResp.getContent()));
+
+        // Invoke Function Async
+        invkReq.setInvocationType(Const.INVOCATION_TYPE_ASYNC);
+        invkResp = client.invokeFunction(invkReq);
+        assertEquals(HttpURLConnection.HTTP_ACCEPTED, invkResp.getStatus());
 
         if (testTrigger) {
             // Create Trigger

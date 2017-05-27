@@ -16,4 +16,5 @@ public class Const {
     public final static int CONNECT_TIMEOUT = 1000;
     public final static int READ_TIMEOUT = 100000;
     public final static String API_VERSION = "2016-08-15";
+    public final static String INVOCATION_TYPE_ASYNC = "Async";
 }

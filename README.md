@@ -84,11 +84,19 @@ public class FcSample {
         CreateFunctionResponse cfResp = fcClient.createFunction(cfReq);
         System.out.println("Created function, request ID " + cfResp.getRequestId());
 
-        // Invoke the function
+        // Invoke the function, Sync mode
         InvokeFunctionRequest invkReq = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         InvokeFunctionResponse invkResp = fcClient.invokeFunction(invkReq);
         System.out.println(new String(invkResp.getContent()));
 
+        // Invoke the function, Async mode
+        invkReq.setInvocationType(Const.INVOCATION_TYPE_ASYNC);
+        invkResp = fcClient.invokeFunction(invkReq);
+        if (HttpURLConnection.HTTP_ACCEPTED == invkResp.getStatus()) {
+            System.out.println("Async invocation has been queued for execution, request ID: " + invkResp.getRequestId());
+        } else {
+            System.out.println("Async invocation was not accepted");
+        }
         // Delete the function
         DeleteFunctionRequest dfReq = new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         DeleteFunctionResponse dfResp = fcClient.deleteFunction(dfReq);
