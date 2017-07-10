@@ -27,9 +27,9 @@ import java.util.Map;
  */
 public class InvokeFunctionResponse extends HttpResponse {
 
-    private Map<String, String> header = null;
-
-    private byte[] Payload = null;
+    private Map<String, String> header;
+    private String logResult;
+    private byte[] payload;
 
     public Map<String, String> getHeader() {
         return header;
@@ -40,12 +40,17 @@ public class InvokeFunctionResponse extends HttpResponse {
         return this;
     }
 
+    public InvokeFunctionResponse setLogResult(String logResult) {
+        this.logResult = logResult;
+        return this;
+    }
+
     public byte[] getPayload() {
-        return Payload;
+        return payload;
     }
 
     public InvokeFunctionResponse setPayload(byte[] payload) {
-        Payload = payload;
+        this.payload = payload;
         return this;
     }
 
@@ -57,4 +62,7 @@ public class InvokeFunctionResponse extends HttpResponse {
         return header.get("Etag");
     }
 
+    public String getLogResult() {
+        return logResult;
+    }
 }

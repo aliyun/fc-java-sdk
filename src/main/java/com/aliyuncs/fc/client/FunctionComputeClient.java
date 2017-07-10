@@ -1,5 +1,6 @@
 package com.aliyuncs.fc.client;
 
+import com.aliyuncs.fc.constants.HeaderKeys;
 import com.aliyuncs.fc.request.*;
 import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.exceptions.ClientException;
@@ -11,6 +12,9 @@ import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.model.TriggerMetadata;
 import com.aliyuncs.fc.response.*;
 import com.google.gson.Gson;
+import java.io.IOException;
+import java.util.Map;
+import sun.misc.BASE64Decoder;
 
 /**
  * TODO: add javadoc
@@ -242,8 +246,19 @@ public class FunctionComputeClient {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_STREAM, "POST");
         InvokeFunctionResponse invokeFunctionResponse = new InvokeFunctionResponse();
         invokeFunctionResponse.setContent(response.getContent());
+        invokeFunctionResponse.setPayload(response.getContent());
+
         invokeFunctionResponse.setHeader(response.getHeaders());
         invokeFunctionResponse.setStatus(response.getStatus());
+        Map<String, String> headers = response.getHeaders();
+        if (headers != null && headers.containsKey(HeaderKeys.INVOCATION_LOG_RESULT)) {
+            try {
+                String logResult = new String(new BASE64Decoder().decodeBuffer(headers.get(HeaderKeys.INVOCATION_LOG_RESULT)));
+                invokeFunctionResponse.setLogResult(logResult);
+            } catch (IOException e) {
+                throw new ClientException(e);
+            }
+        }
         return invokeFunctionResponse;
     }
 }

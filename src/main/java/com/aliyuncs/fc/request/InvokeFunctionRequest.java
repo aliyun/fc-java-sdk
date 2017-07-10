@@ -18,6 +18,7 @@
  */
 package com.aliyuncs.fc.request;
 
+import com.aliyuncs.fc.constants.HeaderKeys;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.constants.Const;
@@ -34,6 +35,7 @@ public class InvokeFunctionRequest extends HttpRequest {
     private final String serviceName;
     private final String functionName;
     private String invocationType;
+    private String logType;
     private byte[] payload;
 
     public InvokeFunctionRequest(String serviceName, String functionName) {
@@ -58,6 +60,15 @@ public class InvokeFunctionRequest extends HttpRequest {
         return invocationType;
     }
 
+    public InvokeFunctionRequest setLogType(String logType) {
+        this.logType = logType;
+        return this;
+    }
+
+    public String getLogType() {
+        return logType;
+    }
+
     public InvokeFunctionRequest setPayload(byte[] payload) {
         this.payload = payload;
         return this;
@@ -68,18 +79,19 @@ public class InvokeFunctionRequest extends HttpRequest {
     }
 
     public String getPath() {
-        return String.format(Const.INVOKE_FUNCTION_PATH, Const.API_VERSION, this.serviceName,
-            this.functionName);
-    }
-
-    public Map<String, String[]> getQueryParam() {
-        return null;
+        return String.format(Const.INVOKE_FUNCTION_PATH, Const.API_VERSION, serviceName,
+            functionName);
     }
 
     public Map<String, String> getHeaders() {
-        if (this.invocationType != null && this.invocationType.length() > 0) {
-            headers.put("X-Fc-Invocation-Type", this.invocationType);
+        if (!Strings.isNullOrEmpty(invocationType)) {
+            headers.put(HeaderKeys.INVOCATION_TYPE, invocationType);
         }
+
+        if (!Strings.isNullOrEmpty(logType)) {
+            headers.put(HeaderKeys.INVOCATION_LOG_TYPE, logType);
+        }
+
         return headers;
     }
 
@@ -98,7 +110,6 @@ public class InvokeFunctionRequest extends HttpRequest {
         }
         return payload;
     }
-
 
     public Class<InvokeFunctionResponse> getResponseClass() {
         return InvokeFunctionResponse.class;
