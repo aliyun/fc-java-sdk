@@ -53,10 +53,6 @@ public class GetTriggerRequest extends HttpRequest {
         return null;
     }
 
-    public Map<String, String> getHeader() {
-        return null;
-    }
-
     public String getPath() {
         return String
             .format(Const.SINGLE_TRIGGER_PATH, Const.API_VERSION, this.serviceName, this.functionName,

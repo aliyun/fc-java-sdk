@@ -18,7 +18,6 @@
  */
 package com.aliyuncs.fc.request;
 
-
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.constants.Const;
@@ -47,10 +46,6 @@ public class GetServiceRequest extends HttpRequest {
     }
 
     public Map<String, String> getQueryParams() {
-        return null;
-    }
-
-    public Map<String, String> getHeader() {
         return null;
     }
 

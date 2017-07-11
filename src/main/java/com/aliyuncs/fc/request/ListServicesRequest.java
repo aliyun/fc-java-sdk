@@ -79,10 +79,6 @@ public class ListServicesRequest extends HttpRequest {
         return ListRequestUrlHelper.buildParams(prefix, startKey, nextToken, limit);
     }
 
-    public Map<String, String> getHeader() {
-        return null;
-    }
-
     public byte[] getPayload() {
         return null;
     }

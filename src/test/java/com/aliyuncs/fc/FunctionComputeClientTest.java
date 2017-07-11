@@ -86,6 +86,7 @@ public class FunctionComputeClientTest {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     private static final String VALIDATE_MSG = "cannot be blank";
     private static final String REGION = System.getenv("REGION");
+    private static final String ENDPOINT = System.getenv("ENDPOINT");
     private static final String ROLE = System.getenv("ROLE");
     private static final String ACCESS_KEY = System.getenv("ACCESS_KEY");
     private static final String SECRET_KEY = System.getenv("SECRET_KEY");
@@ -112,6 +113,9 @@ public class FunctionComputeClientTest {
     public void setup() {
         // Create or clean up everything under the test service
         client = new FunctionComputeClient(REGION, ACCOUNT_ID, ACCESS_KEY, SECRET_KEY);
+        if (!Strings.isNullOrEmpty(ENDPOINT)) {
+            client.setEndpoint(ENDPOINT);
+        }
         GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
         try {
             client.getService(getSReq);
@@ -875,6 +879,19 @@ public class FunctionComputeClientTest {
         new File(zipFilePath).delete();
         new File(funcFilePath).delete();
         new File(tmpDir).delete();
+    }
+
+    @Test
+    public void testInvokeFunctionSetHeader() {
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+
+        // Headers passed in through setHeader should be respected
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        request.setHeader("x-fc-invocation-type", Const.INVOCATION_TYPE_ASYNC);
+
+        InvokeFunctionResponse response = client.invokeFunction(request);
+        assertEquals(HttpURLConnection.HTTP_ACCEPTED, response.getStatus());
     }
 
     private Credentials getAssumeRoleCredentials(String policy)

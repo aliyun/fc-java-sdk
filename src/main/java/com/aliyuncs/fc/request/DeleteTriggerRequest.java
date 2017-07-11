@@ -17,15 +17,12 @@
  * under the License.
  */
 package com.aliyuncs.fc.request;
-
-
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.response.DeleteTriggerResponse;
 
 import com.google.common.base.Strings;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -75,12 +72,11 @@ public class DeleteTriggerRequest extends HttpRequest {
         return null;
     }
 
-    public Map<String, String> getHeader() {
-        Map<String, String> header = new HashMap<String, String>();
+    public Map<String, String> getHeaders() {
         if (!Strings.isNullOrEmpty(ifMatch)) {
-            header.put("If-Match", this.ifMatch);
+            headers.put("If-Match", this.ifMatch);
         }
-        return header;
+        return headers;
     }
 
     public byte[] getPayload() {

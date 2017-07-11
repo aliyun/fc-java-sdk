@@ -26,7 +26,6 @@ import com.aliyuncs.fc.utils.ParameterHelper;
 
 import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -95,12 +94,11 @@ public class UpdateTriggerRequest extends HttpRequest {
             serviceName, functionName, triggerName);
     }
 
-    public Map<String, String> getHeader() {
-        Map<String, String> header = new HashMap<String, String>();
+    public Map<String, String> getHeaders() {
         if (!Strings.isNullOrEmpty(ifMatch)) {
-            header.put("If-Match", ifMatch);
+            headers.put("If-Match", ifMatch);
         }
-        return header;
+        return headers;
     }
 
     public byte[] getPayload() {

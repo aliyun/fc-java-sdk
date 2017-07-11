@@ -18,7 +18,6 @@
  */
 package com.aliyuncs.fc.request;
 
-
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
@@ -27,7 +26,6 @@ import com.aliyuncs.fc.http.FormatType;
 import com.aliyuncs.fc.response.CreateServiceResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 
-import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
 
@@ -86,10 +84,6 @@ public class CreateServiceRequest extends HttpRequest {
 
     public String getPath() {
         return String.format(Const.SERVICE_PATH, Const.API_VERSION);
-    }
-
-    public Map<String, String> getHeader() {
-        return null;
     }
 
     public byte[] getPayload() {

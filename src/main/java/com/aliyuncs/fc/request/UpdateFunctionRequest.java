@@ -27,7 +27,6 @@ import com.aliyuncs.fc.utils.ParameterHelper;
 
 import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -140,8 +139,7 @@ public class UpdateFunctionRequest extends HttpRequest {
             this.functionName);
     }
 
-    public Map<String, String> getHeader() {
-        Map<String, String> headers = new HashMap<String, String>();
+    public Map<String, String> getHeaders() {
         if (this.ifMatch != null && this.ifMatch.length() < 0) {
             headers.put("If-Match", this.ifMatch);
         }
