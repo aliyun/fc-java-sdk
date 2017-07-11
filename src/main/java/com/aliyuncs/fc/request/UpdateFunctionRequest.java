@@ -27,7 +27,6 @@ import com.aliyuncs.fc.utils.ParameterHelper;
 
 import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

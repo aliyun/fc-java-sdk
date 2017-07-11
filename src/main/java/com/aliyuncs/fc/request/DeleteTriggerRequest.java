@@ -17,15 +17,12 @@
  * under the License.
  */
 package com.aliyuncs.fc.request;
-
-
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.response.DeleteTriggerResponse;
 
 import com.google.common.base.Strings;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

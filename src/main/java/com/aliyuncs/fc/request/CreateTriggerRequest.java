@@ -18,7 +18,6 @@
  */
 package com.aliyuncs.fc.request;
 
-
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.constants.Const;

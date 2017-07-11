@@ -76,7 +76,7 @@ public abstract class HttpRequest {
 
     public void setHeader(String key, String value) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(key), "Header key cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(key), "Header value cannot be blank");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(value), "Header value cannot be blank");
         headers.put(key, value);
     }
 

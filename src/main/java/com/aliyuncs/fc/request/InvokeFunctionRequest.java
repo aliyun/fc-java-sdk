@@ -24,7 +24,6 @@ import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.response.InvokeFunctionResponse;
 
 import com.google.common.base.Strings;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

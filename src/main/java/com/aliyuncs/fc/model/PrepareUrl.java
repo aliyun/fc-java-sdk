@@ -1,7 +1,5 @@
 package com.aliyuncs.fc.model;
 
-import java.util.Map;
-
 /**
  * TODO: add javadoc
  */
