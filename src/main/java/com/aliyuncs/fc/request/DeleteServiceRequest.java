@@ -60,12 +60,11 @@ public class DeleteServiceRequest extends HttpRequest {
         return null;
     }
 
-    public Map<String, String> getHeader() {
-        Map<String, String> header = new HashMap<String, String>();
+    public Map<String, String> getHeaders() {
         if (!Strings.isNullOrEmpty(ifMatch)) {
-            header.put("If-Match", ifMatch);
+            headers.put("If-Match", ifMatch);
         }
-        return header;
+        return headers;
     }
 
     public byte[] getPayload() {

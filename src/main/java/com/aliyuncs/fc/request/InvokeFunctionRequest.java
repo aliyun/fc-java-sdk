@@ -77,8 +77,7 @@ public class InvokeFunctionRequest extends HttpRequest {
         return null;
     }
 
-    public Map<String, String> getHeader() {
-        Map<String, String> headers = new HashMap<String, String>();
+    public Map<String, String> getHeaders() {
         if (this.invocationType != null && this.invocationType.length() > 0) {
             headers.put("X-Fc-Invocation-Type", this.invocationType);
         }

@@ -94,10 +94,6 @@ public class ListTriggersRequest extends HttpRequest {
         return null;
     }
 
-    public Map<String, String> getHeader() {
-        return null;
-    }
-
     public void validate() throws ClientException {
         if (Strings.isNullOrEmpty(this.serviceName)) {
             throw new ClientException("Service name cannot be blank");

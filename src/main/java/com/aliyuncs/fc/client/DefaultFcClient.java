@@ -125,8 +125,8 @@ public class DefaultFcClient {
         throws InvalidKeyException, IllegalStateException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
         Map<String, String> imutableMap = null;
-        if (request.getHeader() != null) {
-            imutableMap = request.getHeader();
+        if (request.getHeaders() != null) {
+            imutableMap = request.getHeaders();
         } else {
             imutableMap = new HashMap<String, String>();
         }
@@ -137,7 +137,7 @@ public class DefaultFcClient {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(accessSecret), "Secret key cannot be blank");
         imutableMap = FcSignatureComposer.refreshSignParameters(imutableMap);
 
-        // Get relevent path
+        // Get relevant path
         String uri = request.getPath();
 
         // Set all headers
@@ -151,7 +151,7 @@ public class DefaultFcClient {
         imutableMap.put("Authorization", "FC " + accessKeyId + ":" + signature);
         String allPath = composeUrl(config.getEndpoint() + request.getPath(),
             request.getQueryParams());
-        return new PrepareUrl(allPath, imutableMap);
+        return new PrepareUrl(allPath);
     }
 
     public HttpResponse doAction(HttpRequest request, String form, String method)
@@ -160,14 +160,13 @@ public class DefaultFcClient {
         try {
             PrepareUrl prepareUrl = signRequest(request, form, method);
             int retryTimes = 1;
-            HttpResponse response = HttpResponse.getResponse(prepareUrl.getUrl(),
-                prepareUrl.getHeader(), request, method, config.getConnectTimeoutMillis(),
+            HttpResponse response = HttpResponse.getResponse(prepareUrl.getUrl(), request, method, config.getConnectTimeoutMillis(),
                 config.getReadTimeoutMillis());
 
             while (500 <= response.getStatus() && AUTO_RETRY && retryTimes < MAX_RETRIES) {
                 prepareUrl = signRequest(request, form, method);
-                response = HttpResponse.getResponse(prepareUrl.getUrl(), prepareUrl.getHeader(),
-                    request, method, config.getConnectTimeoutMillis(), config.getReadTimeoutMillis());
+                response = HttpResponse.getResponse(prepareUrl.getUrl(), request, method,
+                    config.getConnectTimeoutMillis(), config.getReadTimeoutMillis());
                 retryTimes++;
             }
             if (response.getStatus() >= 500) {

@@ -32,11 +32,8 @@ import java.util.Map.Entry;
 public class HttpResponse {
 
     private int status;
-
     private byte[] content;
-
     private Map<String, String> headers;
-
     public HttpResponse() {
     }
 
@@ -88,7 +85,7 @@ public class HttpResponse {
         return outputStream.toByteArray();
     }
 
-    private static void pasrseHttpConn(HttpResponse response, HttpURLConnection httpConn,
+    private static void parseHttpConn(HttpResponse response, HttpURLConnection httpConn,
         InputStream content) throws IOException {
         byte[] buff = readContent(content);
         response.setStatus(httpConn.getResponseCode());
@@ -104,26 +101,24 @@ public class HttpResponse {
                 builder.append(",");
                 builder.append(values.get(i));
             }
-            //这里面定义自己的headers
             response.putHeaderParameter(key, builder.toString());
         }
 
         response.setContent(buff);
     }
 
-    // 真的请求.
-    public static HttpResponse getResponse(String urls, Map<String, String> header,
-        HttpRequest request, String method, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
+    // Get http response
+    public static HttpResponse getResponse(String urls, HttpRequest request,
+        String method, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         OutputStream out = null;
         InputStream content = null;
         HttpResponse response = null;
         HttpURLConnection httpConn = request
-            .getHttpConnection(urls, request.getPayload(), header, method);
+            .getHttpConnection(urls, request.getPayload(), method);
         httpConn.setConnectTimeout(connectTimeoutMillis);
         httpConn.setReadTimeout(readTimeoutMillis);
 
         try {
-            //这里面把context写进入request里面去, 在request里面自定getContent方法, 把getPayload改成
             httpConn.connect();
             if (null != request.getPayload() && request.getPayload().length > 0) {
                 out = httpConn.getOutputStream();
@@ -131,14 +126,14 @@ public class HttpResponse {
             }
             content = httpConn.getInputStream();
             response = new HttpResponse();
-            pasrseHttpConn(response, httpConn, content);
+            parseHttpConn(response, httpConn, content);
             return response;
         } catch (SocketTimeoutException e) {
             throw e;
         } catch (IOException e) {
             content = httpConn.getErrorStream();
             response = new HttpResponse();
-            pasrseHttpConn(response, httpConn, content);
+            parseHttpConn(response, httpConn, content);
             return response;
         } finally {
             if (content != null) {

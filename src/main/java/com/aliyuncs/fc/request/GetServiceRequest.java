@@ -50,10 +50,6 @@ public class GetServiceRequest extends HttpRequest {
         return null;
     }
 
-    public Map<String, String> getHeader() {
-        return null;
-    }
-
     public byte[] getPayload() {
         return null;
     }

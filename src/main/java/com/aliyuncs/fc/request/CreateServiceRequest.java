@@ -88,10 +88,6 @@ public class CreateServiceRequest extends HttpRequest {
         return String.format(Const.SERVICE_PATH, Const.API_VERSION);
     }
 
-    public Map<String, String> getHeader() {
-        return null;
-    }
-
     public byte[] getPayload() {
         if (ParameterHelper.ObjectToJson(this) != null) {
             return ParameterHelper.ObjectToJson(this).getBytes();

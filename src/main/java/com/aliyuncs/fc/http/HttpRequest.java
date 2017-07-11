@@ -19,28 +19,30 @@
 package com.aliyuncs.fc.http;
 
 import com.aliyuncs.fc.exceptions.ClientException;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.aliyuncs.fc.constants.Const;
 
 public abstract class HttpRequest {
 
+    protected Map<String, String> headers;
     public abstract String getPath();
-
     public abstract Map<String, String> getQueryParams();
-
-    public abstract Map<String, String> getHeader();
-
     public abstract byte[] getPayload();
-
     public abstract void validate() throws ClientException;
 
-    public HttpURLConnection getHttpConnection(String urls, byte[] content,
-        Map<String, String> headers, String method) throws IOException {
-        Map<String, String> mappedHeaders = headers;
+    public HttpRequest() {
+        headers = new HashMap<String, String>();
+    }
+
+    public HttpURLConnection getHttpConnection(String urls, byte[] content, String method)
+        throws IOException {
         String strUrl = urls;
         if (null == strUrl || null == method) {
             return null;
@@ -70,5 +72,15 @@ public abstract class HttpRequest {
             httpConn.getOutputStream().write(urlArray[1].getBytes());
         }
         return httpConn;
+    }
+
+    public void setHeader(String key, String value) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(key), "Header key cannot be blank");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(key), "Header value cannot be blank");
+        headers.put(key, value);
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 }

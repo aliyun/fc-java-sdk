@@ -119,10 +119,6 @@ public class CreateTriggerRequest extends HttpRequest {
         return null;
     }
 
-    public Map<String, String> getHeader() {
-        return null;
-    }
-
     public byte[] getPayload() {
         return ParameterHelper.ObjectToJson(this).getBytes();
     }
