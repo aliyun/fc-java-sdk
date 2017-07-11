@@ -116,6 +116,7 @@ public class FunctionComputeClientTest {
         if (!Strings.isNullOrEmpty(ENDPOINT)) {
             client.setEndpoint(ENDPOINT);
         }
+
         GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
         try {
             client.getService(getSReq);
@@ -823,7 +824,7 @@ public class FunctionComputeClientTest {
         InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         InvokeFunctionResponse response = client.invokeFunction(request);
 
-        assertEquals("hello world", new String(response.getContent()));
+        assertEquals("hello world", new String(response.getPayload()));
 
         // Cleanups
         client.deleteFunction(new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME));
@@ -831,6 +832,83 @@ public class FunctionComputeClientTest {
 
         new File(funcFilePath).delete();
         new File(tmpDir).delete();
+    }
+
+    @Test
+    public void testInvokeFunctionLogTypeSyncTail() throws IOException {
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        request.setLogType("Tail");
+        InvokeFunctionResponse response = client.invokeFunction(request);
+        assertNotNull(response.getLogResult());
+        assertTrue(response.getLogResult().contains("Duration"));
+        assertTrue(response.getLogResult().contains("Billed Duration"));
+        assertTrue(response.getLogResult().contains("Memory Size: 128 MB"));
+        assertEquals("hello world", new String(response.getPayload()));
+    }
+
+    @Test
+    public void testInvokeFunctionLogTypeSyncNone() throws IOException {
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        request.setLogType("None");
+        InvokeFunctionResponse response = client.invokeFunction(request);
+        assertNull(response.getLogResult());
+        assertEquals("hello world", new String(response.getPayload()));
+    }
+
+    @Test
+    public void testInvokeFunctionLogTypeSyncInvalid() throws IOException {
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        request.setLogType("Invalid");
+        try {
+            client.invokeFunction(request);
+        } catch (ClientException e) {
+            assertEquals("InvalidArgument", e.getErrorCode());
+            assertEquals("LogType is set to an invalid value (allowed: Tail | None, actual: 'Invalid')", e.getErrorMessage());
+            return;
+        }
+
+        fail("ClientException is expected");
+    }
+
+    @Test
+    public void testInvokeFunctionLogTypeAsyncNone() throws IOException {
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        request.setInvocationType(Const.INVOCATION_TYPE_ASYNC);
+        request.setLogType("None");
+        InvokeFunctionResponse response = client.invokeFunction(request);
+        assertEquals(HttpURLConnection.HTTP_ACCEPTED, response.getStatus());
+    }
+
+    @Test
+    public void testInvokeFunctionLogTypeAsyncInvalid() throws IOException {
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        request.setInvocationType(Const.INVOCATION_TYPE_ASYNC);
+        // Anything other than None for async invoke is invalid
+        request.setLogType("Tail");
+        try {
+            client.invokeFunction(request);
+        } catch (ClientException e) {
+            assertEquals("InvalidArgument", e.getErrorCode());
+            assertEquals("LogType is set to an invalid value (allowed: None, actual: 'Tail')", e.getErrorMessage());
+            return;
+        }
+
+        fail("ClientException is expected");
     }
 
     @Test
@@ -870,7 +948,7 @@ public class FunctionComputeClientTest {
         InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         InvokeFunctionResponse response = client.invokeFunction(request);
 
-        assertEquals("hello world", new String(response.getContent()));
+        assertEquals("hello world", new String(response.getPayload()));
 
         // Cleanups
         client.deleteFunction(new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME));
