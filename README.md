@@ -84,8 +84,10 @@ public class FcSample {
         CreateFunctionResponse cfResp = fcClient.createFunction(cfReq);
         System.out.println("Created function, request ID " + cfResp.getRequestId());
 
-        // Invoke the function, Sync mode
+        // Invoke the function with a string as function event parameter, Sync mode
         InvokeFunctionRequest invkReq = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        String payload = "Hello FunctionCompute!"
+        invkReq.setPayload(payload.getBytes())
         InvokeFunctionResponse invkResp = fcClient.invokeFunction(invkReq);
         System.out.println(new String(invkResp.getContent()));
 
