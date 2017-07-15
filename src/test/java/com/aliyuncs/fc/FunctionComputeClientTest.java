@@ -135,9 +135,15 @@ public class FunctionComputeClientTest {
         throws com.aliyuncs.exceptions.ClientException {
         if (useSts) {
             Credentials creds = getAssumeRoleCredentials(null);
-            return new FunctionComputeClient(new Config(REGION, ACCOUNT_ID,
+            FunctionComputeClient fcClient = new FunctionComputeClient(new Config(REGION, ACCOUNT_ID,
                 creds.getAccessKeyId(), creds.getAccessKeySecret(), creds.getSecurityToken(),
                 useHttps));
+
+            if (!Strings.isNullOrEmpty(ENDPOINT)) {
+                fcClient.setEndpoint(ENDPOINT);
+            }
+
+            return fcClient;
         }
         return new FunctionComputeClient(new Config(REGION, ACCOUNT_ID,
             ACCESS_KEY, SECRET_KEY, null, useHttps));
