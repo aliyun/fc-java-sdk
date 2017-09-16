@@ -48,6 +48,15 @@ EOF
 Run below with your own ENDPOINT, ACCESS_KEY/SECRET_KEY and ACCOUNT_ID environment variables
 
 ```Java
+import com.aliyuncs.fc.client.FunctionComputeClient;
+import com.aliyuncs.fc.constants.Const;
+import com.aliyuncs.fc.model.Code;
+import com.aliyuncs.fc.request.*;
+import com.aliyuncs.fc.response.*;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+
 public class FcSample {
     private static final String CODE_DIR = "/tmp/fc_code";
     private static final String REGION = "cn-shanghai";
@@ -86,8 +95,8 @@ public class FcSample {
 
         // Invoke the function with a string as function event parameter, Sync mode
         InvokeFunctionRequest invkReq = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
-        String payload = "Hello FunctionCompute!"
-        invkReq.setPayload(payload.getBytes())
+        String payload = "Hello FunctionCompute!";
+        invkReq.setPayload(payload.getBytes());
         InvokeFunctionResponse invkResp = fcClient.invokeFunction(invkReq);
         System.out.println(new String(invkResp.getContent()));
 
