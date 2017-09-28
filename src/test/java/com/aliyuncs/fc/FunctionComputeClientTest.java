@@ -18,6 +18,10 @@ import com.aliyuncs.fc.model.Code;
 import com.aliyuncs.fc.model.FunctionMetadata;
 import com.aliyuncs.fc.model.OSSTriggerConfig;
 import com.aliyuncs.fc.model.TriggerMetadata;
+import com.aliyuncs.fc.model.trigger.log.JobConfig;
+import com.aliyuncs.fc.model.trigger.log.LogConfig;
+import com.aliyuncs.fc.model.trigger.log.SourceConfig;
+import com.aliyuncs.fc.model.trigger.log.TriggerConfig;
 import com.aliyuncs.fc.request.CreateFunctionRequest;
 import com.aliyuncs.fc.request.CreateServiceRequest;
 import com.aliyuncs.fc.request.CreateTriggerRequest;
@@ -94,9 +98,13 @@ public class FunctionComputeClientTest {
     private static final String CODE_BUCKET = System.getenv("CODE_BUCKET");
     private static final String CODE_OBJECT = System.getenv("CODE_OBJECT");
     private static final String INVOCATION_ROLE = System.getenv("INVOCATION_ROLE");
+    private static final String LOG_PROJECT = System.getenv("LOG_PROJECT");
+    private static final String LOG_STORE = System.getenv("LOG_STORE");
 
     private static final String OSS_SOURCE_ARN =
         String.format("acs:oss:%s:%s:%s", REGION, ACCOUNT_ID, CODE_BUCKET);
+    private static final String LOG_SOURCE_ARN =
+            String.format("acs:log:%s:%s:project/%s", REGION, ACCOUNT_ID, LOG_PROJECT);
     private static final String SERVICE_NAME = "testServiceJavaSDK";
     private static final String SERVICE_DESC_OLD = "service desc";
     private static final String SERVICE_DESC_NEW = "service desc updated";
@@ -105,6 +113,7 @@ public class FunctionComputeClientTest {
     private static final String FUNCTION_DESC_NEW = "function desc updated";
     private static final String TRIGGER_NAME = "testTrigger";
     private static final String TRIGGER_TYPE_OSS = "oss";
+    private static final String TRIGGER_TYPE_LOG = "log";
     public static final String STS_API_VERSION = "2015-04-01";
 
     private FunctionComputeClient client;
@@ -201,7 +210,7 @@ public class FunctionComputeClientTest {
         return client.createService(createSReq);
     }
 
-    private CreateTriggerResponse createTrigger(String triggerName, String prefix, String suffix) {
+    private CreateTriggerResponse createOssTrigger(String triggerName, String prefix, String suffix) {
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
         createTReq.setTriggerType(TRIGGER_TYPE_OSS);
@@ -396,7 +405,7 @@ public class FunctionComputeClientTest {
         for (int i = 0; i < numTriggers; i++) {
             String prefix = "prefix";
             String suffix = "suffix";
-            CreateTriggerResponse createTResp = createTrigger(TRIGGER_NAME + i,
+            CreateTriggerResponse createTResp = createOssTrigger(TRIGGER_NAME + i,
                 prefix + i, suffix + i);
             assertFalse(Strings.isNullOrEmpty(createTResp.getRequestId()));
         }
@@ -1100,7 +1109,7 @@ public class FunctionComputeClientTest {
             String tfPrefix = "prefix";
             String tfSuffix = "suffix";
 
-            createTrigger(TRIGGER_NAME, tfPrefix, tfSuffix);
+            createOssTrigger(TRIGGER_NAME, tfPrefix, tfSuffix);
 
             // List Triggers
             ListTriggersRequest listTReq = new ListTriggersRequest(SERVICE_NAME, FUNCTION_NAME);
@@ -1162,6 +1171,9 @@ public class FunctionComputeClientTest {
             // Delete Trigger
             deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME);
         }
+
+        testLogTrigger();
+
         // Delete Function
         DeleteFunctionRequest deleteFReq = new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         int numFunctionsOld = listFResp.getFunctions().length;
@@ -1198,6 +1210,76 @@ public class FunctionComputeClientTest {
         } catch (ClientException e) {
             assertNull(getSResp2);
         }
+    }
+
+    private void testLogTrigger() throws ParseException {
+        String triggerName = TRIGGER_TYPE_LOG + "_" + TRIGGER_NAME;
+        TriggerConfig triggerConfig = new TriggerConfig().setSourceConfig(new SourceConfig(LOG_STORE)).
+                setJobConfig(new JobConfig().setMaxRetryTime(3).setTriggerInterval(60)).
+                setLogConfig(new LogConfig("", "")).
+                setFunctionParameter(new HashMap<String, Object>()).setEnable(true);
+        CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
+        createTReq.setTriggerName(triggerName);
+        createTReq.setTriggerType(TRIGGER_TYPE_LOG);
+        createTReq.setInvocationRole(INVOCATION_ROLE);
+        createTReq.setSourceArn(LOG_SOURCE_ARN);
+        createTReq.setTriggerConfig(triggerConfig);
+        client.createTrigger(createTReq);
+
+        // List Triggers
+        ListTriggersRequest listTReq = new ListTriggersRequest(SERVICE_NAME, FUNCTION_NAME);
+        ListTriggersResponse listTResp = client.listTriggers(listTReq);
+        assertFalse(Strings.isNullOrEmpty(listTResp.getRequestId()));
+        assertEquals(1, listTResp.getTriggers().length);
+        TriggerMetadata triggerOld = listTResp.getTriggers()[0];
+        assertEquals(triggerName, triggerOld.getTriggerName());
+
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
+        req.setInvocationRole(INVOCATION_ROLE);
+        req.setTriggerConfig(
+                new TriggerConfig().
+                        setJobConfig(new JobConfig().setMaxRetryTime(5).setTriggerInterval(120)));
+        UpdateTriggerResponse updateTResp = client.updateTrigger(req);
+        assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+        assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
+        assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
+        Gson gson = new Gson();
+        TriggerConfig tcOld = gson
+                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), TriggerConfig.class);
+        TriggerConfig tcNew = gson
+                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), TriggerConfig.class);
+        assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
+        assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
+        assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
+        assertEquals(tcOld.getSourceConfig(), tcNew.getSourceConfig());
+        assertEquals(tcOld.getLogConfig(), tcNew.getLogConfig());
+        assertEquals(tcOld.isEnable(), tcNew.isEnable());
+        assertNotEquals(tcOld.getJobConfig(), tcNew.getJobConfig());
+
+        Date dateOld = DATE_FORMAT.parse(triggerOld.getLastModifiedTime());
+        Date dateNew = DATE_FORMAT.parse(updateTResp.getLastModifiedTime());
+        assertTrue(dateOld.before(dateNew));
+
+        // Get Trigger
+        GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+                triggerName);
+        GetTriggerResponse getTResp = client.getTrigger(getTReq);
+        TriggerConfig getTConfig = gson
+                .fromJson(gson.toJson(getTResp.getTriggerConfig()), TriggerConfig.class);
+        assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
+        assertEquals(triggerName, getTResp.getTriggerName());
+        assertEquals(LOG_SOURCE_ARN, getTResp.getSourceARN());
+        assertEquals(TRIGGER_TYPE_LOG, getTResp.getTriggerType());
+        assertEquals(5, getTConfig.getJobConfig().getMaxRetryTime().intValue());
+        assertEquals(120, getTConfig.getJobConfig().getTriggerInterval().intValue());
+
+        // Delete Trigger
+        deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
     }
 
     private void verifyUpdate(String nameOld, String nameNew, String idOld,
