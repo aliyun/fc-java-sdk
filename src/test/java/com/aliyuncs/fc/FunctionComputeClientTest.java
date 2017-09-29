@@ -18,10 +18,7 @@ import com.aliyuncs.fc.model.Code;
 import com.aliyuncs.fc.model.FunctionMetadata;
 import com.aliyuncs.fc.model.OSSTriggerConfig;
 import com.aliyuncs.fc.model.TriggerMetadata;
-import com.aliyuncs.fc.model.trigger.log.JobConfig;
-import com.aliyuncs.fc.model.trigger.log.LogConfig;
-import com.aliyuncs.fc.model.trigger.log.SourceConfig;
-import com.aliyuncs.fc.model.trigger.log.TriggerConfig;
+import com.aliyuncs.fc.model.LogTriggerConfig;
 import com.aliyuncs.fc.request.CreateFunctionRequest;
 import com.aliyuncs.fc.request.CreateServiceRequest;
 import com.aliyuncs.fc.request.CreateTriggerRequest;
@@ -1213,10 +1210,13 @@ public class FunctionComputeClientTest {
     }
 
     private void testLogTrigger() throws ParseException {
+
+
+
         String triggerName = TRIGGER_TYPE_LOG + "_" + TRIGGER_NAME;
-        TriggerConfig triggerConfig = new TriggerConfig().setSourceConfig(new SourceConfig(LOG_STORE)).
-                setJobConfig(new JobConfig().setMaxRetryTime(3).setTriggerInterval(60)).
-                setLogConfig(new LogConfig("", "")).
+        LogTriggerConfig triggerConfig = new LogTriggerConfig().setSourceConfig(new LogTriggerConfig.SourceConfig(LOG_STORE)).
+                setJobConfig(new LogTriggerConfig.JobConfig().setMaxRetryTime(3).setTriggerInterval(60)).
+                setLogConfig(new LogTriggerConfig.LogConfig("", "")).
                 setFunctionParameter(new HashMap<String, Object>()).setEnable(true);
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
@@ -1242,17 +1242,17 @@ public class FunctionComputeClientTest {
         UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
         req.setInvocationRole(INVOCATION_ROLE);
         req.setTriggerConfig(
-                new TriggerConfig().
-                        setJobConfig(new JobConfig().setMaxRetryTime(5).setTriggerInterval(120)));
+                new LogTriggerConfig().
+                        setJobConfig(new LogTriggerConfig.JobConfig().setMaxRetryTime(5).setTriggerInterval(120)));
         UpdateTriggerResponse updateTResp = client.updateTrigger(req);
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
         assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
         Gson gson = new Gson();
-        TriggerConfig tcOld = gson
-                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), TriggerConfig.class);
-        TriggerConfig tcNew = gson
-                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), TriggerConfig.class);
+        LogTriggerConfig tcOld = gson
+                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), LogTriggerConfig.class);
+        LogTriggerConfig tcNew = gson
+                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), LogTriggerConfig.class);
         assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
         assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
@@ -1269,8 +1269,8 @@ public class FunctionComputeClientTest {
         GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
                 triggerName);
         GetTriggerResponse getTResp = client.getTrigger(getTReq);
-        TriggerConfig getTConfig = gson
-                .fromJson(gson.toJson(getTResp.getTriggerConfig()), TriggerConfig.class);
+        LogTriggerConfig getTConfig = gson
+                .fromJson(gson.toJson(getTResp.getTriggerConfig()), LogTriggerConfig.class);
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(triggerName, getTResp.getTriggerName());
         assertEquals(LOG_SOURCE_ARN, getTResp.getSourceARN());
