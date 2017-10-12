@@ -280,6 +280,17 @@ public class FunctionComputeClientTest {
     }
 
     @Test
+    public void testNewRegions() {
+        FunctionComputeClient clientHz = new FunctionComputeClient("cn-hangzhou", ACCOUNT_ID, ACCESS_KEY, SECRET_KEY);
+        ListServicesResponse lrHz = clientHz.listServices(new ListServicesRequest());
+        assertTrue(lrHz.getStatus() == HttpURLConnection.HTTP_OK);
+
+        FunctionComputeClient clientBj = new FunctionComputeClient("cn-beijing", ACCOUNT_ID, ACCESS_KEY, SECRET_KEY);
+        ListServicesResponse lrBj = clientBj.listServices(new ListServicesRequest());
+        assertTrue(lrBj.getStatus() == HttpURLConnection.HTTP_OK);
+    }
+
+    @Test
     public void testCRUD()
         throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException {
         testCRUDHelper(false);

@@ -11,7 +11,7 @@ import java.util.Properties;
  */
 public class Config {
 
-    private static final String ENDPOINT_FMT = "%s.fc.%s.aliyuncs.com";
+    private static final String ENDPOINT_FMT = "%s.%s.fc.aliyuncs.com";
     private static final String PROPERTIES_FILE = "fc.properties";
     private String endpoint;
     private String apiVersion = "2016-08-15";
