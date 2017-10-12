@@ -72,6 +72,9 @@ public class FcSample {
         // Initialize FC client
         FunctionComputeClient fcClient = new FunctionComputeClient(REGION, accountId, accessKey, accessSecretKey);
 
+        // Set to a specific endpoint in case needed, endpoint sample: http://123456.cn-hangzhou.fc.aliyuncs.com
+        // fcClient.setEndpoint("http://{accountId}.{regionId}.fc.aliyuncs.com.");
+
         // Create a service
         CreateServiceRequest csReq = new CreateServiceRequest();
         csReq.setServiceName(SERVICE_NAME);
