@@ -14,11 +14,7 @@ import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
-import com.aliyuncs.fc.model.Code;
-import com.aliyuncs.fc.model.FunctionMetadata;
-import com.aliyuncs.fc.model.OSSTriggerConfig;
-import com.aliyuncs.fc.model.TriggerMetadata;
-import com.aliyuncs.fc.model.LogTriggerConfig;
+import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.request.CreateFunctionRequest;
 import com.aliyuncs.fc.request.CreateServiceRequest;
 import com.aliyuncs.fc.request.CreateTriggerRequest;
@@ -111,6 +107,7 @@ public class FunctionComputeClientTest {
     private static final String TRIGGER_NAME = "testTrigger";
     private static final String TRIGGER_TYPE_OSS = "oss";
     private static final String TRIGGER_TYPE_LOG = "log";
+    private static final String TRIGGER_TYPE_TIMER = "timer";
     public static final String STS_API_VERSION = "2015-04-01";
 
     private FunctionComputeClient client;
@@ -293,7 +290,7 @@ public class FunctionComputeClientTest {
     @Test
     public void testCRUD()
         throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException {
-        testCRUDHelper(false);
+        testCRUDHelper(true);
     }
 
     @Test
@@ -1181,6 +1178,7 @@ public class FunctionComputeClientTest {
         }
 
         testLogTrigger();
+        testTimeTrigger();
 
         // Delete Function
         DeleteFunctionRequest deleteFReq = new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
@@ -1222,8 +1220,6 @@ public class FunctionComputeClientTest {
 
     private void testLogTrigger() throws ParseException {
 
-
-
         String triggerName = TRIGGER_TYPE_LOG + "_" + TRIGGER_NAME;
         LogTriggerConfig triggerConfig = new LogTriggerConfig().setSourceConfig(new LogTriggerConfig.SourceConfig(LOG_STORE)).
                 setJobConfig(new LogTriggerConfig.JobConfig().setMaxRetryTime(3).setTriggerInterval(60)).
@@ -1244,7 +1240,6 @@ public class FunctionComputeClientTest {
         assertEquals(1, listTResp.getTriggers().length);
         TriggerMetadata triggerOld = listTResp.getTriggers()[0];
         assertEquals(triggerName, triggerOld.getTriggerName());
-
 
         try {
             Thread.sleep(1000);
@@ -1288,6 +1283,72 @@ public class FunctionComputeClientTest {
         assertEquals(TRIGGER_TYPE_LOG, getTResp.getTriggerType());
         assertEquals(5, getTConfig.getJobConfig().getMaxRetryTime().intValue());
         assertEquals(120, getTConfig.getJobConfig().getTriggerInterval().intValue());
+
+        // Delete Trigger
+        deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
+    }
+
+    private void testTimeTrigger() throws ParseException {
+        String cronEvery = "@every 5m";
+        String cronExpression = "0 2 * * * *";
+        String triggerName = TRIGGER_TYPE_TIMER + "_" + TRIGGER_NAME;
+        Gson gson = new Gson();
+
+        // Create Trigger
+        CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        String triggerTime = simpleDateFormat.format(new Date());
+        TimeTriggerPayload payload = new TimeTriggerPayload(triggerTime, triggerName,"awesome-fc");
+        TimeTriggerConfig timeTriggerConfig = new TimeTriggerConfig(cronEvery, payload,true);
+        createTReq.setTriggerName(triggerName);
+        createTReq.setTriggerType(TRIGGER_TYPE_TIMER);
+        createTReq.setInvocationRole(INVOCATION_ROLE);
+        createTReq.setTriggerConfig(timeTriggerConfig);
+        CreateTriggerResponse createTriggerResponse = client.createTrigger(createTReq);
+        assertEquals(createTriggerResponse.getTriggerName(), triggerName);
+        assertEquals(createTriggerResponse.getTriggerType(), TRIGGER_TYPE_TIMER);
+        assertEquals(createTriggerResponse.getInvocationRole(), INVOCATION_ROLE);
+        TimeTriggerConfig tRConfig = gson
+                .fromJson(gson.toJson(createTriggerResponse.getTriggerConfig()), TimeTriggerConfig.class);
+        assertEquals(tRConfig, timeTriggerConfig);
+
+        // Get Trigger
+        GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
+        GetTriggerResponse getTResp = client.getTrigger(getTReq);
+        TimeTriggerConfig getTConfig = gson
+                .fromJson(gson.toJson(getTResp.getTriggerConfig()), TimeTriggerConfig.class);
+        assertEquals(getTConfig, timeTriggerConfig);
+        assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
+        assertEquals(triggerName, getTResp.getTriggerName());
+        assertEquals(TRIGGER_TYPE_TIMER, getTResp.getTriggerType());
+
+        // List Triggers
+        ListTriggersRequest listTReq = new ListTriggersRequest(SERVICE_NAME, FUNCTION_NAME);
+        ListTriggersResponse listTResp = client.listTriggers(listTReq);
+        assertFalse(Strings.isNullOrEmpty(listTResp.getRequestId()));
+        assertEquals(1, listTResp.getTriggers().length);
+        TriggerMetadata triggerOld = listTResp.getTriggers()[0];
+        assertEquals(triggerName, triggerOld.getTriggerName());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
+        // Update Triggers
+        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
+        req.setTriggerConfig(new TimeTriggerConfig(cronExpression, payload,true));
+        UpdateTriggerResponse updateTResp = client.updateTrigger(req);
+        assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+        assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
+        TimeTriggerConfig tcOld = gson
+                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), TimeTriggerConfig.class);
+        TimeTriggerConfig tcNew = gson
+                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), TimeTriggerConfig.class);
+        assertNotEquals(tcNew, tcOld);
+        Date dateOld = DATE_FORMAT.parse(triggerOld.getLastModifiedTime());
+        Date dateNew = DATE_FORMAT.parse(updateTResp.getLastModifiedTime());
+        assertTrue(dateOld.before(dateNew));
 
         // Delete Trigger
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
