@@ -1342,7 +1342,6 @@ public class FunctionComputeClientTest {
         req.setTriggerConfig(new TimeTriggerConfig().setCronExpression(cronExpression).setPayload(payload).setEnable(true));
         UpdateTriggerResponse updateTResp = client.updateTrigger(req);
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
-        assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
         TimeTriggerConfig tcOld = gson
                 .fromJson(gson.toJson(triggerOld.getTriggerConfig()), TimeTriggerConfig.class);
         TimeTriggerConfig tcNew = gson

@@ -35,11 +35,11 @@ public class TimeTriggerConfig {
         return this;
     }
 
-    public boolean isEnable() {
+    public Boolean isEnable() {
         return enable;
     }
 
-    public TimeTriggerConfig setEnable(boolean enable) {
+    public TimeTriggerConfig setEnable(Boolean enable) {
         this.enable = enable;
         return this;
     }
