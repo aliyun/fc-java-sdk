@@ -11,10 +11,11 @@ import com.aliyuncs.fc.model.FunctionCodeMetadata;
 import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.model.TriggerMetadata;
 import com.aliyuncs.fc.response.*;
+import com.aliyuncs.fc.utils.Base64Helper;
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
-import sun.misc.BASE64Decoder;
 
 /**
  * TODO: add javadoc
@@ -253,7 +254,8 @@ public class FunctionComputeClient {
         Map<String, String> headers = response.getHeaders();
         if (headers != null && headers.containsKey(HeaderKeys.INVOCATION_LOG_RESULT)) {
             try {
-                String logResult = new String(new BASE64Decoder().decodeBuffer(headers.get(HeaderKeys.INVOCATION_LOG_RESULT)));
+                String logResult = Base64Helper.decode(headers.get(HeaderKeys.INVOCATION_LOG_RESULT),
+                        Charset.defaultCharset().name());
                 invokeFunctionResponse.setLogResult(logResult);
             } catch (IOException e) {
                 throw new ClientException(e);

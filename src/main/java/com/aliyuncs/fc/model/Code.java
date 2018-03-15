@@ -1,12 +1,12 @@
 package com.aliyuncs.fc.model;
 
+import com.aliyuncs.fc.utils.Base64Helper;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.google.gson.annotations.SerializedName;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.UUID;
-import sun.misc.BASE64Encoder;
 
 /**
  * TODO: add javadoc
@@ -41,7 +41,7 @@ public class Code {
     }
 
     public Code setZipFile(byte[] zipFile) {
-        this.zipFile = new BASE64Encoder().encode(zipFile);
+        this.zipFile = Base64Helper.encode(zipFile);
         return this;
     }
 
@@ -57,7 +57,7 @@ public class Code {
         FileInputStream fis = new FileInputStream(tempZipPath);
         fis.read(buffer);
         fis.close();
-        this.zipFile = new BASE64Encoder().encode(buffer);
+        this.zipFile = Base64Helper.encode(buffer);
         new File(tempZipPath).delete();
         return this;
     }

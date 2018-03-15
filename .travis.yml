@@ -1,14 +1,17 @@
 language: java
+dist: trusty
 
 addons:
   apt:
     packages:
       - openjdk-6-jdk
+      - oracle-java9-installer
 
 jdk:
   - openjdk6
   - openjdk7
   - oraclejdk8
+  - oraclejdk9
 
 install:
   - echo "Downloading Maven 3.0";
