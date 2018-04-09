@@ -12,6 +12,7 @@ import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.model.TriggerMetadata;
 import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.Base64Helper;
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -262,5 +263,57 @@ public class FunctionComputeClient {
             }
         }
         return invokeFunctionResponse;
+    }
+
+    public Map createEnvironmentVariables(String serviceName, String functionName, String key, String value)
+            throws ClientException, ServerException {
+        //Get environmentVariables first
+        Map<String, String> environmentVariables = listEnvironmentVariables(serviceName, functionName);
+        environmentVariables.put(key, value);
+        UpdateFunctionRequest request = new UpdateFunctionRequest(serviceName, functionName);
+        request.setEnvironmentVariables(environmentVariables);
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "PUT");
+        FunctionMetadata functionMetadata = GSON.fromJson(
+                new String(response.getContent()), FunctionMetadata.class);
+        return functionMetadata.getEnvironmentVariables();
+    }
+
+    public Map updateEnvironmentVariables(String serviceName, String functionName, String key, String value)
+            throws ClientException, ServerException {
+        return createEnvironmentVariables(serviceName, functionName, key, value);
+    }
+
+    // return the previous value associated with key, or null if there was no mapping for key.
+    public String deleteEnvironmentVariables(String serviceName, String functionName, String key)
+            throws ClientException, ServerException {
+        Map<String, String> environmentVariables = listEnvironmentVariables(serviceName, functionName);
+        Preconditions.checkArgument(environmentVariables != null);
+        String value = environmentVariables.remove(key);
+        UpdateFunctionRequest request = new UpdateFunctionRequest(serviceName, functionName);
+        request.setEnvironmentVariables(environmentVariables);
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "PUT");
+        FunctionMetadata functionMetadata = GSON.fromJson(
+                new String(response.getContent()), FunctionMetadata.class);
+        return value;
+    }
+
+    public String getEnvironmentVariables(String serviceName, String functionName, String key)
+            throws ClientException, ServerException {
+        GetFunctionRequest request = new GetFunctionRequest(serviceName, functionName);
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        FunctionMetadata functionMetadata = GSON.fromJson(
+                new String(response.getContent()), FunctionMetadata.class);
+        String value = (String) functionMetadata.getEnvironmentVariables().get(key);
+        return value;
+    }
+
+    public Map listEnvironmentVariables(String serviceName, String functionName)
+            throws ClientException, ServerException {
+        GetFunctionRequest request = new GetFunctionRequest(serviceName, functionName);
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        FunctionMetadata functionMetadata = GSON.fromJson(
+                new String(response.getContent()), FunctionMetadata.class);
+        Map environmentVariables = functionMetadata.getEnvironmentVariables();
+        return environmentVariables;
     }
 }

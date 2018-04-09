@@ -71,6 +71,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.json.JSONException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -290,7 +291,7 @@ public class FunctionComputeClientTest {
     @Test
     public void testCRUD()
         throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException {
-        testCRUDHelper(true);
+        testCRUDHelper(false);
     }
 
     @Test
@@ -1108,6 +1109,38 @@ public class FunctionComputeClientTest {
         invkReq.setInvocationType(Const.INVOCATION_TYPE_ASYNC);
         invkResp = client.invokeFunction(invkReq);
         assertEquals(HttpURLConnection.HTTP_ACCEPTED, invkResp.getStatus());
+
+        // test environment variables
+        // Create environment variables
+        Map<String, String> environmentVariables = client.createEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey", "testValue");
+        Map<String, String> origionalEnvironmentVariables = new HashMap<String, String>();
+        origionalEnvironmentVariables.put("testKey","testValue");
+        assertEquals(environmentVariables.size(),origionalEnvironmentVariables.size());
+        assertEquals(origionalEnvironmentVariables.get("testKey"), environmentVariables.get("testKey"));
+
+        // Update environment variables
+        Map<String, String> environmentVariablesUpdate = client.updateEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey", "newTestValue");
+        Map<String, String> origionalEnvironmentVariablesUpdate = new HashMap<String, String>();
+        origionalEnvironmentVariablesUpdate.put("testKey","newTestValue");
+        assertEquals(environmentVariablesUpdate.size(),origionalEnvironmentVariablesUpdate.size());
+        assertEquals(environmentVariablesUpdate.get("testKey"),origionalEnvironmentVariablesUpdate.get("testKey"));
+
+        // Delete environment variables
+        String value = client.deleteEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey");
+        assertEquals(value, "newTestValue");
+
+        // Get environment variables
+        client.createEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey", "testValue");
+        client.createEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey1", "testValue1");
+        client.createEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey2", "testValue2");
+        String valueGet = client.getEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey2");
+        assertEquals(valueGet,"testValue2");
+
+        // List environment variables
+        Map environmentVariablesList = client.listEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME);
+        assertEquals(environmentVariablesList.size(), 3);
+        assertEquals(environmentVariablesList.get("testKey1"), "testValue1");
+        assertEquals(environmentVariablesList.get("testKey2"), "testValue2");
 
         if (testTrigger) {
             // Create Trigger

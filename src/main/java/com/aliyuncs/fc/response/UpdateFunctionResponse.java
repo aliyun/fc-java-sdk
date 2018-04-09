@@ -113,4 +113,8 @@ public class UpdateFunctionResponse extends HttpResponse {
         return header.get("Etag");
     }
 
+    public Map getEnvironmentVariables() {
+        Preconditions.checkArgument(functionMetadata != null);
+        return functionMetadata.getEnvironmentVariables();
+    }
 }
