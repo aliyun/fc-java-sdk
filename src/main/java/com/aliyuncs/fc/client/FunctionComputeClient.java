@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * TODO: add javadoc
@@ -25,6 +26,7 @@ public class FunctionComputeClient {
 
     private final static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
     private final static String CONTENT_TYPE_APPLICATION_STREAM = "application/octet-stream";
+    private static final Logger LOGGER = Logger.getLogger("debug");
 
     private final DefaultFcClient client;
     private static final Gson GSON = new Gson();
@@ -314,6 +316,7 @@ public class FunctionComputeClient {
         FunctionMetadata functionMetadata = GSON.fromJson(
                 new String(response.getContent()), FunctionMetadata.class);
         Map environmentVariables = functionMetadata.getEnvironmentVariables();
+        LOGGER.info(new String(response.getContent()));
         return environmentVariables;
     }
 }
