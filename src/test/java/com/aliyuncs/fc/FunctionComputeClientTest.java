@@ -32,22 +32,7 @@ import com.aliyuncs.fc.request.ListTriggersRequest;
 import com.aliyuncs.fc.request.UpdateFunctionRequest;
 import com.aliyuncs.fc.request.UpdateServiceRequest;
 import com.aliyuncs.fc.request.UpdateTriggerRequest;
-import com.aliyuncs.fc.response.CreateFunctionResponse;
-import com.aliyuncs.fc.response.CreateServiceResponse;
-import com.aliyuncs.fc.response.CreateTriggerResponse;
-import com.aliyuncs.fc.response.DeleteFunctionResponse;
-import com.aliyuncs.fc.response.DeleteServiceResponse;
-import com.aliyuncs.fc.response.DeleteTriggerResponse;
-import com.aliyuncs.fc.response.GetFunctionResponse;
-import com.aliyuncs.fc.response.GetFunctionCodeResponse;
-import com.aliyuncs.fc.response.GetServiceResponse;
-import com.aliyuncs.fc.response.GetTriggerResponse;
-import com.aliyuncs.fc.response.InvokeFunctionResponse;
-import com.aliyuncs.fc.response.ListFunctionsResponse;
-import com.aliyuncs.fc.response.ListServicesResponse;
-import com.aliyuncs.fc.response.ListTriggersResponse;
-import com.aliyuncs.fc.response.UpdateServiceResponse;
-import com.aliyuncs.fc.response.UpdateTriggerResponse;
+import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
@@ -190,6 +175,9 @@ public class FunctionComputeClientTest {
         createFuncReq.setMemorySize(128);
         createFuncReq.setHandler("hello_world.handler");
         createFuncReq.setRuntime("nodejs4.4");
+        Map<String, String> environmentVariables = new HashMap<String, String>();
+        environmentVariables.put("testKey", "testValue");
+        createFuncReq.setEnvironmentVariables(environmentVariables);
         createFuncReq
             .setCode(new Code().setOssBucketName(CODE_BUCKET).setOssObjectName(CODE_OBJECT));
         createFuncReq.setTimeout(10);
@@ -291,7 +279,7 @@ public class FunctionComputeClientTest {
     @Test
     public void testCRUD()
         throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException {
-        testCRUDHelper(false);
+        testCRUDHelper(true);
     }
 
     @Test
@@ -1060,6 +1048,9 @@ public class FunctionComputeClientTest {
         CreateFunctionResponse createFResp = createFunction(FUNCTION_NAME);
         assertFalse(Strings.isNullOrEmpty(createFResp.getRequestId()));
         assertFalse(Strings.isNullOrEmpty(createFResp.getFunctionId()));
+        Map<String, String> environmentVariables = createFResp.getEnvironmentVariables();
+        assertEquals(1, environmentVariables.size());
+        assertEquals("testValue", environmentVariables.get("testKey"));
         assertEquals(FUNCTION_NAME, createFResp.getFunctionName());
         assertEquals(FUNCTION_DESC_OLD, createFResp.getDescription());
 
@@ -1074,9 +1065,15 @@ public class FunctionComputeClientTest {
         // Update Function
         UpdateFunctionRequest updateFReq = new UpdateFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         updateFReq.setDescription(FUNCTION_DESC_NEW);
+        GetFunctionRequest getFReq = new GetFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        GetFunctionResponse getFResp = client.getFunction(getFReq);
+        Map envOriginal = getFResp.getEnvironmentVariables();
+        envOriginal.put("testKey", "testValueNew");
+        updateFReq.setEnvironmentVariables(envOriginal);
         Thread.sleep(1000L);
-        client.updateFunction(updateFReq);
+        UpdateFunctionResponse updateFResp = client.updateFunction(updateFReq);
         listFResp = client.listFunctions(listFReq);
+        Assert.assertEquals("testValueNew", updateFResp.getEnvironmentVariables().get("testKey"));
         assertFalse(Strings.isNullOrEmpty(listFResp.getRequestId()));
         assertEquals(1, listFResp.getFunctions().length);
         FunctionMetadata funcNew = listFResp.getFunctions()[0];
@@ -1087,8 +1084,11 @@ public class FunctionComputeClientTest {
             funcOld.getDescription(), funcNew.getDescription());
 
         // Get Function
-        GetFunctionRequest getFReq = new GetFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
-        GetFunctionResponse getFResp = client.getFunction(getFReq);
+        getFReq = new GetFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        getFResp = client.getFunction(getFReq);
+        Map envGet = getFResp.getEnvironmentVariables();
+        assertEquals(1, envGet.size());
+        assertEquals("testValueNew",envGet.get("testKey"));
         assertFalse(Strings.isNullOrEmpty(getFResp.getRequestId()));
         assertEquals(FUNCTION_NAME, getFResp.getFunctionName());
 
@@ -1109,38 +1109,6 @@ public class FunctionComputeClientTest {
         invkReq.setInvocationType(Const.INVOCATION_TYPE_ASYNC);
         invkResp = client.invokeFunction(invkReq);
         assertEquals(HttpURLConnection.HTTP_ACCEPTED, invkResp.getStatus());
-
-        // test environment variables
-        // Create environment variables
-        Map<String, String> environmentVariables = client.createEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey", "testValue");
-        Map<String, String> origionalEnvironmentVariables = new HashMap<String, String>();
-        origionalEnvironmentVariables.put("testKey","testValue");
-        assertEquals(environmentVariables.size(),origionalEnvironmentVariables.size());
-        assertEquals(origionalEnvironmentVariables.get("testKey"), environmentVariables.get("testKey"));
-
-        // Update environment variables
-        Map<String, String> environmentVariablesUpdate = client.updateEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey", "newTestValue");
-        Map<String, String> origionalEnvironmentVariablesUpdate = new HashMap<String, String>();
-        origionalEnvironmentVariablesUpdate.put("testKey","newTestValue");
-        assertEquals(environmentVariablesUpdate.size(),origionalEnvironmentVariablesUpdate.size());
-        assertEquals(environmentVariablesUpdate.get("testKey"),origionalEnvironmentVariablesUpdate.get("testKey"));
-
-        // Delete environment variables
-        String value = client.deleteEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey");
-        assertEquals(value, "newTestValue");
-
-        // Get environment variables
-        client.createEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey", "testValue");
-        client.createEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey1", "testValue1");
-        client.createEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey2", "testValue2");
-        String valueGet = client.getEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME, "testKey2");
-        assertEquals(valueGet,"testValue2");
-
-        // List environment variables
-        Map environmentVariablesList = client.listEnvironmentVariables(SERVICE_NAME, FUNCTION_NAME);
-        assertEquals(environmentVariablesList.size(), 3);
-        assertEquals(environmentVariablesList.get("testKey1"), "testValue1");
-        assertEquals(environmentVariablesList.get("testKey2"), "testValue2");
 
         if (testTrigger) {
             // Create Trigger
