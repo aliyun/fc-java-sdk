@@ -1067,7 +1067,7 @@ public class FunctionComputeClientTest {
         updateFReq.setDescription(FUNCTION_DESC_NEW);
         GetFunctionRequest getFReq = new GetFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         GetFunctionResponse getFResp = client.getFunction(getFReq);
-        Map envOriginal = getFResp.getEnvironmentVariables();
+        Map<String, String> envOriginal = getFResp.getEnvironmentVariables();
         envOriginal.put("testKey", "testValueNew");
         updateFReq.setEnvironmentVariables(envOriginal);
         Thread.sleep(1000L);
@@ -1086,7 +1086,7 @@ public class FunctionComputeClientTest {
         // Get Function
         getFReq = new GetFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         getFResp = client.getFunction(getFReq);
-        Map envGet = getFResp.getEnvironmentVariables();
+        Map<String, String> envGet = getFResp.getEnvironmentVariables();
         assertEquals(1, envGet.size());
         assertEquals("testValueNew",envGet.get("testKey"));
         assertFalse(Strings.isNullOrEmpty(getFResp.getRequestId()));

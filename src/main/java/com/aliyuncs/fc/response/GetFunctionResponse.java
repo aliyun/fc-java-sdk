@@ -96,7 +96,7 @@ public class GetFunctionResponse extends HttpResponse {
         return functionMetadata.getLastModifiedTime();
     }
 
-    public Map getEnvironmentVariables() {
+    public Map<String, String> getEnvironmentVariables() {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getEnvironmentVariables();
     }

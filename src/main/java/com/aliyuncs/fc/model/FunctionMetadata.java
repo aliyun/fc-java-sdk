@@ -46,7 +46,7 @@ public class FunctionMetadata {
 
     public FunctionMetadata(String functionId, String functionName, String description,
         String runtime, String handler, Integer timeout, Integer memorySize,
-        int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, Map environmentVariables) {
+        int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, Map<String, String> environmentVariables) {
         this.functionId = functionId;
         this.functionName = functionName;
         this.description = description;
@@ -105,7 +105,7 @@ public class FunctionMetadata {
         return codeChecksum;
     }
 
-    public Map getEnvironmentVariables() {
+    public Map<String, String> getEnvironmentVariables() {
         return environmentVariables;
     }
 

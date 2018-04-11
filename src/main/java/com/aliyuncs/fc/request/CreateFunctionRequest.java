@@ -59,7 +59,7 @@ public class CreateFunctionRequest extends HttpRequest {
     private Code code;
 
     @SerializedName("environmentVariables")
-    private Map environmentVariables;
+    private Map<String, String> environmentVariables;
 
     public CreateFunctionRequest(String serviceName) {
         this.serviceName = serviceName;
@@ -132,11 +132,11 @@ public class CreateFunctionRequest extends HttpRequest {
         return memorySize;
     }
 
-    public Map getEnvironmentVariables() {
+    public Map<String, String> getEnvironmentVariables() {
         return environmentVariables;
     }
 
-    public void setEnvironmentVariables(Map environmentVariables) {
+    public void setEnvironmentVariables(Map<String, String> environmentVariables) {
         this.environmentVariables = environmentVariables;
     }
 
