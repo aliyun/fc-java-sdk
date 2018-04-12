@@ -12,10 +12,12 @@ import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.model.TriggerMetadata;
 import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.Base64Helper;
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * TODO: add javadoc
@@ -24,6 +26,7 @@ public class FunctionComputeClient {
 
     private final static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
     private final static String CONTENT_TYPE_APPLICATION_STREAM = "application/octet-stream";
+    private static final Logger LOGGER = Logger.getLogger("debug");
 
     private final DefaultFcClient client;
     private static final Gson GSON = new Gson();
@@ -263,4 +266,5 @@ public class FunctionComputeClient {
         }
         return invokeFunctionResponse;
     }
+
 }

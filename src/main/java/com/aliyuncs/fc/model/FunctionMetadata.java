@@ -1,6 +1,7 @@
 package com.aliyuncs.fc.model;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.Map;
 
 /**
  * TODO: add javadoc
@@ -40,9 +41,12 @@ public class FunctionMetadata {
     @SerializedName("lastModifiedTime")
     private String lastModifiedTime;
 
+    @SerializedName("environmentVariables")
+    private Map<String, String> environmentVariables;
+
     public FunctionMetadata(String functionId, String functionName, String description,
         String runtime, String handler, Integer timeout, Integer memorySize,
-        int codeSize, String codeChecksum, String createdTime, String lastModifiedTime) {
+        int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, Map<String, String> environmentVariables) {
         this.functionId = functionId;
         this.functionName = functionName;
         this.description = description;
@@ -54,6 +58,7 @@ public class FunctionMetadata {
         this.codeChecksum = codeChecksum;
         this.createdTime = createdTime;
         this.lastModifiedTime = lastModifiedTime;
+        this.environmentVariables = environmentVariables;
 
     }
     public String getFunctionName() {
@@ -98,6 +103,10 @@ public class FunctionMetadata {
 
     public String getCodeChecksum() {
         return codeChecksum;
+    }
+
+    public Map<String, String> getEnvironmentVariables() {
+        return environmentVariables;
     }
 
 }
