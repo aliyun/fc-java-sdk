@@ -1,3 +1,10 @@
+
+1.1.6 / 2018-04-12
+==================
+
+  * add environment variables support
+  * update mvn version to 1.1.6-SNAPSHOT
+
 1.1.5 / 2018-03-16
 ==================
 
