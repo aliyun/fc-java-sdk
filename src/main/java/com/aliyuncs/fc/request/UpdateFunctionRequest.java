@@ -55,6 +55,9 @@ public class UpdateFunctionRequest extends HttpRequest {
     @SerializedName("code")
     private Code code;
 
+    @SerializedName("environmentVariables")
+    private Map<String, String> environmentVariables;
+
     private transient String ifMatch;
 
 
@@ -128,6 +131,14 @@ public class UpdateFunctionRequest extends HttpRequest {
     public UpdateFunctionRequest setIfMatch(String ifMatch) {
         this.ifMatch = ifMatch;
         return this;
+    }
+
+    public Map<String, String> getEnvironmentVariables() {
+        return environmentVariables;
+    }
+
+    public void setEnvironmentVariables(Map<String, String> environmentVariables) {
+        this.environmentVariables = environmentVariables;
     }
 
     public String getIfMatch() {

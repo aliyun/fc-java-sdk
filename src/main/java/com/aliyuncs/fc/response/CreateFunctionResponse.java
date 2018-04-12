@@ -88,9 +88,13 @@ public class CreateFunctionResponse extends HttpResponse {
     }
 
     public String getCodeChecksum() {
-
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getCodeChecksum();
+    }
+
+    public Map<String, String> getEnvironmentVariables() {
+        Preconditions.checkArgument(functionMetadata != null);
+        return functionMetadata.getEnvironmentVariables();
     }
 
     public CreateFunctionResponse setHeader(Map<String, String> header) {
