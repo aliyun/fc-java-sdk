@@ -28,8 +28,6 @@ import java.util.Map;
  */
 public class ListFunctionsResponse extends HttpResponse {
 
-    private Map<String, String> header = null;
-
     private FunctionMetadata[] functions = null;
 
     private String nextToken = null;
@@ -51,23 +49,4 @@ public class ListFunctionsResponse extends HttpResponse {
         functions = functions;
         return this;
     }
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public ListFunctionsResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
-    }
-
-
 }

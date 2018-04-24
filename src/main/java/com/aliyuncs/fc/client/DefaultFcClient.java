@@ -19,10 +19,21 @@
  */
 package com.aliyuncs.fc.client;
 
+import com.aliyuncs.fc.auth.AcsURLEncoder;
+import com.aliyuncs.fc.auth.FcSignatureComposer;
+import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.HeaderKeys;
+import com.aliyuncs.fc.exceptions.ClientException;
+import com.aliyuncs.fc.exceptions.ServerException;
+import com.aliyuncs.fc.http.HttpRequest;
+import com.aliyuncs.fc.http.HttpResponse;
+import com.aliyuncs.fc.model.PrepareUrl;
+import com.aliyuncs.fc.request.HttpInvokeFunctionRequest;
+import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
@@ -31,16 +42,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.aliyuncs.fc.auth.FcSignatureComposer;
-import com.aliyuncs.fc.config.Config;
-import com.aliyuncs.fc.exceptions.ClientException;
-import com.aliyuncs.fc.exceptions.ServerException;
-import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.http.HttpResponse;
-import com.google.gson.Gson;
-import com.aliyuncs.fc.auth.AcsURLEncoder;
-import com.aliyuncs.fc.model.PrepareUrl;
-import com.aliyuncs.fc.utils.ParameterHelper;
+import static com.aliyuncs.fc.auth.FcSignatureComposer.composeStringToSign;
+import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class DefaultFcClient {
     public final static Boolean AUTO_RETRY = true;
@@ -115,13 +119,13 @@ public class DefaultFcClient {
         if (payload != null) {
             header.put("Content-MD5", ParameterHelper.md5Sum(payload));
         }
-        if (!Strings.isNullOrEmpty(config.getSecurityToken())) {
+        if (!isNullOrEmpty(config.getSecurityToken())) {
             header.put("x-fc-security-token", config.getSecurityToken());
         }
         return header;
     }
 
-    public PrepareUrl signRequest(HttpRequest request, String form, String method)
+    public void signRequest(HttpRequest request, String form, String method, boolean includeParameters)
         throws InvalidKeyException, IllegalStateException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
         Map<String, String> imutableMap = null;
@@ -133,8 +137,8 @@ public class DefaultFcClient {
         String accessKeyId = config.getAccessKeyID();
         String accessSecret = config.getAccessKeySecret();
 
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeyId), "Access key cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessSecret), "Secret key cannot be blank");
+        Preconditions.checkArgument(!isNullOrEmpty(accessKeyId), "Access key cannot be blank");
+        Preconditions.checkArgument(!isNullOrEmpty(accessSecret), "Secret key cannot be blank");
         imutableMap = FcSignatureComposer.refreshSignParameters(imutableMap);
 
         // Get relevant path
@@ -144,33 +148,56 @@ public class DefaultFcClient {
         imutableMap = getHeader(imutableMap, request.getPayload(), form);
 
         // Sign URL
-        String strToSign = FcSignatureComposer.composeStringToSign(method, uri, imutableMap);
+        String strToSign = null;
+
+        if (includeParameters) {
+            strToSign = composeStringToSign(method, uri, imutableMap, request.getQueryParams());
+        } else {
+            strToSign = composeStringToSign(method, uri, imutableMap, null);
+        }
+
         String signature = FcSignatureComposer.signString(strToSign, accessSecret);
 
         // Set signature
         imutableMap.put("Authorization", "FC " + accessKeyId + ":" + signature);
-        String allPath = composeUrl(config.getEndpoint() + request.getPath(),
-            request.getQueryParams());
-        return new PrepareUrl(allPath);
     }
 
+    private PrepareUrl prepareUrl(String path, Map<String, String> queryParams) throws UnsupportedEncodingException {
+        return new PrepareUrl(composeUrl(config.getEndpoint() + path, queryParams));
+    }
+
+    /**
+     * if form paramter is null, it will use content-type of request.headers
+     */
     public HttpResponse doAction(HttpRequest request, String form, String method)
         throws ClientException, ServerException {
         request.validate();
         try {
-            PrepareUrl prepareUrl = signRequest(request, form, method);
-            int retryTimes = 1;
-            HttpResponse response = HttpResponse.getResponse(prepareUrl.getUrl(), request, method, config.getConnectTimeoutMillis(),
-                config.getReadTimeoutMillis());
+            int retryTimes = 0;
+            HttpResponse response = null;
 
-            while (500 <= response.getStatus() && AUTO_RETRY && retryTimes < MAX_RETRIES) {
-                prepareUrl = signRequest(request, form, method);
+            boolean httpInvoke = false;
+            if (request instanceof HttpInvokeFunctionRequest) httpInvoke = true;
+
+            do {
+                if ( ! httpInvoke
+                        || ! ANONYMOUS.equals(((HttpInvokeFunctionRequest) request).getAuthType())) {
+                    signRequest(request, form, method, httpInvoke);
+                }
+
+                PrepareUrl prepareUrl = prepareUrl(request.getPath(), request.getQueryParams());
+
                 response = HttpResponse.getResponse(prepareUrl.getUrl(), request, method,
-                    config.getConnectTimeoutMillis(), config.getReadTimeoutMillis());
+                        config.getConnectTimeoutMillis(), config.getReadTimeoutMillis());
+
                 retryTimes++;
-            }
+
+                if (httpInvoke) return response;
+
+            } while (500 <= response.getStatus() && AUTO_RETRY && retryTimes < MAX_RETRIES);
+
             if (response.getStatus() >= 500) {
-                String requestId = response.getHeaderValue(HeaderKeys.REQUEST_ID);
+                String requestId = response.getHeader(HeaderKeys.REQUEST_ID);
                 String stringContent = response.getContent() == null ? "" : new String(response.getContent());
                 ServerException se;
                 try {
@@ -196,7 +223,7 @@ public class DefaultFcClient {
                     ce = new ClientException("SDK.UnknownError", "Unknown client error");
                 }
                 ce.setStatusCode(response.getStatus());
-                ce.setRequestId(response.getHeaderValue(HeaderKeys.REQUEST_ID));
+                ce.setRequestId(response.getHeader(HeaderKeys.REQUEST_ID));
                 throw ce;
             }
             return response;

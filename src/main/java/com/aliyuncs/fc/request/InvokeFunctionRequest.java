@@ -27,6 +27,10 @@ import com.aliyuncs.fc.response.InvokeFunctionResponse;
 import com.google.common.base.Strings;
 import java.util.Map;
 
+import static com.aliyuncs.fc.constants.Const.INVOCATION_TYPE_HTTP;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
+
 /**
  * TODO: add javadoc
  */
@@ -36,6 +40,7 @@ public class InvokeFunctionRequest extends HttpRequest {
     private final String functionName;
     private String invocationType;
     private String logType;
+
     private byte[] payload;
 
     public InvokeFunctionRequest(String serviceName, String functionName) {
@@ -79,16 +84,15 @@ public class InvokeFunctionRequest extends HttpRequest {
     }
 
     public String getPath() {
-        return String.format(Const.INVOKE_FUNCTION_PATH, Const.API_VERSION, serviceName,
-            functionName);
+        return format(Const.INVOKE_FUNCTION_PATH, Const.API_VERSION, serviceName, functionName);
     }
 
     public Map<String, String> getHeaders() {
-        if (!Strings.isNullOrEmpty(invocationType)) {
+        if (!isNullOrEmpty(invocationType) && !Const.INVOCATION_TYPE_HTTP.equalsIgnoreCase(invocationType)) {
             headers.put(HeaderKeys.INVOCATION_TYPE, invocationType);
         }
 
-        if (!Strings.isNullOrEmpty(logType)) {
+        if (!isNullOrEmpty(logType)) {
             headers.put(HeaderKeys.INVOCATION_LOG_TYPE, logType);
         }
 
@@ -96,10 +100,10 @@ public class InvokeFunctionRequest extends HttpRequest {
     }
 
     public void validate() throws ClientException {
-        if (Strings.isNullOrEmpty(serviceName)) {
+        if (isNullOrEmpty(serviceName)) {
             throw new ClientException("Service name cannot be blank");
         }
-        if (Strings.isNullOrEmpty(functionName)) {
+        if (isNullOrEmpty(functionName)) {
             throw new ClientException("Function name cannot be blank");
         }
     }
@@ -114,5 +118,4 @@ public class InvokeFunctionRequest extends HttpRequest {
     public Class<InvokeFunctionResponse> getResponseClass() {
         return InvokeFunctionResponse.class;
     }
-
 }

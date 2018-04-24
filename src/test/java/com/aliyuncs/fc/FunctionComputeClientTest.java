@@ -1,5 +1,9 @@
 package com.aliyuncs.fc;
 
+import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
+import static com.aliyuncs.fc.model.HttpAuthType.FUNCTION;
+import static com.aliyuncs.fc.model.HttpMethod.GET;
+import static com.aliyuncs.fc.model.HttpMethod.POST;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
@@ -15,23 +19,7 @@ import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
 import com.aliyuncs.fc.model.*;
-import com.aliyuncs.fc.request.CreateFunctionRequest;
-import com.aliyuncs.fc.request.CreateServiceRequest;
-import com.aliyuncs.fc.request.CreateTriggerRequest;
-import com.aliyuncs.fc.request.DeleteFunctionRequest;
-import com.aliyuncs.fc.request.DeleteServiceRequest;
-import com.aliyuncs.fc.request.DeleteTriggerRequest;
-import com.aliyuncs.fc.request.GetFunctionRequest;
-import com.aliyuncs.fc.request.GetFunctionCodeRequest;
-import com.aliyuncs.fc.request.GetServiceRequest;
-import com.aliyuncs.fc.request.GetTriggerRequest;
-import com.aliyuncs.fc.request.InvokeFunctionRequest;
-import com.aliyuncs.fc.request.ListFunctionsRequest;
-import com.aliyuncs.fc.request.ListServicesRequest;
-import com.aliyuncs.fc.request.ListTriggersRequest;
-import com.aliyuncs.fc.request.UpdateFunctionRequest;
-import com.aliyuncs.fc.request.UpdateServiceRequest;
-import com.aliyuncs.fc.request.UpdateTriggerRequest;
+import com.aliyuncs.fc.request.*;
 import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
@@ -55,6 +43,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.google.gson.JsonObject;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -92,11 +81,14 @@ public class FunctionComputeClientTest {
     private static final String FUNCTION_DESC_NEW = "function desc updated";
     private static final String TRIGGER_NAME = "testTrigger";
     private static final String TRIGGER_TYPE_OSS = "oss";
+    private static final String TRIGGER_TYPE_HTTP = "http";
     private static final String TRIGGER_TYPE_LOG = "log";
     private static final String TRIGGER_TYPE_TIMER = "timer";
     public static final String STS_API_VERSION = "2015-04-01";
 
     private FunctionComputeClient client;
+
+    private static final Gson gson = new Gson();
 
     @Before
     public void setup() {
@@ -109,9 +101,8 @@ public class FunctionComputeClientTest {
         GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
         try {
             client.getService(getSReq);
-            ListFunctionsRequest listFReq = new ListFunctionsRequest(SERVICE_NAME);
-            ListFunctionsResponse listFResp = client.listFunctions(listFReq);
-            cleanUpFunctions(SERVICE_NAME, listFResp.getFunctions());
+
+            cleanUpFunctions(SERVICE_NAME);
             cleanupService(SERVICE_NAME);
         } catch (ClientException e) {
             if (!ErrorCodes.SERVICE_NOT_FOUND.equals(e.getErrorCode())) {
@@ -144,7 +135,11 @@ public class FunctionComputeClientTest {
         System.out.println("Service " + serviceName + " is deleted");
     }
 
-    private void cleanUpFunctions(String serviceName, FunctionMetadata[] functions) {
+    private void cleanUpFunctions(String serviceName) {
+        ListFunctionsRequest listFReq = new ListFunctionsRequest(SERVICE_NAME);
+        ListFunctionsResponse listFResp = client.listFunctions(listFReq);
+        FunctionMetadata[] functions = listFResp.getFunctions();
+
         for (FunctionMetadata function : functions) {
             ListTriggersRequest listReq = new ListTriggersRequest(serviceName,
                 function.getFunctionName());
@@ -168,7 +163,13 @@ public class FunctionComputeClientTest {
         }
     }
 
-    private CreateFunctionResponse createFunction(String functionName) {
+    private CreateFunctionResponse createFunction(String functionName) throws IOException {
+        String source = "exports.handler = function(event, context, callback) {\n" +
+                "  callback(null, 'hello world');\n" +
+                "};";
+
+        byte[] code = createZipByteData("hello_world.js", source);
+
         CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
         createFuncReq.setFunctionName(functionName);
         createFuncReq.setDescription(FUNCTION_DESC_OLD);
@@ -179,7 +180,7 @@ public class FunctionComputeClientTest {
         environmentVariables.put("testKey", "testValue");
         createFuncReq.setEnvironmentVariables(environmentVariables);
         createFuncReq
-            .setCode(new Code().setOssBucketName(CODE_BUCKET).setOssObjectName(CODE_OBJECT));
+            .setCode(new Code().setZipFile(code));
         createFuncReq.setTimeout(10);
 
         return client.createFunction(createFuncReq);
@@ -191,6 +192,15 @@ public class FunctionComputeClientTest {
         createSReq.setDescription(SERVICE_DESC_OLD);
         createSReq.setRole(ROLE);
         return client.createService(createSReq);
+    }
+
+    private CreateTriggerResponse createHttpTrigger(String triggerName, HttpAuthType authType, HttpMethod[] methods) {
+        CreateTriggerRequest createReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
+        createReq.setTriggerName(triggerName);
+        createReq.setTriggerType(TRIGGER_TYPE_HTTP);
+        createReq.setTriggerConfig(new HttpTriggerConfig(authType, methods));
+
+        return client.createTrigger(createReq);
     }
 
     private CreateTriggerResponse createOssTrigger(String triggerName, String prefix, String suffix) {
@@ -278,20 +288,20 @@ public class FunctionComputeClientTest {
 
     @Test
     public void testCRUD()
-        throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException {
+            throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException, IOException {
         testCRUDHelper(true);
     }
 
     @Test
     public void testCRUDStsToken() throws com.aliyuncs.exceptions.ClientException,
-        ParseException, InterruptedException {
+            ParseException, InterruptedException, IOException {
         client = overrideFCClient(true, false);
         testCRUDHelper(false);
     }
 
     @Test
     public void testCRUDStsTokenHttps() throws com.aliyuncs.exceptions.ClientException,
-        ParseException, InterruptedException {
+            ParseException, InterruptedException, IOException {
         client = overrideFCClient(true, true);
         testCRUDHelper(false);
     }
@@ -315,6 +325,96 @@ public class FunctionComputeClientTest {
             assertTrue(e.getErrorMessage()
                 .contains("the caller is not authorized to perform 'ram:PassRole'"));
         }
+    }
+
+    @Test
+    public void testCRUDHttpTrigger() throws ParseException, InterruptedException, IOException {
+
+        // create service
+        CreateServiceResponse createSResp = createService(SERVICE_NAME);
+        assertEquals(SERVICE_NAME, createSResp.getServiceName());
+
+        // Create Function
+        CreateFunctionResponse createFResp = createFunction(FUNCTION_NAME);
+
+        assertFalse(Strings.isNullOrEmpty(createFResp.getRequestId()));
+        assertFalse(Strings.isNullOrEmpty(createFResp.getFunctionId()));
+        assertEquals(FUNCTION_NAME, createFResp.getFunctionName());
+        assertEquals(FUNCTION_DESC_OLD, createFResp.getDescription());
+
+        // create http trigger
+        createHttpTrigger(TRIGGER_NAME, ANONYMOUS, new HttpMethod[] {GET, POST});
+
+        // List Triggers
+        ListTriggersRequest listTReq = new ListTriggersRequest(SERVICE_NAME, FUNCTION_NAME);
+        ListTriggersResponse listTResp = client.listTriggers(listTReq);
+
+        assertFalse(Strings.isNullOrEmpty(listTResp.getRequestId()));
+        assertEquals(1, listTResp.getTriggers().length);
+
+        TriggerMetadata trigger = listTResp.getTriggers()[0];
+
+        assertEquals(TRIGGER_NAME, trigger.getTriggerName());
+        assertEquals("http", trigger.getTriggerType());
+
+        // retrieve http trigger
+        GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+                TRIGGER_NAME);
+
+        GetTriggerResponse getTResp = client.getTrigger(getTReq);
+        HttpTriggerConfig triggerConfig = gson
+                .fromJson(gson.toJson(getTResp.getTriggerConfig()), HttpTriggerConfig.class);
+
+        assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
+        assertEquals(TRIGGER_NAME, getTResp.getTriggerName());
+        assertEquals(TRIGGER_TYPE_HTTP, getTResp.getTriggerType());
+        assertTrue(Arrays.deepEquals(new String[] {"GET", "POST"}, triggerConfig.getMethods()));
+
+        // update http trigger
+        GetTriggerResponse triggerOld = getTResp;
+        HttpTriggerConfig updateTriggerConfig = new HttpTriggerConfig(
+                FUNCTION, new HttpMethod[] {POST});
+
+        UpdateTriggerRequest updateTReq = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+                TRIGGER_NAME);
+        updateTReq.setTriggerConfig(updateTriggerConfig);
+
+        Thread.sleep(1000);
+
+        UpdateTriggerResponse updateTResp = updateTrigger(updateTReq);
+        assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+
+        Gson gson = new Gson();
+        HttpTriggerConfig tcOld = gson
+                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), HttpTriggerConfig.class);
+        HttpTriggerConfig tcNew = gson
+                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), HttpTriggerConfig.class);
+        assertFalse(Arrays.deepEquals(tcOld.getMethods(), tcNew.getMethods()));
+        assertNotEquals(tcOld.getAuthType(), tcNew.getAuthType());
+
+        assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
+        assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
+
+        Date dateOld = DATE_FORMAT.parse(triggerOld.getLastModifiedTime());
+        Date dateNew = DATE_FORMAT.parse(updateTResp.getLastModifiedTime());
+
+        assertTrue(dateOld.before(dateNew));
+
+        // delete http trigger
+        deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME);
+
+        getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+                TRIGGER_NAME);
+
+        try {
+            client.getTrigger(getTReq);
+        } catch (ClientException e) {
+            assertEquals(404, e.getStatusCode());
+        }
+
+
+        cleanUpFunctions(SERVICE_NAME);
+        cleanupService(SERVICE_NAME);
     }
 
     @Test
@@ -360,7 +460,7 @@ public class FunctionComputeClientTest {
     }
 
     @Test
-    public void testListFunctions() {
+    public void testListFunctions() throws IOException {
         final int numServices = 10;
         final int limit = 3;
 
@@ -387,7 +487,7 @@ public class FunctionComputeClientTest {
         assertEquals(numServices / limit + 1, numCalled);
     }
 
-    public void ignoreTestListTriggers() {
+    public void ignoreTestListTriggers() throws IOException {
         final int numTriggers = 5;
         final int limit = 2;
 
@@ -920,9 +1020,125 @@ public class FunctionComputeClientTest {
         fail("ClientException is expected");
     }
 
+    private byte[] createZipByteData(String filename, String code) throws IOException {
+
+        // Setup code directory
+        String tmpDir = "/tmp/fc_test_" + UUID.randomUUID();
+        String funcFilePath = tmpDir + "/" + filename;
+        new File(tmpDir).mkdir();
+        PrintWriter out = new PrintWriter(funcFilePath);
+        out.println(code);
+        out.close();
+        String zipFilePath = tmpDir + "/" + "main.zip";
+        ZipUtils.zipDir(new File(tmpDir), zipFilePath);
+
+        File zipFile = new File(zipFilePath);
+        byte[] buffer = new byte[(int) zipFile.length()];
+        FileInputStream fis = new FileInputStream(zipFilePath);
+        fis.read(buffer);
+        fis.close();
+
+        new File(funcFilePath).delete();
+        new File(zipFilePath).delete();
+        new File(tmpDir).delete();
+
+        return buffer;
+    }
+
+    private void createFunction(String functionName, String handler, String runtime, byte[] data) {
+        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
+
+        Code code = new Code().setZipFile(data);
+        createFuncReq.setFunctionName(functionName);
+        createFuncReq.setDescription("test");
+        createFuncReq.setHandler(handler);
+        createFuncReq.setMemorySize(128);
+        createFuncReq.setRuntime(runtime);
+        createFuncReq.setCode(code);
+        createFuncReq.setTimeout(10);
+
+        client.createFunction(createFuncReq);
+    }
+
+    @Test
+    public void testHttpInvokeFunction() throws IOException {
+        createService(SERVICE_NAME);
+
+        // Create a function
+        String source = "import json\n" +
+                "\n" +
+                "def echo_handler(request, response, context):\n" +
+                "\tresp_body_map = {\n" +
+                "\t\t\"headers\" : {},\n" +
+                "\t\t\"queries\" : {},\n" +
+                "\t\t\"body\" : request.body,\n" +
+                "\t\t\"path\" : request.path,\n" +
+                "\t}\n" +
+                "\n" +
+                "\tfor headerKey, headerValue in request.headers.items():\n" +
+                "\t\tresp_body_map[\"headers\"][headerKey] = headerValue\n" +
+                "\n" +
+                "\tfor param, value in request.queries.items():\n" +
+                "\t\tresp_body_map[\"queries\"][param] = value\n" +
+                "\n" +
+                "\tbody = json.dumps(resp_body_map)\n" +
+                "\tresponse.set_body(body)\n" +
+                "\t\n" +
+                "\tresponse.set_status_code(200)\n" +
+                "\t\n" +
+                "\tresponse.set_header(\"Test-Header-Key\", request.headers[\"Test-Header-Key\"])\n" +
+                "\tresponse.set_header(\"content-type\", \"application/json\")";
+
+        byte[] data = createZipByteData("main.py", source);
+
+        // create function
+        createFunction(FUNCTION_NAME, "main.echo_handler", "python2.7", data);
+
+
+        for (HttpAuthType auth : new HttpAuthType[] {ANONYMOUS, FUNCTION}) {
+            // create http trigger
+            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[] {GET, POST});
+
+            // Invoke the function
+            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, "POST", "/test/path");
+
+            request.addQuery("a", "1");
+            request.addQuery("b", "2");
+
+            request.setHeader("Test-Header-Key", "testHeaderValue");
+            request.setHeader("Content-Type", "application/json");
+
+            request.setPayload(new String("data").getBytes());
+
+            InvokeFunctionResponse response = client.invokeFunction(request);
+
+            assertEquals(200, response.getStatus());
+            assertTrue(response.getHeader("Content-Type").startsWith("application/json"));
+            assertEquals("testHeaderValue", response.getHeader("Test-Header-Key"));
+
+            JsonObject jsonObject = gson.fromJson(new String(response.getPayload()), JsonObject.class);
+
+            assertEquals("/test/path", jsonObject.get("path").getAsString());
+            assertEquals("1", jsonObject.get("queries").getAsJsonObject().get("a").getAsString());
+            assertEquals("2", jsonObject.get("queries").getAsJsonObject().get("b").getAsString());
+            assertEquals("data", jsonObject.get("body").getAsString());
+
+            // delete trigger
+            deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME);
+        }
+
+        // Cleanups
+        client.deleteFunction(new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME));
+        client.deleteService(new DeleteServiceRequest(SERVICE_NAME));
+    }
+
     @Test
     public void testCreateFunctionSetZipFile() throws IOException {
         createService(SERVICE_NAME);
+
+        String source = "'use strict'; module.exports.handler = function(event, context, callback) {console.log('hello world'); callback(null, 'hello world');};";
+
+        byte[] data = createZipByteData("hello_world.js", source);
 
         // Create a function
         CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
@@ -932,23 +1148,7 @@ public class FunctionComputeClientTest {
         createFuncReq.setHandler("hello_world.handler");
         createFuncReq.setRuntime("nodejs4.4");
 
-        // Setup code directory
-        String tmpDir = "/tmp/fc_test_" + UUID.randomUUID();
-        String funcFilePath = tmpDir + "/" + "hello_world.js";
-        new File(tmpDir).mkdir();
-        PrintWriter out = new PrintWriter(funcFilePath);
-        out.println(
-            "'use strict'; module.exports.handler = function(event, context, callback) {console.log('hello world'); callback(null, 'hello world');};");
-        out.close();
-        String zipFilePath = tmpDir + "/" + "hello_world.zip";
-        ZipUtils.zipDir(new File(tmpDir), zipFilePath);
-
-        File zipFile = new File(zipFilePath);
-        byte[] buffer = new byte[(int) zipFile.length()];
-        FileInputStream fis = new FileInputStream(zipFilePath);
-        fis.read(buffer);
-        fis.close();
-        Code code = new Code().setZipFile(buffer);
+        Code code = new Code().setZipFile(data);
         createFuncReq.setCode(code);
         createFuncReq.setTimeout(10);
         client.createFunction(createFuncReq);
@@ -962,14 +1162,10 @@ public class FunctionComputeClientTest {
         // Cleanups
         client.deleteFunction(new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME));
         client.deleteService(new DeleteServiceRequest(SERVICE_NAME));
-
-        new File(zipFilePath).delete();
-        new File(funcFilePath).delete();
-        new File(tmpDir).delete();
     }
 
     @Test
-    public void testInvokeFunctionSetHeader() {
+    public void testInvokeFunctionSetHeader() throws IOException {
         createService(SERVICE_NAME);
         createFunction(FUNCTION_NAME);
 
@@ -1016,7 +1212,7 @@ public class FunctionComputeClientTest {
         return stsResponse.getCredentials();
     }
 
-    private void testCRUDHelper(boolean testTrigger) throws ParseException, InterruptedException {
+    private void testCRUDHelper(boolean testTrigger) throws ParseException, InterruptedException, IOException {
         // Create Service
         CreateServiceResponse createSResp = createService(SERVICE_NAME);
         assertFalse(Strings.isNullOrEmpty(createSResp.getRequestId()));

@@ -28,23 +28,11 @@ import java.util.Map;
  * TODO: add javadoc
  */
 public class ListTriggersResponse extends HttpResponse {
-
-    private Map<String, String> header;
-
     @SerializedName("triggers")
     private TriggerMetadata[] triggers;
 
     @SerializedName("nextToken")
     private String nextToken;
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public ListTriggersResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
 
     public TriggerMetadata[] getTriggers() {
         return triggers;
@@ -62,14 +50,6 @@ public class ListTriggersResponse extends HttpResponse {
     public ListTriggersResponse setNextToken(String nextToken) {
         this.nextToken = nextToken;
         return this;
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
     }
 
 }

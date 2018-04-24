@@ -29,14 +29,7 @@ import java.util.Map;
  * TODO: add javadoc
  */
 public class CreateServiceResponse extends HttpResponse {
-
-    private Map<String, String> header;
     private ServiceMetadata serviceMetadata;
-
-    public CreateServiceResponse setHeaders(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
 
     public CreateServiceResponse setServiceMetadata(ServiceMetadata serviceMetadata) {
         this.serviceMetadata = serviceMetadata;
@@ -76,17 +69,4 @@ public class CreateServiceResponse extends HttpResponse {
         Preconditions.checkArgument(serviceMetadata != null);
         return serviceMetadata.getLastModifiedTime();
     }
-
-    public Map<String, String> getHeader() {
-        return this.header;
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
-    }
-
 }

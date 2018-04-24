@@ -30,17 +30,7 @@ import java.util.Map;
  */
 public class GetTriggerResponse extends HttpResponse {
 
-    private Map<String, String> header;
     private TriggerMetadata triggerMetadata;
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public GetTriggerResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
 
     public GetTriggerResponse setTriggerMetadata(TriggerMetadata triggerMetadata) {
         this.triggerMetadata = triggerMetadata;
@@ -80,14 +70,6 @@ public class GetTriggerResponse extends HttpResponse {
     public Object getTriggerConfig() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getTriggerConfig();
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
     }
 
 }
