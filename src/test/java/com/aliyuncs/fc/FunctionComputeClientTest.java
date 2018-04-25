@@ -368,7 +368,7 @@ public class FunctionComputeClientTest {
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(TRIGGER_NAME, getTResp.getTriggerName());
         assertEquals(TRIGGER_TYPE_HTTP, getTResp.getTriggerType());
-        assertTrue(Arrays.deepEquals(new String[] {"GET", "POST"}, triggerConfig.getMethods()));
+        assertTrue(Arrays.deepEquals(new HttpMethod[] {GET, POST}, triggerConfig.getMethods()));
 
         // update http trigger
         GetTriggerResponse triggerOld = getTResp;

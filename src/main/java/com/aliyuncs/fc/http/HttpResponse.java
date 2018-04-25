@@ -117,7 +117,7 @@ public class HttpResponse {
         InputStream content = null;
         HttpResponse response = null;
         HttpURLConnection httpConn = request
-            .getHttpConnection(urls, request.getPayload(), method);
+            .getHttpConnection(urls, method);
         httpConn.setConnectTimeout(connectTimeoutMillis);
         httpConn.setReadTimeout(readTimeoutMillis);
 
