@@ -1165,7 +1165,7 @@ public class FunctionComputeClientTest {
     }
 
     @Test
-    public void testInvokeFunctionSetHeader() throws IOException {
+    public void testInvokeFunctionSetHeader() throws IOException, InterruptedException {
         createService(SERVICE_NAME);
         createFunction(FUNCTION_NAME);
 
@@ -1175,6 +1175,9 @@ public class FunctionComputeClientTest {
 
         InvokeFunctionResponse response = client.invokeFunction(request);
         assertEquals(HttpURLConnection.HTTP_ACCEPTED, response.getStatus());
+
+        Thread.sleep(5000);
+
     }
 
     private Credentials getAssumeRoleCredentials(String policy)
