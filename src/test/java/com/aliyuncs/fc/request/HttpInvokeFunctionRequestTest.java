@@ -4,6 +4,7 @@ import com.aliyuncs.fc.model.HttpAuthType;
 import org.junit.Test;
 
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
+import static com.aliyuncs.fc.model.HttpMethod.GET;
 import static java.lang.String.format;
 import static org.junit.Assert.*;
 
@@ -51,14 +52,21 @@ public class HttpInvokeFunctionRequestTest {
         request = createHttpInvoke("/a/b/c?a");
 
         assertEquals(1, request.getQueryParams().size());
-        assertEquals(null, request.getQueryParams().get("a"));
+        assertEquals("", request.getQueryParams().get("a"));
 
         request.addQuery("a", "1");
         assertEquals("1", request.getQueryParams().get("a"));
     }
 
+    @Test
+    public void testNullPath() {
+        HttpInvokeFunctionRequest request = createHttpInvoke(null);
+
+        assertEquals(generatePath("/"), request.getPath());
+    }
+
     private static HttpInvokeFunctionRequest createHttpInvoke(String path) {
-        return new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, ANONYMOUS, "GET", path);
+        return new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, ANONYMOUS, GET, path);
     }
 
     private static String generatePath(String path) {

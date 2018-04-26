@@ -2,8 +2,7 @@ package com.aliyuncs.fc;
 
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
 import static com.aliyuncs.fc.model.HttpAuthType.FUNCTION;
-import static com.aliyuncs.fc.model.HttpMethod.GET;
-import static com.aliyuncs.fc.model.HttpMethod.POST;
+import static com.aliyuncs.fc.model.HttpMethod.*;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
@@ -1100,10 +1099,11 @@ public class FunctionComputeClientTest {
             createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[] {GET, POST});
 
             // Invoke the function
-            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, "POST", "/test/path");
+            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, POST, "/test/path");
 
             request.addQuery("a", "1");
             request.addQuery("b", "2");
+            request.addQuery("aaa", null);
 
             request.setHeader("Test-Header-Key", "testHeaderValue");
             request.setHeader("Content-Type", "application/json");
@@ -1122,6 +1122,71 @@ public class FunctionComputeClientTest {
             assertEquals("1", jsonObject.get("queries").getAsJsonObject().get("a").getAsString());
             assertEquals("2", jsonObject.get("queries").getAsJsonObject().get("b").getAsString());
             assertEquals("data", jsonObject.get("body").getAsString());
+
+            // delete trigger
+            deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME);
+        }
+
+        // Cleanups
+        client.deleteFunction(new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME));
+        client.deleteService(new DeleteServiceRequest(SERVICE_NAME));
+    }
+
+    @Test
+    public void testHttpInvokeFunctionWithoutQueriesAndBody() throws IOException {
+        createService(SERVICE_NAME);
+
+        // Create a function
+        String source = "import json\n" +
+                "\n" +
+                "def echo_handler(request, response, context):\n" +
+                "\tresp_body_map = {\n" +
+                "\t\t\"headers\" : {},\n" +
+                "\t\t\"queries\" : {},\n" +
+                "\t\t\"body\" : request.body,\n" +
+                "\t\t\"path\" : request.path,\n" +
+                "\t}\n" +
+                "\n" +
+                "\tfor headerKey, headerValue in request.headers.items():\n" +
+                "\t\tresp_body_map[\"headers\"][headerKey] = headerValue\n" +
+                "\n" +
+                "\tfor param, value in request.queries.items():\n" +
+                "\t\tresp_body_map[\"queries\"][param] = value\n" +
+                "\n" +
+                "\tbody = json.dumps(resp_body_map)\n" +
+                "\tresponse.set_body(body)\n" +
+                "\t\n" +
+                "\tresponse.set_status_code(200)\n" +
+                "\t\n" +
+                "\tresponse.set_header(\"Test-Header-Key\", request.headers[\"Test-Header-Key\"])\n" +
+                "\tresponse.set_header(\"content-type\", \"application/json\")";
+
+        byte[] data = createZipByteData("main.py", source);
+
+        // create function
+        createFunction(FUNCTION_NAME, "main.echo_handler", "python2.7", data);
+
+
+        for (HttpAuthType auth : new HttpAuthType[] {ANONYMOUS, FUNCTION}) {
+            // create http trigger
+            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[] {GET, POST, PUT, HEAD, DELETE});
+
+            // Invoke the function
+            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, POST, "/test/path");
+
+            request.setHeader("Test-Header-Key", "testHeaderValue");
+            request.setHeader("Content-Type", "application/json");
+
+            InvokeFunctionResponse response = client.invokeFunction(request);
+
+            assertEquals(200, response.getStatus());
+            assertTrue(response.getHeader("Content-Type").startsWith("application/json"));
+            assertEquals("testHeaderValue", response.getHeader("Test-Header-Key"));
+
+            JsonObject jsonObject = gson.fromJson(new String(response.getPayload()), JsonObject.class);
+
+            assertEquals("/test/path", jsonObject.get("path").getAsString());
+            assertEquals("", jsonObject.get("body").getAsString());
 
             // delete trigger
             deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME);

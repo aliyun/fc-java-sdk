@@ -23,6 +23,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+import com.aliyuncs.fc.model.HttpMethod;
 import com.aliyuncs.fc.utils.Base64Helper;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Joiner;
@@ -50,10 +51,10 @@ public class FcSignatureComposer {
         return parameters;
     }
 
-    static String composeStringToSignWithMultiValue(String method, String path,
+    static String composeStringToSignWithMultiValue(HttpMethod method, String path,
                                                     Map<String, String> headers, Map<String, String[]> queries) {
         StringBuilder sb = new StringBuilder();
-        sb.append(method);
+        sb.append(method.name());
         sb.append(HEADER_SEPARATOR);
 
         sb.append(composeCanonicalizedFCHeaders(headers));
@@ -62,7 +63,6 @@ public class FcSignatureComposer {
         sb.append(buildCanonicalHeaders(headers, "x-fc"));
 
         sb.append(composeCanonicalizedResource(path, queries));
-
 
         return sb.toString();
     }
@@ -91,7 +91,7 @@ public class FcSignatureComposer {
 
         sb.append(path);
 
-        if (queries != null && queries.size() != 0) {
+        if (queries != null) {
             sb.append(HEADER_SEPARATOR);
 
             List<String> params = new ArrayList<String>(queries.size());
@@ -105,7 +105,11 @@ public class FcSignatureComposer {
                     continue;
                 } else {
                     for (String value : values) {
-                        params.add(format("%s=%s", key, value));
+                        if (value == null) {
+                            params.add(key);
+                        } else {
+                            params.add(format("%s=%s", key, value));
+                        }
                     }
                 }
             }
@@ -119,12 +123,14 @@ public class FcSignatureComposer {
         return sb.toString();
     }
 
-    public static String composeStringToSign(String method, String path,
+    public static String composeStringToSign(HttpMethod method, String path,
         Map<String, String> headers, Map<String, String> queries) {
 
-        Map<String, String[]> multiValueQueries = new HashMap<String, String[]>();
+        Map<String, String[]> multiValueQueries = null;
 
         if (queries != null) {
+            multiValueQueries = new HashMap<String, String[]>();
+
             for (Map.Entry<String, String> entry : queries.entrySet()) {
                 multiValueQueries.put(entry.getKey(), new String[] {entry.getValue()});
             }

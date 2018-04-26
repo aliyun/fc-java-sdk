@@ -5,10 +5,7 @@ import com.aliyuncs.fc.constants.HeaderKeys;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ServerException;
 import com.aliyuncs.fc.http.HttpResponse;
-import com.aliyuncs.fc.model.FunctionCodeMetadata;
-import com.aliyuncs.fc.model.FunctionMetadata;
-import com.aliyuncs.fc.model.ServiceMetadata;
-import com.aliyuncs.fc.model.TriggerMetadata;
+import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.request.*;
 import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.Base64Helper;
@@ -18,6 +15,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import static com.aliyuncs.fc.model.HttpMethod.*;
 
 /**
  * TODO: add javadoc
@@ -57,7 +56,7 @@ public class FunctionComputeClient {
     public DeleteServiceResponse deleteService(DeleteServiceRequest request)
         throws ClientException, ServerException {
 
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "DELETE");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
         DeleteServiceResponse deleteServiceResponse = new DeleteServiceResponse();
         deleteServiceResponse.setHeaders(response.getHeaders());
         deleteServiceResponse.setStatus(response.getStatus());
@@ -66,7 +65,7 @@ public class FunctionComputeClient {
 
     public DeleteFunctionResponse deleteFunction(DeleteFunctionRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "DELETE");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
         DeleteFunctionResponse deleteFunctionResponse = new DeleteFunctionResponse();
         deleteFunctionResponse.setHeaders(response.getHeaders());
         deleteFunctionResponse.setStatus(response.getStatus());
@@ -75,7 +74,7 @@ public class FunctionComputeClient {
 
     public GetServiceResponse getService(GetServiceRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         ServiceMetadata serviceMetadata = GSON.fromJson(
             new String(response.getContent()), ServiceMetadata.class);
         GetServiceResponse getServiceResponse = new GetServiceResponse();
@@ -88,7 +87,7 @@ public class FunctionComputeClient {
 
     public GetFunctionResponse getFunction(GetFunctionRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         FunctionMetadata functionMetadata = GSON.fromJson(
             new String(response.getContent()), FunctionMetadata.class);
         GetFunctionResponse getFunctionResponse = new GetFunctionResponse();
@@ -101,7 +100,7 @@ public class FunctionComputeClient {
 
     public GetFunctionCodeResponse getFunctionCode(GetFunctionCodeRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         FunctionCodeMetadata functionCodeMetadata = GSON.fromJson(
             new String(response.getContent()), FunctionCodeMetadata.class);
         GetFunctionCodeResponse getFunctionCodeResponse = new GetFunctionCodeResponse();
@@ -114,7 +113,7 @@ public class FunctionComputeClient {
 
     public CreateServiceResponse createService(CreateServiceRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "POST");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
         ServiceMetadata serviceMetadata = GSON.fromJson(
             new String(response.getContent()), ServiceMetadata.class);
         CreateServiceResponse createServiceResponse = new CreateServiceResponse();
@@ -127,7 +126,7 @@ public class FunctionComputeClient {
 
     public CreateFunctionResponse createFunction(CreateFunctionRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "POST");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
         FunctionMetadata functionMetadata = GSON.fromJson(
             new String(response.getContent()), FunctionMetadata.class);
         CreateFunctionResponse createFunctionResponse = new CreateFunctionResponse();
@@ -140,7 +139,7 @@ public class FunctionComputeClient {
 
     public UpdateServiceResponse updateService(UpdateServiceRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "PUT");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
         ServiceMetadata serviceMetadata = GSON.fromJson(
             new String(response.getContent()), ServiceMetadata.class);
         UpdateServiceResponse updateServiceResponse = new UpdateServiceResponse();
@@ -153,7 +152,7 @@ public class FunctionComputeClient {
 
     public UpdateFunctionResponse updateFunction(UpdateFunctionRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "PUT");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
         FunctionMetadata functionMetadata = GSON.fromJson(
             new String(response.getContent()), FunctionMetadata.class);
         UpdateFunctionResponse updateFunctionResponse = new UpdateFunctionResponse();
@@ -166,7 +165,7 @@ public class FunctionComputeClient {
 
     public ListServicesResponse listServices(ListServicesRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         ListServicesResponse listServicesResponse = GSON.fromJson(
             new String(response.getContent()), ListServicesResponse.class);
         listServicesResponse.setHeaders(response.getHeaders());
@@ -177,7 +176,7 @@ public class FunctionComputeClient {
 
     public ListFunctionsResponse listFunctions(ListFunctionsRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         ListFunctionsResponse listFunctionsResponse = GSON.fromJson(
             new String(response.getContent()), ListFunctionsResponse.class);
         listFunctionsResponse.setHeaders(response.getHeaders());
@@ -188,7 +187,7 @@ public class FunctionComputeClient {
 
     public CreateTriggerResponse createTrigger(CreateTriggerRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "POST");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
         TriggerMetadata triggerMetadata = GSON.fromJson(
             new String(response.getContent()), TriggerMetadata.class);
         CreateTriggerResponse createTriggerResponse = new CreateTriggerResponse();
@@ -201,7 +200,7 @@ public class FunctionComputeClient {
 
     public DeleteTriggerResponse deleteTrigger(DeleteTriggerRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "DELETE");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
         DeleteTriggerResponse deleteTriggerResponse = new DeleteTriggerResponse();
         deleteTriggerResponse.setHeaders(response.getHeaders());
         deleteTriggerResponse.setStatus(response.getStatus());
@@ -210,7 +209,7 @@ public class FunctionComputeClient {
 
     public UpdateTriggerResponse updateTrigger(UpdateTriggerRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "PUT");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
         TriggerMetadata triggerMetadata = GSON.fromJson(
             new String(response.getContent()), TriggerMetadata.class);
         UpdateTriggerResponse updateTriggerResponse = new UpdateTriggerResponse();
@@ -223,7 +222,7 @@ public class FunctionComputeClient {
 
     public GetTriggerResponse getTrigger(GetTriggerRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         TriggerMetadata triggerMetadata = GSON.fromJson(
             new String(response.getContent()), TriggerMetadata.class);
         GetTriggerResponse getTriggerResponse = new GetTriggerResponse();
@@ -236,7 +235,7 @@ public class FunctionComputeClient {
 
     public ListTriggersResponse listTriggers(ListTriggersRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, "GET");
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         ListTriggersResponse listTriggersResponse = GSON.fromJson(
             new String(response.getContent()), ListTriggersResponse.class);
         listTriggersResponse.setHeaders(response.getHeaders());
@@ -263,7 +262,7 @@ public class FunctionComputeClient {
 
             response = client.doAction(request, form, ((HttpInvokeFunctionRequest) request).getMethod());
         } else {
-            response = client.doAction(request, CONTENT_TYPE_APPLICATION_STREAM, "POST");
+            response = client.doAction(request, CONTENT_TYPE_APPLICATION_STREAM, POST);
         }
 
         InvokeFunctionResponse invokeFunctionResponse = new InvokeFunctionResponse();

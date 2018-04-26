@@ -18,6 +18,8 @@ Z * Licensed to the Apache Software Foundation (ASF) under one
  */
 package com.aliyuncs.fc.http;
 
+import com.aliyuncs.fc.model.HttpMethod;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -112,12 +114,12 @@ public class HttpResponse {
 
     // Get http response
     public static HttpResponse getResponse(String urls, HttpRequest request,
-        String method, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
+                                           HttpMethod method, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         OutputStream out = null;
         InputStream content = null;
         HttpResponse response = null;
         HttpURLConnection httpConn = request
-            .getHttpConnection(urls, method);
+            .getHttpConnection(urls, method.name());
         httpConn.setConnectTimeout(connectTimeoutMillis);
         httpConn.setReadTimeout(readTimeoutMillis);
 

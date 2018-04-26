@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.aliyuncs.fc.model.HttpMethod.GET;
 import static org.junit.Assert.*;
 
 public class FcSignatureComposerTest {
@@ -23,7 +24,7 @@ public class FcSignatureComposerTest {
         headers.put("h3", "k3");
         headers.put("x-fc-h5", "k5");
 
-        String composed = FcSignatureComposer.composeStringToSign("GET", "aa", headers, null);
+        String composed = FcSignatureComposer.composeStringToSign(GET, "aa", headers, null);
 
         assertEquals("GET\n" +
                 "1bca714f406993b309bb87fabeb30a6b\n" +
@@ -58,7 +59,7 @@ public class FcSignatureComposerTest {
         queries.put("h3", new String[] {"k3"});
         queries.put("h5", new String[] {"k5"});
 
-        String composed = FcSignatureComposer.composeStringToSignWithMultiValue("GET", "aa", headers, queries);
+        String composed = FcSignatureComposer.composeStringToSignWithMultiValue(GET, "aa", headers, queries);
 
         assertEquals("GET\n" +
                 "1bca714f406993b309bb87fabeb30a6b\n" +
@@ -91,7 +92,7 @@ public class FcSignatureComposerTest {
         queries.put("key1", new String[] {"xyz", "abc"});
         queries.put("key3/~x-y_z.a#b", new String[] {"value/~x-y_z.a#b"});
 
-        String composed = FcSignatureComposer.composeStringToSignWithMultiValue("GET", "/path/action with space", null, queries);
+        String composed = FcSignatureComposer.composeStringToSignWithMultiValue(GET, "/path/action with space", null, queries);
 
         assertEquals("GET\n" +
                 "\n" +
@@ -127,7 +128,7 @@ public class FcSignatureComposerTest {
         queries.put("h3", "k3");
         queries.put("h5", "k5");
 
-        String composed = FcSignatureComposer.composeStringToSign("GET", "aa", headers, queries);
+        String composed = FcSignatureComposer.composeStringToSign(GET, "aa", headers, queries);
 
         assertEquals("GET\n" +
                 "1bca714f406993b309bb87fabeb30a6b\n" +

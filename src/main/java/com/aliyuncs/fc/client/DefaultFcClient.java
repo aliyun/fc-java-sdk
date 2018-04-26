@@ -27,6 +27,7 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ServerException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.http.HttpResponse;
+import com.aliyuncs.fc.model.HttpMethod;
 import com.aliyuncs.fc.model.PrepareUrl;
 import com.aliyuncs.fc.request.HttpInvokeFunctionRequest;
 import com.aliyuncs.fc.utils.ParameterHelper;
@@ -125,7 +126,7 @@ public class DefaultFcClient {
         return header;
     }
 
-    public void signRequest(HttpRequest request, String form, String method, boolean includeParameters)
+    public void signRequest(HttpRequest request, String form, HttpMethod method, boolean includeParameters)
         throws InvalidKeyException, IllegalStateException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
         Map<String, String> imutableMap = null;
@@ -169,7 +170,7 @@ public class DefaultFcClient {
     /**
      * if form paramter is null, it will use content-type of request.headers
      */
-    public HttpResponse doAction(HttpRequest request, String form, String method)
+    public HttpResponse doAction(HttpRequest request, String form, HttpMethod method)
         throws ClientException, ServerException {
         request.validate();
         try {
