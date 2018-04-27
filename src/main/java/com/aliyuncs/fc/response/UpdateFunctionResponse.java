@@ -29,17 +29,7 @@ import java.util.Map;
  */
 public class UpdateFunctionResponse extends HttpResponse {
 
-    private Map<String, String> header;
     private FunctionMetadata functionMetadata;
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public UpdateFunctionResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
 
     public FunctionMetadata getFunctionMetadata() {
         return functionMetadata;
@@ -103,14 +93,6 @@ public class UpdateFunctionResponse extends HttpResponse {
     public String getLastModifiedTime() {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getLastModifiedTime();
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
     }
 
     public Map<String, String> getEnvironmentVariables() {

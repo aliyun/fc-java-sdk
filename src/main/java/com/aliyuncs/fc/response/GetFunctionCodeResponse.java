@@ -11,7 +11,6 @@ import java.util.Map;
  */
 public class GetFunctionCodeResponse extends HttpResponse {
 
-    private Map<String, String> header;
     private FunctionCodeMetadata functionCodeMetadata;
 
     public void setFunctionCodeMetadata(FunctionCodeMetadata functionCodeMetadata) {
@@ -31,17 +30,5 @@ public class GetFunctionCodeResponse extends HttpResponse {
     public String getCodeChecksum() {
         Preconditions.checkArgument(functionCodeMetadata != null);
         return functionCodeMetadata.getChecksum();
-    }
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public void setHeader(Map<String, String> header) {
-        this.header = header;
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
     }
 }

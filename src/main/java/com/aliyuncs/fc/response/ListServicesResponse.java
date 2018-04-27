@@ -28,18 +28,8 @@ import java.util.Map;
  */
 public class ListServicesResponse extends HttpResponse {
 
-    private Map<String, String> header = null;
     private ServiceMetadata[] services = null;
     private String nextToken = null;
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public ListServicesResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
 
     public ServiceMetadata[] getServices() {
         return services;
@@ -57,14 +47,6 @@ public class ListServicesResponse extends HttpResponse {
     public ListServicesResponse setNextToken(String nextToken) {
         this.nextToken = nextToken;
         return this;
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
     }
 
 }

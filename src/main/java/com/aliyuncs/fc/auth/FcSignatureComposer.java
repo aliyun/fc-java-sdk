@@ -21,15 +21,17 @@ package com.aliyuncs.fc.auth;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
+import com.aliyuncs.fc.model.HttpMethod;
 import com.aliyuncs.fc.utils.Base64Helper;
 import com.aliyuncs.fc.utils.ParameterHelper;
+import com.google.common.base.Joiner;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import static java.lang.String.format;
 
 /**
  * TODO: add javadoc
@@ -49,28 +51,98 @@ public class FcSignatureComposer {
         return parameters;
     }
 
-    public static String composeStringToSign(String method, String path,
-        Map<String, String> headers) {
+    static String composeStringToSignWithMultiValue(HttpMethod method, String path,
+                                                    Map<String, String> headers, Map<String, String[]> queries) {
         StringBuilder sb = new StringBuilder();
-        sb.append(method).append(HEADER_SEPARATOR);
-        if (headers.get("Content-MD5") != null) {
-            sb.append(headers.get("Content-MD5"));
-        }
+        sb.append(method.name());
         sb.append(HEADER_SEPARATOR);
-        if (headers.get("Content-Type") != null) {
-            sb.append(headers.get("Content-Type"));
-        }
+
+        sb.append(composeCanonicalizedFCHeaders(headers));
         sb.append(HEADER_SEPARATOR);
-        if (headers.get("Date") != null) {
-            sb.append(headers.get("Date"));
-        }
-        sb.append(HEADER_SEPARATOR);
+
         sb.append(buildCanonicalHeaders(headers, "x-fc"));
-        sb.append(path);
+
+        sb.append(composeCanonicalizedResource(path, queries));
+
         return sb.toString();
     }
 
+    private static String composeCanonicalizedFCHeaders(Map<String, String> headers) {
+        StringBuilder sb = new StringBuilder();
+
+        if (headers != null && headers.get("Content-MD5") != null) {
+            sb.append(headers.get("Content-MD5"));
+        }
+        sb.append(HEADER_SEPARATOR);
+        if (headers != null && headers.get("Content-Type") != null) {
+            sb.append(headers.get("Content-Type"));
+        }
+
+        sb.append(HEADER_SEPARATOR);
+        if (headers != null && headers.get("Date") != null) {
+            sb.append(headers.get("Date"));
+        }
+
+        return sb.toString();
+    }
+
+    private static String composeCanonicalizedResource(String path, Map<String, String[]> queries) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(path);
+
+        if (queries != null) {
+            sb.append(HEADER_SEPARATOR);
+
+            List<String> params = new ArrayList<String>(queries.size());
+
+            for (Map.Entry<String, String[]> query : queries.entrySet()) {
+                String key = query.getKey();
+                String[] values = query.getValue();
+
+                if (values == null || values.length == 0) {
+                    params.add(key);
+                    continue;
+                } else {
+                    for (String value : values) {
+                        if (value == null) {
+                            params.add(key);
+                        } else {
+                            params.add(format("%s=%s", key, value));
+                        }
+                    }
+                }
+            }
+
+            Collections.sort(params);
+
+            sb.append(Joiner.on(HEADER_SEPARATOR)
+                    .join(params));
+        }
+
+        return sb.toString();
+    }
+
+    public static String composeStringToSign(HttpMethod method, String path,
+        Map<String, String> headers, Map<String, String> queries) {
+
+        Map<String, String[]> multiValueQueries = null;
+
+        if (queries != null) {
+            multiValueQueries = new HashMap<String, String[]>();
+
+            for (Map.Entry<String, String> entry : queries.entrySet()) {
+                multiValueQueries.put(entry.getKey(), new String[] {entry.getValue()});
+            }
+        }
+
+        return composeStringToSignWithMultiValue(method, path,
+                headers, multiValueQueries);
+    }
+
     public static String buildCanonicalHeaders(Map<String, String> headers, String headerBegin) {
+        if (headers == null) return "";
+
         Map<String, String> sortMap = new TreeMap<String, String>();
         for (Map.Entry<String, String> e : headers.entrySet()) {
             String key = e.getKey().toLowerCase();

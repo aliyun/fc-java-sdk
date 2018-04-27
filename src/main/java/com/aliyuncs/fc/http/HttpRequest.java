@@ -41,20 +41,14 @@ public abstract class HttpRequest {
         headers = new HashMap<String, String>();
     }
 
-    public HttpURLConnection getHttpConnection(String urls, byte[] content, String method)
+    public HttpURLConnection getHttpConnection(String urls, String method)
         throws IOException {
         String strUrl = urls;
         if (null == strUrl || null == method) {
             return null;
         }
-        URL url = null;
-        String[] urlArray = null;
-        if ("POST".equals(method) && null == content) {
-            urlArray = strUrl.split("\\?");
-            url = new URL(urlArray[0]);
-        } else {
-            url = new URL(strUrl);
-        }
+        URL url = new URL(strUrl);
+
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
         httpConn.setRequestMethod(method);
@@ -68,9 +62,6 @@ public abstract class HttpRequest {
             httpConn.setRequestProperty(entry.getKey(), entry.getValue());
         }
 
-        if ("POST".equals(method) && null != urlArray && urlArray.length == 2) {
-            httpConn.getOutputStream().write(urlArray[1].getBytes());
-        }
         return httpConn;
     }
 
