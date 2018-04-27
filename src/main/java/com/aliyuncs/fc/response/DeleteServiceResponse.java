@@ -26,23 +26,4 @@ import java.util.Map;
  */
 public class DeleteServiceResponse extends HttpResponse {
 
-    private Map<String, String> header = null;
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public DeleteServiceResponse setHeaders(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
-    }
-
 }

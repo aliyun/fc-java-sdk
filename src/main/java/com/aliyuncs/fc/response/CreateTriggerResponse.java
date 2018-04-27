@@ -18,11 +18,10 @@
  */
 package com.aliyuncs.fc.response;
 
-import com.aliyuncs.fc.model.OSSTriggerConfig;
-import com.aliyuncs.fc.model.TriggerMetadata;
 import com.aliyuncs.fc.http.HttpResponse;
-
+import com.aliyuncs.fc.model.TriggerMetadata;
 import com.google.common.base.Preconditions;
+
 import java.util.Map;
 
 /**
@@ -30,21 +29,11 @@ import java.util.Map;
  */
 public class CreateTriggerResponse extends HttpResponse {
 
-    private Map<String, String> header;
     private TriggerMetadata triggerMetadata;
-
-    public CreateTriggerResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
 
     public CreateTriggerResponse setTriggerMetadata(TriggerMetadata triggerMetadata) {
         this.triggerMetadata = triggerMetadata;
         return this;
-    }
-
-    public Map<String, String> getHeader() {
-        return header;
     }
 
     public String getTriggerName() {
@@ -75,13 +64,4 @@ public class CreateTriggerResponse extends HttpResponse {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getTriggerConfig();
     }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
-    }
-
 }

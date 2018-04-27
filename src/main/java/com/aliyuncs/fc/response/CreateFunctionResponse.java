@@ -29,7 +29,6 @@ import java.util.Map;
  */
 public class CreateFunctionResponse extends HttpResponse {
 
-    private Map<String, String> header;
     private FunctionMetadata functionMetadata;
 
     public CreateFunctionResponse setFunctionMetadata(FunctionMetadata functionMetadata) {
@@ -96,23 +95,4 @@ public class CreateFunctionResponse extends HttpResponse {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getEnvironmentVariables();
     }
-
-    public CreateFunctionResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
-    }
-
-
 }

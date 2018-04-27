@@ -30,17 +30,7 @@ import java.util.Map;
  */
 public class GetServiceResponse extends HttpResponse {
 
-    private Map<String, String> header;
     private ServiceMetadata serviceMetadata;
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public GetServiceResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
 
     public String getServiceName() {
         Preconditions.checkArgument(serviceMetadata != null);
@@ -81,13 +71,4 @@ public class GetServiceResponse extends HttpResponse {
         this.serviceMetadata = serviceMetadata;
         return this;
     }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
-    }
-
 }

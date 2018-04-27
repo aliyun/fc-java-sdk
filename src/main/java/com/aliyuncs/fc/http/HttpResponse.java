@@ -18,6 +18,8 @@ Z * Licensed to the Apache Software Foundation (ASF) under one
  */
 package com.aliyuncs.fc.http;
 
+import com.aliyuncs.fc.model.HttpMethod;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,11 +39,15 @@ public class HttpResponse {
     public HttpResponse() {
     }
 
-    public void putHeaderParameter(String key, String value) {
+    public void setHeader(String key, String value) {
         if (headers == null) {
             headers = new HashMap<String, String>();
         }
         headers.put(key, value);
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
     }
 
     public void setContent(byte[] content) {
@@ -52,8 +58,7 @@ public class HttpResponse {
         return this.content;
     }
 
-
-    public String getHeaderValue(String name) {
+    public String getHeader(String name) {
         String value = this.headers.get(name);
         if (null == value) {
             value = this.headers.get(name.toLowerCase());
@@ -101,7 +106,7 @@ public class HttpResponse {
                 builder.append(",");
                 builder.append(values.get(i));
             }
-            response.putHeaderParameter(key, builder.toString());
+            response.setHeader(key, builder.toString());
         }
 
         response.setContent(buff);
@@ -109,12 +114,12 @@ public class HttpResponse {
 
     // Get http response
     public static HttpResponse getResponse(String urls, HttpRequest request,
-        String method, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
+                                           HttpMethod method, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         OutputStream out = null;
         InputStream content = null;
         HttpResponse response = null;
         HttpURLConnection httpConn = request
-            .getHttpConnection(urls, request.getPayload(), method);
+            .getHttpConnection(urls, method.name());
         httpConn.setConnectTimeout(connectTimeoutMillis);
         httpConn.setReadTimeout(readTimeoutMillis);
 
@@ -159,4 +164,11 @@ public class HttpResponse {
         return false;
     }
 
+    public String getRequestId() {
+        return this.headers.get("X-Fc-Request-Id");
+    }
+
+    public String getEtag() {
+        return this.headers.get("Etag");
+    }
 }

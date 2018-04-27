@@ -20,25 +20,13 @@ package com.aliyuncs.fc.response;
 
 import com.aliyuncs.fc.http.HttpResponse;
 
-import java.util.Map;
-
 /**
  * TODO: add javadoc
  */
 public class InvokeFunctionResponse extends HttpResponse {
 
-    private Map<String, String> header;
     private String logResult;
     private byte[] payload;
-
-    public Map<String, String> getHeader() {
-        return header;
-    }
-
-    public InvokeFunctionResponse setHeader(Map<String, String> header) {
-        this.header = header;
-        return this;
-    }
 
     public InvokeFunctionResponse setLogResult(String logResult) {
         this.logResult = logResult;
@@ -52,14 +40,6 @@ public class InvokeFunctionResponse extends HttpResponse {
     public InvokeFunctionResponse setPayload(byte[] payload) {
         this.payload = payload;
         return this;
-    }
-
-    public String getRequestId() {
-        return header.get("X-Fc-Request-Id");
-    }
-
-    public String getEtag() {
-        return header.get("Etag");
     }
 
     public String getLogResult() {
