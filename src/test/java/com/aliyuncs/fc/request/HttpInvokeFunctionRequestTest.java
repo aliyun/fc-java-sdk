@@ -39,6 +39,12 @@ public class HttpInvokeFunctionRequestTest {
         assertEquals(generatePath("/a/b/c中 文"), request.getPath());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalArgument() {
+        HttpInvokeFunctionRequest request = createHttpInvoke("/a/b/c中 文?a=中 文");
+        assertEquals(generatePath("/a/b/c中 文"), request.getPath());
+    }
+
     @Test
     public void testGetParamters() {
         HttpInvokeFunctionRequest request = createHttpInvoke("a");

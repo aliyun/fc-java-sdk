@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.aliyuncs.fc.auth.AcsURLEncoder.encode;
+import static com.aliyuncs.fc.auth.AcsURLEncoder.urlEncode;
 import static com.aliyuncs.fc.auth.FcSignatureComposer.composeStringToSign;
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -165,7 +166,7 @@ public class DefaultFcClient {
     }
 
     private PrepareUrl prepareUrl(String path, Map<String, String> queryParams) throws UnsupportedEncodingException, URISyntaxException {
-        return new PrepareUrl(composeUrl(config.getEndpoint() + encode(path), queryParams));
+        return new PrepareUrl(composeUrl(config.getEndpoint() + urlEncode(path), queryParams));
     }
 
     /**

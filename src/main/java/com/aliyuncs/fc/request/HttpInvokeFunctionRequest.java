@@ -40,8 +40,6 @@ public class HttpInvokeFunctionRequest extends InvokeFunctionRequest {
         try {
             // parse path. Path may contain parameters
             if (path != null) {
-                path = UrlEscapers.urlFragmentEscaper().escape(path);
-
                 URIBuilder uriBuilder = new URIBuilder(path);
                 path = decode(uriBuilder.getPath());
 
