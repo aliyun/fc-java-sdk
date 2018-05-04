@@ -1,9 +1,13 @@
 package com.aliyuncs.fc.auth;
 
+import com.google.common.net.UrlEscapers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 public class AcsURLEncoderTest {
 
@@ -22,10 +26,7 @@ public class AcsURLEncoderTest {
         Assert.assertEquals("/a%E4%B8%AD%E6%96%87/%E4%B8%AD%E6%96%87", AcsURLEncoder.urlEncode("/a中文/中文"));
 
         Assert.assertEquals("/a%E4%B8%AD%E6%96%87/%E4%B8%AD%E6%96%87?a=%E4%B8%AD&b=%E6%96%87", AcsURLEncoder.urlEncode("/a中文/中文?a=中&b=文"));
-    }
 
-    @Test(expected = URISyntaxException.class)
-    public void testInvliadUrl() throws URISyntaxException {
-        AcsURLEncoder.urlEncode("/a中文/中文?a=中&b=中 文");
+        Assert.assertEquals("/a%E4%B8%AD%20%E6%96%87/%E4%B8%AD%20%E6%96%87?a=%E4%B8%AD&b=%E6%96%87", AcsURLEncoder.urlEncode("/a中 文/中 文?a=中&b=文"));
     }
 }

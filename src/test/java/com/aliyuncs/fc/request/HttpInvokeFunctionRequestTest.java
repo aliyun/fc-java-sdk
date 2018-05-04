@@ -34,6 +34,9 @@ public class HttpInvokeFunctionRequestTest {
         request = createHttpInvoke("/a/b/c中文?a=中文");
 
         assertEquals(generatePath("/a/b/c中文"), request.getPath());
+
+        request = createHttpInvoke("/a/b/c中 文?a=中 文");
+        assertEquals(generatePath("/a/b/c中 文"), request.getPath());
     }
 
     @Test
@@ -60,8 +63,8 @@ public class HttpInvokeFunctionRequestTest {
         request.addQuery("a", "1");
         assertEquals("1", request.getQueryParams().get("a"));
 
-        request.addQuery("b", "中文");
-        assertEquals("中文", request.getQueryParams().get("b"));
+        request.addQuery("b", "中 文");
+        assertEquals("中 文", request.getQueryParams().get("b"));
     }
 
     @Test
