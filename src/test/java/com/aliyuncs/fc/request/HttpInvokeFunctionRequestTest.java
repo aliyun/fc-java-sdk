@@ -1,12 +1,11 @@
 package com.aliyuncs.fc.request;
 
-import com.aliyuncs.fc.model.HttpAuthType;
 import org.junit.Test;
 
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
 import static com.aliyuncs.fc.model.HttpMethod.GET;
 import static java.lang.String.format;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class HttpInvokeFunctionRequestTest {
 
@@ -31,6 +30,17 @@ public class HttpInvokeFunctionRequestTest {
         request = createHttpInvoke("/a/b/c?a");
 
         assertEquals(generatePath("/a/b/c"), request.getPath());
+
+        request = createHttpInvoke("/a/b/c中文?a=中文");
+
+        assertEquals(generatePath("/a/b/c中文"), request.getPath());
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalArgument() {
+        HttpInvokeFunctionRequest request = createHttpInvoke("/a/b/c中 文?a=中 文");
+        assertEquals(generatePath("/a/b/c中 文"), request.getPath());
     }
 
     @Test
@@ -56,6 +66,9 @@ public class HttpInvokeFunctionRequestTest {
 
         request.addQuery("a", "1");
         assertEquals("1", request.getQueryParams().get("a"));
+
+        request.addQuery("b", "中 文");
+        assertEquals("中 文", request.getQueryParams().get("b"));
     }
 
     @Test

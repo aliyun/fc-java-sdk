@@ -3,13 +3,16 @@ package com.aliyuncs.fc.request;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.model.HttpAuthType;
 import com.aliyuncs.fc.model.HttpMethod;
+import com.google.common.net.UrlEscapers;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.aliyuncs.fc.auth.AcsURLEncoder.decode;
 import static java.lang.String.format;
 
 /**
@@ -35,19 +38,21 @@ public class HttpInvokeFunctionRequest extends InvokeFunctionRequest {
         this.setInvocationType(Const.INVOCATION_TYPE_HTTP);
 
         try {
-            // parse path, path may contain parameters
+            // parse path. Path may contain parameters
             if (path != null) {
                 URIBuilder uriBuilder = new URIBuilder(path);
-                path = uriBuilder.getPath();
+                path = decode(uriBuilder.getPath());
 
                 for (NameValuePair pair : uriBuilder.getQueryParams()) {
-                    addQuery(pair.getName(), pair.getValue());
+                    addQuery(decode(pair.getName()), decode(pair.getValue()));
                 }
             }
 
             this.path = path == null ? "" : (path.startsWith("/") ? path.substring(1) : path);
 
         } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
 
