@@ -19,6 +19,8 @@
 package com.aliyuncs.fc.auth;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
 /**
@@ -28,6 +30,17 @@ public class AcsURLEncoder {
 
     public final static String URL_ENCODING = "UTF-8";
 
+    /**
+     * used for encoding url path
+     */
+    public static String urlEncode(String path) throws URISyntaxException {
+        return new URI(path).toASCIIString();
+    }
+
+    /**
+     * used for encoding queries or form data
+     *
+     */
     public static String encode(String value) throws UnsupportedEncodingException {
         return URLEncoder.encode(value, URL_ENCODING);
     }
