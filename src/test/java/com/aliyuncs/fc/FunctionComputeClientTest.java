@@ -1099,7 +1099,7 @@ public class FunctionComputeClientTest {
             createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[] {GET, POST});
 
             // Invoke the function
-            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, POST, "/test/path");
+            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, POST, "/test/path/中文");
 
             request.addQuery("a", "1");
             request.addQuery("b", "2");
@@ -1118,7 +1118,7 @@ public class FunctionComputeClientTest {
 
             JsonObject jsonObject = gson.fromJson(new String(response.getPayload()), JsonObject.class);
 
-            assertEquals("/test/path", jsonObject.get("path").getAsString());
+            assertEquals("/test/path/中文", jsonObject.get("path").getAsString());
             assertEquals("1", jsonObject.get("queries").getAsJsonObject().get("a").getAsString());
             assertEquals("2", jsonObject.get("queries").getAsJsonObject().get("b").getAsString());
             assertEquals("data", jsonObject.get("body").getAsString());

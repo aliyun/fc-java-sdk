@@ -18,8 +18,16 @@
  */
 package com.aliyuncs.fc.auth;
 
+import com.google.common.base.Strings;
+import com.google.common.net.UrlEscapers;
+
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * TODO: add javadoc
@@ -28,8 +36,27 @@ public class AcsURLEncoder {
 
     public final static String URL_ENCODING = "UTF-8";
 
+    /**
+     * used for encoding url path segment
+     */
+    public static String urlEncode(String path) throws URISyntaxException {
+        if (isNullOrEmpty(path)) return path;
+
+        return UrlEscapers.urlFragmentEscaper().escape(path);
+    }
+
+    /**
+     * used for encoding queries or form data
+     *
+     */
     public static String encode(String value) throws UnsupportedEncodingException {
+        if (isNullOrEmpty(value)) return value;
         return URLEncoder.encode(value, URL_ENCODING);
+    }
+
+    public static String decode(String value) throws UnsupportedEncodingException {
+        if (isNullOrEmpty(value)) return value;
+        return URLDecoder.decode(value, URL_ENCODING);
     }
 
     public static String percentEncode(String value) throws UnsupportedEncodingException {

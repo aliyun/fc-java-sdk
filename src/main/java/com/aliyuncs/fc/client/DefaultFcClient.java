@@ -19,7 +19,6 @@
  */
 package com.aliyuncs.fc.client;
 
-import com.aliyuncs.fc.auth.AcsURLEncoder;
 import com.aliyuncs.fc.auth.FcSignatureComposer;
 import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.HeaderKeys;
@@ -38,11 +37,14 @@ import com.google.gson.JsonParseException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
+import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.aliyuncs.fc.auth.AcsURLEncoder.encode;
+import static com.aliyuncs.fc.auth.AcsURLEncoder.urlEncode;
 import static com.aliyuncs.fc.auth.FcSignatureComposer.composeStringToSign;
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -94,9 +96,9 @@ public class DefaultFcClient {
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             String key = entry.getKey();
             String val = entry.getValue();
-            urlBuilder.append(AcsURLEncoder.encode(key));
+            urlBuilder.append(encode(key));
             if (val != null) {
-                urlBuilder.append("=").append(AcsURLEncoder.encode(val));
+                urlBuilder.append("=").append(encode(val));
             }
             urlBuilder.append("&");
         }
@@ -163,8 +165,8 @@ public class DefaultFcClient {
         imutableMap.put("Authorization", "FC " + accessKeyId + ":" + signature);
     }
 
-    private PrepareUrl prepareUrl(String path, Map<String, String> queryParams) throws UnsupportedEncodingException {
-        return new PrepareUrl(composeUrl(config.getEndpoint() + path, queryParams));
+    private PrepareUrl prepareUrl(String path, Map<String, String> queryParams) throws UnsupportedEncodingException, URISyntaxException {
+        return new PrepareUrl(composeUrl(config.getEndpoint() + urlEncode(path), queryParams));
     }
 
     /**
@@ -236,6 +238,8 @@ public class DefaultFcClient {
             throw new ClientException("SDK.ServerUnreachable", "Server unreachable: " + exp.toString());
         } catch (NoSuchAlgorithmException exp) {
             throw new ClientException("SDK.InvalidMD5Algorithm", "MD5 hash is not supported by client side.");
+        } catch (URISyntaxException e) {
+            throw new ClientException("SDK.InvalidURL", "url is not valid: " + e.getMessage());
         }
     }
 }
