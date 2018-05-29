@@ -3,6 +3,7 @@ package com.aliyuncs.fc;
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
 import static com.aliyuncs.fc.model.HttpAuthType.FUNCTION;
 import static com.aliyuncs.fc.model.HttpMethod.*;
+import static java.util.Arrays.asList;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
@@ -72,6 +73,9 @@ public class FunctionComputeClientTest {
         String.format("acs:oss:%s:%s:%s", REGION, ACCOUNT_ID, CODE_BUCKET);
     private static final String LOG_SOURCE_ARN =
             String.format("acs:log:%s:%s:project/%s", REGION, ACCOUNT_ID, LOG_PROJECT);
+    private static final String CDN_SOURCE_ARN =
+            String.format("acs:cdn:*:%s", ACCOUNT_ID);
+
     private static final String SERVICE_NAME = "testServiceJavaSDK";
     private static final String SERVICE_DESC_OLD = "service desc";
     private static final String SERVICE_DESC_NEW = "service desc updated";
@@ -82,6 +86,7 @@ public class FunctionComputeClientTest {
     private static final String TRIGGER_TYPE_OSS = "oss";
     private static final String TRIGGER_TYPE_HTTP = "http";
     private static final String TRIGGER_TYPE_LOG = "log";
+    private static final String TRIGGER_TYPE_CDN = "cdn_events";
     private static final String TRIGGER_TYPE_TIMER = "timer";
     public static final String STS_API_VERSION = "2015-04-01";
 
@@ -182,7 +187,20 @@ public class FunctionComputeClientTest {
             .setCode(new Code().setZipFile(code));
         createFuncReq.setTimeout(10);
 
-        return client.createFunction(createFuncReq);
+        CreateFunctionResponse response = client.createFunction(createFuncReq);
+
+        assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
+        assertFalse(Strings.isNullOrEmpty(response.getFunctionId()));
+        assertEquals(functionName, response.getFunctionName());
+        assertEquals(FUNCTION_DESC_OLD, response.getDescription());
+
+        environmentVariables = response.getEnvironmentVariables();
+        assertEquals(1, environmentVariables.size());
+        assertEquals("testValue", environmentVariables.get("testKey"));
+        assertEquals(functionName, response.getFunctionName());
+        assertEquals(FUNCTION_DESC_OLD, response.getDescription());
+
+        return response;
     }
 
     private CreateServiceResponse createService(String serviceName) {
@@ -190,7 +208,16 @@ public class FunctionComputeClientTest {
         createSReq.setServiceName(serviceName);
         createSReq.setDescription(SERVICE_DESC_OLD);
         createSReq.setRole(ROLE);
-        return client.createService(createSReq);
+
+        CreateServiceResponse response = client.createService(createSReq);
+
+        assertEquals(serviceName, response.getServiceName());
+        assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
+        assertFalse(Strings.isNullOrEmpty(response.getServiceId()));
+        assertEquals(SERVICE_DESC_OLD, response.getDescription());
+        assertEquals(ROLE, response.getRole());
+
+        return response;
     }
 
     private CreateTriggerResponse createHttpTrigger(String triggerName, HttpAuthType authType, HttpMethod[] methods) {
@@ -330,16 +357,10 @@ public class FunctionComputeClientTest {
     public void testCRUDHttpTrigger() throws ParseException, InterruptedException, IOException {
 
         // create service
-        CreateServiceResponse createSResp = createService(SERVICE_NAME);
-        assertEquals(SERVICE_NAME, createSResp.getServiceName());
+        createService(SERVICE_NAME);
 
         // Create Function
-        CreateFunctionResponse createFResp = createFunction(FUNCTION_NAME);
-
-        assertFalse(Strings.isNullOrEmpty(createFResp.getRequestId()));
-        assertFalse(Strings.isNullOrEmpty(createFResp.getFunctionId()));
-        assertEquals(FUNCTION_NAME, createFResp.getFunctionName());
-        assertEquals(FUNCTION_DESC_OLD, createFResp.getDescription());
+        createFunction(FUNCTION_NAME);
 
         // create http trigger
         createHttpTrigger(TRIGGER_NAME, ANONYMOUS, new HttpMethod[] {GET, POST});
@@ -988,7 +1009,7 @@ public class FunctionComputeClientTest {
     }
 
     @Test
-    public void testInvokeFunctionLogTypeAsyncNone() throws IOException {
+    public void testInvokeFunctionLogTypeAsyncNone() throws IOException, InterruptedException {
         createService(SERVICE_NAME);
         createFunction(FUNCTION_NAME);
 
@@ -997,6 +1018,8 @@ public class FunctionComputeClientTest {
         request.setLogType("None");
         InvokeFunctionResponse response = client.invokeFunction(request);
         assertEquals(HttpURLConnection.HTTP_ACCEPTED, response.getStatus());
+
+        Thread.sleep(1000);
     }
 
     @Test
@@ -1064,29 +1087,7 @@ public class FunctionComputeClientTest {
         createService(SERVICE_NAME);
 
         // Create a function
-        String source = "import json\n" +
-                "\n" +
-                "def echo_handler(request, response, context):\n" +
-                "\tresp_body_map = {\n" +
-                "\t\t\"headers\" : {},\n" +
-                "\t\t\"queries\" : {},\n" +
-                "\t\t\"body\" : request.body,\n" +
-                "\t\t\"path\" : request.path,\n" +
-                "\t}\n" +
-                "\n" +
-                "\tfor headerKey, headerValue in request.headers.items():\n" +
-                "\t\tresp_body_map[\"headers\"][headerKey] = headerValue\n" +
-                "\n" +
-                "\tfor param, value in request.queries.items():\n" +
-                "\t\tresp_body_map[\"queries\"][param] = value\n" +
-                "\n" +
-                "\tbody = json.dumps(resp_body_map)\n" +
-                "\tresponse.set_body(body)\n" +
-                "\t\n" +
-                "\tresponse.set_status_code(200)\n" +
-                "\t\n" +
-                "\tresponse.set_header(\"Test-Header-Key\", request.headers[\"Test-Header-Key\"])\n" +
-                "\tresponse.set_header(\"content-type\", \"application/json\")";
+        String source = generatePythonHttpCode();
 
         byte[] data = createZipByteData("main.py", source);
 
@@ -1102,7 +1103,6 @@ public class FunctionComputeClientTest {
             HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, POST, "/test/path/中文");
 
             request.addQuery("a", "1");
-            request.addQuery("b", "2");
             request.addQuery("aaa", null);
 
             request.setHeader("Test-Header-Key", "testHeaderValue");
@@ -1119,8 +1119,7 @@ public class FunctionComputeClientTest {
             JsonObject jsonObject = gson.fromJson(new String(response.getPayload()), JsonObject.class);
 
             assertEquals("/test/path/中文", jsonObject.get("path").getAsString());
-            assertEquals("1", jsonObject.get("queries").getAsJsonObject().get("a").getAsString());
-            assertEquals("2", jsonObject.get("queries").getAsJsonObject().get("b").getAsString());
+            assertEquals("aaa=&a=1", jsonObject.get("queries").getAsString());
             assertEquals("data", jsonObject.get("body").getAsString());
 
             // delete trigger
@@ -1132,34 +1131,39 @@ public class FunctionComputeClientTest {
         client.deleteService(new DeleteServiceRequest(SERVICE_NAME));
     }
 
+    private String generatePythonHttpCode() {
+        return "import json\n" +
+                "from cgi import parse_qs, escape\n" +
+                "\n" +
+                "def echo_handler(environ, start_response):\n" +
+                "  \n" +
+                "    resp_body_map = {\n" +
+                "      \"headers\": {},\n" +
+                "      \"queries\": environ.get('QUERY_STRING',''),\n" +
+                "      \"body\": environ[\"wsgi.input\"].read(int(environ.get('CONTENT_LENGTH', 0))),\n" +
+                "      \"path\": environ[\"PATH_INFO\"],\n" +
+                "      \"request_uri\": environ['fc.request_uri']\n" +
+                "    }\n" +
+                "    \n" +
+                "    for k, v in environ.items():\n" +
+                "      if k.startswith(\"HTTP_\"):\n" +
+                "        resp_body_map[\"headers\"][k[5:]] = v\n" +
+                "      \n" +
+                "    body = json.dumps(resp_body_map)\n" +
+                "    \n" +
+                "    # do something here\n" +
+                "    status = '200 OK'\n" +
+                "    response_headers = [('Content-type', 'application/json'),('Test-Header-Key', environ['HTTP_TEST_HEADER_KEY'])]\n" +
+                "    start_response(status, response_headers)\n" +
+                "    return [body]";
+    }
+
     @Test
     public void testHttpInvokeFunctionWithoutQueriesAndBody() throws IOException {
         createService(SERVICE_NAME);
 
         // Create a function
-        String source = "import json\n" +
-                "\n" +
-                "def echo_handler(request, response, context):\n" +
-                "\tresp_body_map = {\n" +
-                "\t\t\"headers\" : {},\n" +
-                "\t\t\"queries\" : {},\n" +
-                "\t\t\"body\" : request.body,\n" +
-                "\t\t\"path\" : request.path,\n" +
-                "\t}\n" +
-                "\n" +
-                "\tfor headerKey, headerValue in request.headers.items():\n" +
-                "\t\tresp_body_map[\"headers\"][headerKey] = headerValue\n" +
-                "\n" +
-                "\tfor param, value in request.queries.items():\n" +
-                "\t\tresp_body_map[\"queries\"][param] = value\n" +
-                "\n" +
-                "\tbody = json.dumps(resp_body_map)\n" +
-                "\tresponse.set_body(body)\n" +
-                "\t\n" +
-                "\tresponse.set_status_code(200)\n" +
-                "\t\n" +
-                "\tresponse.set_header(\"Test-Header-Key\", request.headers[\"Test-Header-Key\"])\n" +
-                "\tresponse.set_header(\"content-type\", \"application/json\")";
+        String source = generatePythonHttpCode();
 
         byte[] data = createZipByteData("main.py", source);
 
@@ -1282,12 +1286,8 @@ public class FunctionComputeClientTest {
 
     private void testCRUDHelper(boolean testTrigger) throws ParseException, InterruptedException, IOException {
         // Create Service
-        CreateServiceResponse createSResp = createService(SERVICE_NAME);
-        assertFalse(Strings.isNullOrEmpty(createSResp.getRequestId()));
-        assertFalse(Strings.isNullOrEmpty(createSResp.getServiceId()));
-        assertEquals(SERVICE_NAME, createSResp.getServiceName());
-        assertEquals(SERVICE_DESC_OLD, createSResp.getDescription());
-        assertEquals(ROLE, createSResp.getRole());
+        createService(SERVICE_NAME);
+
         GetServiceResponse svcOldResp = client.getService(new GetServiceRequest(SERVICE_NAME));
 
         // Update Service
@@ -1296,10 +1296,10 @@ public class FunctionComputeClientTest {
         Thread.sleep(1000L);
         UpdateServiceResponse updateSResp = client.updateService(updateSReq);
         verifyUpdate(svcOldResp.getServiceName(), updateSResp.getServiceName(),
-            svcOldResp.getServiceId(), updateSResp.getServiceId(),
-            svcOldResp.getLastModifiedTime(), updateSResp.getLastModifiedTime(),
-            svcOldResp.getCreatedTime(), updateSResp.getCreatedTime(),
-            svcOldResp.getDescription(), updateSResp.getDescription());
+                svcOldResp.getServiceId(), updateSResp.getServiceId(),
+                svcOldResp.getLastModifiedTime(), updateSResp.getLastModifiedTime(),
+                svcOldResp.getCreatedTime(), updateSResp.getCreatedTime(),
+                svcOldResp.getDescription(), updateSResp.getDescription());
 
         // Get Service
         GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
@@ -1444,6 +1444,7 @@ public class FunctionComputeClientTest {
 
         testLogTrigger();
         testTimeTrigger();
+        testCdnEventTrigger();
 
         // Delete Function
         DeleteFunctionRequest deleteFReq = new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
@@ -1481,6 +1482,94 @@ public class FunctionComputeClientTest {
         } catch (ClientException e) {
             assertNull(getSResp2);
         }
+    }
+
+    private void testCdnEventTrigger() throws ParseException, InterruptedException {
+        String triggerName = TRIGGER_TYPE_CDN + "_" + TRIGGER_NAME;
+
+        String EVENT_NAME = "logFileCreated";
+
+        String EVENT_VERSION = "1.0.0";
+
+        String NOTES = "notes";
+        String NEW_NOTES = "updateNotes";
+
+        CdnTriggerConfig config = new CdnTriggerConfig();
+        config.setEventName(EVENT_NAME);
+        config.setEventVersion(EVENT_VERSION);
+        config.setNotes(NOTES);
+
+        Map<String, List<String>> filters = new HashMap<String, List<String>>();
+        filters.put("domain", asList("www.taobao.com"));
+        filters.put("stream", asList("def"));
+
+        config.setFilter(filters);
+
+        CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
+        createTReq.setTriggerName(triggerName);
+        createTReq.setTriggerType(TRIGGER_TYPE_CDN);
+        createTReq.setInvocationRole(INVOCATION_ROLE);
+        createTReq.setSourceArn(CDN_SOURCE_ARN);
+        createTReq.setTriggerConfig(config);
+        client.createTrigger(createTReq);
+
+        // List Triggers
+        ListTriggersRequest listTReq = new ListTriggersRequest(SERVICE_NAME, FUNCTION_NAME);
+        ListTriggersResponse listTResp = client.listTriggers(listTReq);
+        assertFalse(Strings.isNullOrEmpty(listTResp.getRequestId()));
+        assertEquals(1, listTResp.getTriggers().length);
+        TriggerMetadata triggerOld = listTResp.getTriggers()[0];
+        assertEquals(triggerName, triggerOld.getTriggerName());
+
+        Thread.sleep(300);
+
+        Map<String, List<String>> newFilters = new HashMap<String, List<String>>();
+        newFilters.put("a", asList("b"));
+
+        CdnTriggerConfig updateConfig = new CdnTriggerConfig();
+        updateConfig.setNotes(NEW_NOTES);
+        updateConfig.setFilter(newFilters);
+
+        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
+        req.setInvocationRole(INVOCATION_ROLE);
+        req.setTriggerConfig(updateConfig);
+
+        UpdateTriggerResponse updateTResp = client.updateTrigger(req);
+        assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+        assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
+        assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
+        Gson gson = new Gson();
+        CdnTriggerConfig tcOld = gson
+                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), CdnTriggerConfig.class);
+        CdnTriggerConfig tcNew = gson
+                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), CdnTriggerConfig.class);
+        assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
+        assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
+        assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
+        assertEquals(EVENT_NAME, tcNew.getEventName());
+        assertEquals(tcOld.getEventVersion(), tcNew.getEventVersion());
+        assertEquals(NEW_NOTES, tcNew.getNotes());
+        assertNotEquals(tcOld.getFilter(), tcNew.getFilter());
+
+        Date dateOld = DATE_FORMAT.parse(triggerOld.getLastModifiedTime());
+        Date dateNew = DATE_FORMAT.parse(updateTResp.getLastModifiedTime());
+        assertTrue(dateOld.before(dateNew));
+
+        // Get Trigger
+        GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+                triggerName);
+        GetTriggerResponse getTResp = client.getTrigger(getTReq);
+        config = gson
+                .fromJson(gson.toJson(getTResp.getTriggerConfig()), CdnTriggerConfig.class);
+        assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
+        assertEquals(triggerName, getTResp.getTriggerName());
+        assertEquals(CDN_SOURCE_ARN, getTResp.getSourceARN());
+        assertEquals(TRIGGER_TYPE_CDN, getTResp.getTriggerType());
+        assertEquals(EVENT_NAME, config.getEventName());
+        assertEquals(EVENT_VERSION, config.getEventVersion());
+
+        // Delete Trigger
+        deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
     }
 
     private void testLogTrigger() throws ParseException {

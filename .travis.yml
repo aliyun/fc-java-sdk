@@ -6,6 +6,9 @@ addons:
     packages:
       - openjdk-6-jdk
       - oracle-java9-installer
+cache:
+  directories:
+  - $HOME/.m2
 
 jdk:
   - openjdk6
