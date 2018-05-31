@@ -23,6 +23,7 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.LogConfig;
 import com.aliyuncs.fc.http.FormatType;
+import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.response.CreateServiceResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 
@@ -45,6 +46,12 @@ public class CreateServiceRequest extends HttpRequest {
 
     @SerializedName("logConfig")
     private LogConfig logConfig;
+
+    @SerializedName("vpcConfig")
+    private VpcConfig vpcConfig;
+
+    @SerializedName("internetAccess")
+    private Boolean internetAccess = true;
 
     public CreateServiceRequest setServiceName(String serviceName) {
         this.serviceName = serviceName;
@@ -107,5 +114,21 @@ public class CreateServiceRequest extends HttpRequest {
 
     public Class<CreateServiceResponse> getResponseClass() {
         return CreateServiceResponse.class;
+    }
+
+    public VpcConfig getVpcConfig() {
+        return vpcConfig;
+    }
+
+    public Boolean getInternetAccess() {
+        return internetAccess;
+    }
+
+    public void setInternetAccess(Boolean internetAccess) {
+        this.internetAccess = internetAccess;
+    }
+
+    public void setVpcConfig(VpcConfig vpcConfig) {
+        this.vpcConfig = vpcConfig;
     }
 }
