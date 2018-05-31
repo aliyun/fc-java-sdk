@@ -22,6 +22,7 @@ import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.LogConfig;
+import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 
@@ -44,6 +45,13 @@ public class UpdateServiceRequest extends HttpRequest {
 
     @SerializedName("logConfig")
     private LogConfig logConfig;
+
+    @SerializedName("vpcConfig")
+    private VpcConfig vpcConfig;
+
+    @SerializedName("internetAccess")
+    private Boolean internetAccess;
+
     private transient String ifMatch;
 
     public UpdateServiceRequest(String serviceName) {
@@ -68,6 +76,10 @@ public class UpdateServiceRequest extends HttpRequest {
         return this;
     }
 
+    public void setInternetAccess(Boolean internetAccess) {
+        this.internetAccess = internetAccess;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -84,6 +96,10 @@ public class UpdateServiceRequest extends HttpRequest {
     public UpdateServiceRequest setLogConfig(LogConfig logConfig) {
         this.logConfig = logConfig;
         return this;
+    }
+
+    public void setVpcConfig(VpcConfig vpcConfig) {
+        this.vpcConfig = vpcConfig;
     }
 
     public LogConfig getLogConfig() {
@@ -119,4 +135,11 @@ public class UpdateServiceRequest extends HttpRequest {
         return UpdateServiceResponse.class;
     }
 
+    public VpcConfig getVpcConfig() {
+        return vpcConfig;
+    }
+
+    public Boolean getInternetAccess() {
+        return internetAccess;
+    }
 }

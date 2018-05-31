@@ -22,8 +22,8 @@ import com.aliyuncs.fc.model.LogConfig;
 import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.http.HttpResponse;
 
+import com.aliyuncs.fc.model.VpcConfig;
 import com.google.common.base.Preconditions;
-import java.util.Map;
 
 /**
  * TODO: add javadoc
@@ -50,6 +50,15 @@ public class UpdateServiceResponse extends HttpResponse {
     public LogConfig getLogConfig() {
         Preconditions.checkArgument(serviceMetadata != null);
         return serviceMetadata.getLogConfig();
+    }
+
+    public VpcConfig getVpcConfig() {
+        Preconditions.checkArgument(serviceMetadata != null);
+        return serviceMetadata.getVpcConfig();
+    }
+
+    public Boolean getInternetAccess() {
+        return serviceMetadata.getInternetAccess();
     }
 
     public String getServiceId() {
