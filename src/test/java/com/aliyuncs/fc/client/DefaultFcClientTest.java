@@ -12,7 +12,7 @@ public class DefaultFcClientTest {
 
     @Test
     public void testGetHeaderWithoutMd5() {
-        Config config = new Config("", "", "", "", "", false);
+        Config config = new Config("cn-shanghai", "123", "123", "123", "123", false);
 
         DefaultFcClient fcClient = new DefaultFcClient(config);
 
@@ -21,5 +21,14 @@ public class DefaultFcClientTest {
         headers.put("x-fc-date", "x-fc-date-value");
 
         headers = fcClient.getHeader(headers, "123".getBytes(), null);
+
+        assertEquals(headers.get("x-fc-date"), "x-fc-date-value");
+        assertEquals(headers.get("Content-MD5"), null);
+
+        headers.remove("x-fc-date");
+
+        headers = fcClient.getHeader(headers, "123".getBytes(), null);
+
+        assertEquals(headers.get("Content-MD5"), "ICy5YqxZB1uWSwcVLSNLcA==");
     }
 }
