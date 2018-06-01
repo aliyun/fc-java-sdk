@@ -1494,7 +1494,7 @@ public class FunctionComputeClientTest {
         String NOTES = "notes";
         String NEW_NOTES = "updateNotes";
 
-        CdnTriggerConfig config = new CdnTriggerConfig();
+        CdnEventsTriggerConfig config = new CdnEventsTriggerConfig();
         config.setEventName(EVENT_NAME);
         config.setEventVersion(EVENT_VERSION);
         config.setNotes(NOTES);
@@ -1526,7 +1526,7 @@ public class FunctionComputeClientTest {
         Map<String, List<String>> newFilters = new HashMap<String, List<String>>();
         newFilters.put("a", asList("b"));
 
-        CdnTriggerConfig updateConfig = new CdnTriggerConfig();
+        CdnEventsTriggerConfig updateConfig = new CdnEventsTriggerConfig();
         updateConfig.setNotes(NEW_NOTES);
         updateConfig.setFilter(newFilters);
 
@@ -1539,10 +1539,10 @@ public class FunctionComputeClientTest {
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
         assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
         Gson gson = new Gson();
-        CdnTriggerConfig tcOld = gson
-                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), CdnTriggerConfig.class);
-        CdnTriggerConfig tcNew = gson
-                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), CdnTriggerConfig.class);
+        CdnEventsTriggerConfig tcOld = gson
+                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), CdnEventsTriggerConfig.class);
+        CdnEventsTriggerConfig tcNew = gson
+                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), CdnEventsTriggerConfig.class);
         assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
         assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
@@ -1560,7 +1560,7 @@ public class FunctionComputeClientTest {
                 triggerName);
         GetTriggerResponse getTResp = client.getTrigger(getTReq);
         config = gson
-                .fromJson(gson.toJson(getTResp.getTriggerConfig()), CdnTriggerConfig.class);
+                .fromJson(gson.toJson(getTResp.getTriggerConfig()), CdnEventsTriggerConfig.class);
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(triggerName, getTResp.getTriggerName());
         assertEquals(CDN_SOURCE_ARN, getTResp.getSourceARN());

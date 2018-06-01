@@ -3,7 +3,7 @@ package com.aliyuncs.fc.model;
 import java.util.List;
 import java.util.Map;
 
-public class CdnTriggerConfig {
+public class CdnEventsTriggerConfig {
 
     private String eventName;
 
@@ -13,7 +13,7 @@ public class CdnTriggerConfig {
 
     private Map<String, List<String>> filter;
 
-    public CdnTriggerConfig() {
+    public CdnEventsTriggerConfig() {
 
     }
 
