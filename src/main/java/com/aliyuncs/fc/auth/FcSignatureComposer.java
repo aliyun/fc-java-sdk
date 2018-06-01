@@ -18,11 +18,6 @@
  */
 package com.aliyuncs.fc.auth;
 
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-
 import com.aliyuncs.fc.model.HttpMethod;
 import com.aliyuncs.fc.utils.Base64Helper;
 import com.aliyuncs.fc.utils.ParameterHelper;
@@ -30,7 +25,12 @@ import com.google.common.base.Joiner;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 
 /**
@@ -47,7 +47,13 @@ public class FcSignatureComposer {
         if (parameters == null) {
             parameters = new HashMap<String, String>();
         }
-        parameters.put("Date", ParameterHelper.getRFC2616Date(null));
+
+        if ( ! isNullOrEmpty(parameters.get("x-fc-date")) ) { // used for fc-console
+            parameters.put("Date", parameters.get("x-fc-date"));
+        } else {
+            parameters.put("Date", ParameterHelper.getRFC2616Date(null));
+        }
+
         return parameters;
     }
 
@@ -73,6 +79,7 @@ public class FcSignatureComposer {
         if (headers != null && headers.get("Content-MD5") != null) {
             sb.append(headers.get("Content-MD5"));
         }
+
         sb.append(HEADER_SEPARATOR);
         if (headers != null && headers.get("Content-Type") != null) {
             sb.append(headers.get("Content-Type"));

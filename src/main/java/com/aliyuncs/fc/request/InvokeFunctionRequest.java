@@ -18,16 +18,14 @@
  */
 package com.aliyuncs.fc.request;
 
+import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.constants.HeaderKeys;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.response.InvokeFunctionResponse;
 
-import com.google.common.base.Strings;
 import java.util.Map;
 
-import static com.aliyuncs.fc.constants.Const.INVOCATION_TYPE_HTTP;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 
