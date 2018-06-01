@@ -51,7 +51,7 @@ public class CreateServiceRequest extends HttpRequest {
     private VpcConfig vpcConfig;
 
     @SerializedName("internetAccess")
-    private Boolean internetAccess = true;
+    private Boolean internetAccess;
 
     public CreateServiceRequest setServiceName(String serviceName) {
         this.serviceName = serviceName;
