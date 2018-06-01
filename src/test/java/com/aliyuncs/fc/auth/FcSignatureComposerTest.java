@@ -12,6 +12,21 @@ import static org.junit.Assert.*;
 public class FcSignatureComposerTest {
 
     @Test
+    public void testGetHeaderWithXFcDate() {
+        Map<String, String> headers = new HashMap();
+        headers.put("Content-MD5", "1bca714f406993b309bb87fabeb30a6b");
+        headers.put("Content-Type", "application/json");
+        headers.put("Date", "today");
+        headers.put("x-fc-h4", "k4");
+        headers.put("x-fc-date", "xxxx");
+
+        Map<String, String> composed = FcSignatureComposer.refreshSignParameters(headers);
+
+        assertEquals("xxxx", composed.get("x-fc-date"));
+        assertEquals("xxxx", composed.get("Date"));
+    }
+
+    @Test
     public void testComposeWithoutParameters() {
         Map<String, String> headers = new HashMap();
         headers.put("Content-MD5", "1bca714f406993b309bb87fabeb30a6b");
