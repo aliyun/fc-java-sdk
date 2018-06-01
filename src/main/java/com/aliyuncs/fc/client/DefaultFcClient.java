@@ -119,9 +119,11 @@ public class DefaultFcClient {
         header.put("Accept", "application/json");
         header.put("Content-Type", form);
         header.put("x-fc-account-id", config.getUid());
-        if (payload != null) {
+
+        if (header.get("x-fc-date") == null && payload != null) { // x-fc-date is used for fc-console
             header.put("Content-MD5", ParameterHelper.md5Sum(payload));
         }
+
         if (!isNullOrEmpty(config.getSecurityToken())) {
             header.put("x-fc-security-token", config.getSecurityToken());
         }
