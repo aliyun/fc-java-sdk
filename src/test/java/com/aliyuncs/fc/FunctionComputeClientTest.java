@@ -1444,7 +1444,7 @@ public class FunctionComputeClientTest {
 
         testLogTrigger();
         testTimeTrigger();
-        testCdnEventTrigger();
+        testCdnEventsTrigger();
 
         // Delete Function
         DeleteFunctionRequest deleteFReq = new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
@@ -1484,7 +1484,7 @@ public class FunctionComputeClientTest {
         }
     }
 
-    private void testCdnEventTrigger() throws ParseException, InterruptedException {
+    private void testCdnEventsTrigger() throws ParseException, InterruptedException {
         String triggerName = TRIGGER_TYPE_CDN + "_" + TRIGGER_NAME;
 
         String EVENT_NAME = "logFileCreated";
