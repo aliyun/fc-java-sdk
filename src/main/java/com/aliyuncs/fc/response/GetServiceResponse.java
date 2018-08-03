@@ -18,13 +18,12 @@
  */
 package com.aliyuncs.fc.response;
 
-import com.aliyuncs.fc.model.LogConfig;
-import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.http.HttpResponse;
-
+import com.aliyuncs.fc.model.LogConfig;
+import com.aliyuncs.fc.model.NasConfig;
+import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.model.VpcConfig;
 import com.google.common.base.Preconditions;
-import java.util.Map;
 
 /**
  * TODO: add javadoc
@@ -60,6 +59,11 @@ public class GetServiceResponse extends HttpResponse {
     public VpcConfig getVpcConfig() {
         Preconditions.checkArgument(serviceMetadata != null);
         return serviceMetadata.getVpcConfig();
+    }
+
+    public NasConfig getNasConfig() {
+        Preconditions.checkArgument(serviceMetadata != null);
+        return serviceMetadata.getNasConfig();
     }
 
     public String getServiceId() {

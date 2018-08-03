@@ -22,6 +22,7 @@ import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.LogConfig;
+import com.aliyuncs.fc.model.NasConfig;
 import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
@@ -51,6 +52,9 @@ public class UpdateServiceRequest extends HttpRequest {
 
     @SerializedName("internetAccess")
     private Boolean internetAccess;
+
+    @SerializedName("nasConfig")
+    private NasConfig nasConfig;
 
     private transient String ifMatch;
 
@@ -141,5 +145,13 @@ public class UpdateServiceRequest extends HttpRequest {
 
     public Boolean getInternetAccess() {
         return internetAccess;
+    }
+
+    public NasConfig getNasConfig() {
+        return nasConfig;
+    }
+
+    public void setNasConfig(NasConfig nasConfig) {
+        this.nasConfig = nasConfig;
     }
 }
