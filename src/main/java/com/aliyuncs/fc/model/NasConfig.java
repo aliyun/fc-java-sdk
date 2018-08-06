@@ -2,13 +2,13 @@ package com.aliyuncs.fc.model;
 
 public class NasConfig {
 
-    private int userId;
+    private Integer userId;
 
-    private int groupId;
+    private Integer groupId;
 
-    private NASMountConfig[] mountPoints;
+    private NasMountConfig[] mountPoints;
 
-    public NasConfig(int userId, int groupId, NASMountConfig[] mountPoints) {
+    public NasConfig(Integer userId, Integer groupId, NasMountConfig[] mountPoints) {
         this.userId = userId;
         this.groupId = groupId;
         this.mountPoints = mountPoints;
@@ -18,7 +18,7 @@ public class NasConfig {
         return userId;
     }
 
-    public NasConfig setUserId(int userId) {
+    public NasConfig setUserId(Integer userId) {
         this.userId = userId;
         return this;
     }
@@ -27,27 +27,27 @@ public class NasConfig {
         return groupId;
     }
 
-    public NasConfig setGroupId(int groupId) {
+    public NasConfig setGroupId(Integer groupId) {
         this.groupId = groupId;
         return this;
     }
 
-    public NASMountConfig[] getMountPoints() {
+    public NasMountConfig[] getMountPoints() {
         return mountPoints;
     }
 
-    public NasConfig setMountPoints(NASMountConfig[] mountPoints) {
+    public NasConfig setMountPoints(NasMountConfig[] mountPoints) {
         this.mountPoints = mountPoints;
         return this;
     }
 
-    public static class NASMountConfig {
+    public static class NasMountConfig {
 
         private String serverAddr;
 
         private String mountDir;
 
-        public NASMountConfig(String serverAddr, String mountDir) {
+        public NasMountConfig(String serverAddr, String mountDir) {
             this.serverAddr = serverAddr;
             this.mountDir = mountDir;
         }
