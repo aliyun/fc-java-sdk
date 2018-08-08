@@ -20,13 +20,13 @@ package com.aliyuncs.fc.request;
 
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
+import com.aliyuncs.fc.http.FormatType;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.LogConfig;
-import com.aliyuncs.fc.http.FormatType;
+import com.aliyuncs.fc.model.NasConfig;
 import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.response.CreateServiceResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
-
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
 
@@ -53,17 +53,15 @@ public class CreateServiceRequest extends HttpRequest {
     @SerializedName("internetAccess")
     private Boolean internetAccess;
 
-    public CreateServiceRequest setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-        return this;
-    }
+    @SerializedName("nasConfig")
+    private NasConfig nasConfig;
 
     public String getServiceName() {
         return serviceName;
     }
 
-    public CreateServiceRequest setDescription(String description) {
-        this.description = description;
+    public CreateServiceRequest setServiceName(String serviceName) {
+        this.serviceName = serviceName;
         return this;
     }
 
@@ -71,13 +69,18 @@ public class CreateServiceRequest extends HttpRequest {
         return description;
     }
 
-    public CreateServiceRequest setRole(String role) {
-        this.role = role;
+    public CreateServiceRequest setDescription(String description) {
+        this.description = description;
         return this;
     }
 
     public String getRole() {
         return role;
+    }
+
+    public CreateServiceRequest setRole(String role) {
+        this.role = role;
+        return this;
     }
 
     public LogConfig getLogConfig() {
@@ -120,6 +123,10 @@ public class CreateServiceRequest extends HttpRequest {
         return vpcConfig;
     }
 
+    public void setVpcConfig(VpcConfig vpcConfig) {
+        this.vpcConfig = vpcConfig;
+    }
+
     public Boolean getInternetAccess() {
         return internetAccess;
     }
@@ -128,7 +135,11 @@ public class CreateServiceRequest extends HttpRequest {
         this.internetAccess = internetAccess;
     }
 
-    public void setVpcConfig(VpcConfig vpcConfig) {
-        this.vpcConfig = vpcConfig;
+    public NasConfig getNasConfig() {
+        return nasConfig;
+    }
+
+    public void setNasConfig(NasConfig nasConfig) {
+        this.nasConfig = nasConfig;
     }
 }

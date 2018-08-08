@@ -19,6 +19,7 @@
 package com.aliyuncs.fc.response;
 
 import com.aliyuncs.fc.model.LogConfig;
+import com.aliyuncs.fc.model.NasConfig;
 import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.http.HttpResponse;
 
@@ -64,6 +65,11 @@ public class CreateServiceResponse extends HttpResponse {
     public Boolean getInternetAccess() {
         Preconditions.checkArgument(serviceMetadata != null);
         return serviceMetadata.getInternetAccess();
+    }
+
+    public NasConfig getNasConfig() {
+        Preconditions.checkArgument(serviceMetadata != null);
+        return serviceMetadata.getNasConfig();
     }
 
     public String getServiceId() {

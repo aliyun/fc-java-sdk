@@ -1487,7 +1487,7 @@ public class FunctionComputeClientTest {
     private void testCdnEventsTrigger() throws ParseException, InterruptedException {
         String triggerName = TRIGGER_TYPE_CDN + "_" + TRIGGER_NAME;
 
-        String EVENT_NAME = "logFileCreated";
+        String EVENT_NAME = "LogFileCreated";
 
         String EVENT_VERSION = "1.0.0";
 
