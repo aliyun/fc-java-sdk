@@ -46,7 +46,7 @@ public class ListFunctionsResponse extends HttpResponse {
     }
 
     public ListFunctionsResponse setFunctions(FunctionMetadata[] functions) {
-        functions = functions;
+        this.functions = functions;
         return this;
     }
 }
