@@ -14,27 +14,30 @@ public class VpcConfig {
         this.securityGroupId = securityGroupId;
     }
 
-    public void setVpcId(String vpcId) {
-        this.vpcId = vpcId;
-    }
-
     public String getVpcId() {
         return vpcId;
+    }
+
+    public VpcConfig setVpcId(String vpcId) {
+        this.vpcId = vpcId;
+        return this;
     }
 
     public String[] getVSwitchIds() {
         return vSwitchIds;
     }
 
+    public VpcConfig setVSwitchIds(String[] vSwitchIds) {
+        this.vSwitchIds = vSwitchIds;
+        return this;
+    }
+
     public String getSecurityGroupId() {
         return securityGroupId;
     }
 
-    public void setVSwitchIds(String[] vSwitchIds) {
-        this.vSwitchIds = vSwitchIds;
-    }
-
-    public void setSecurityGroupId(String securityGroupId) {
+    public VpcConfig setSecurityGroupId(String securityGroupId) {
         this.securityGroupId = securityGroupId;
+        return this;
     }
 }

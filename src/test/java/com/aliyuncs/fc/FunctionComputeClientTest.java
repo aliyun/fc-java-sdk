@@ -2,7 +2,11 @@ package com.aliyuncs.fc;
 
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
 import static com.aliyuncs.fc.model.HttpAuthType.FUNCTION;
-import static com.aliyuncs.fc.model.HttpMethod.*;
+import static com.aliyuncs.fc.model.HttpMethod.DELETE;
+import static com.aliyuncs.fc.model.HttpMethod.GET;
+import static com.aliyuncs.fc.model.HttpMethod.HEAD;
+import static com.aliyuncs.fc.model.HttpMethod.POST;
+import static com.aliyuncs.fc.model.HttpMethod.PUT;
 import static java.util.Arrays.asList;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
@@ -18,9 +22,54 @@ import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
-import com.aliyuncs.fc.model.*;
-import com.aliyuncs.fc.request.*;
-import com.aliyuncs.fc.response.*;
+import com.aliyuncs.fc.model.CdnEventsTriggerConfig;
+import com.aliyuncs.fc.model.Code;
+import com.aliyuncs.fc.model.FunctionMetadata;
+import com.aliyuncs.fc.model.HttpAuthType;
+import com.aliyuncs.fc.model.HttpMethod;
+import com.aliyuncs.fc.model.HttpTriggerConfig;
+import com.aliyuncs.fc.model.LogTriggerConfig;
+import com.aliyuncs.fc.model.NasConfig;
+import com.aliyuncs.fc.model.NasConfig.NasMountConfig;
+import com.aliyuncs.fc.model.OSSTriggerConfig;
+import com.aliyuncs.fc.model.TimeTriggerConfig;
+import com.aliyuncs.fc.model.TriggerMetadata;
+import com.aliyuncs.fc.model.VpcConfig;
+import com.aliyuncs.fc.request.CreateFunctionRequest;
+import com.aliyuncs.fc.request.CreateServiceRequest;
+import com.aliyuncs.fc.request.CreateTriggerRequest;
+import com.aliyuncs.fc.request.DeleteFunctionRequest;
+import com.aliyuncs.fc.request.DeleteServiceRequest;
+import com.aliyuncs.fc.request.DeleteTriggerRequest;
+import com.aliyuncs.fc.request.GetFunctionCodeRequest;
+import com.aliyuncs.fc.request.GetFunctionRequest;
+import com.aliyuncs.fc.request.GetServiceRequest;
+import com.aliyuncs.fc.request.GetTriggerRequest;
+import com.aliyuncs.fc.request.HttpInvokeFunctionRequest;
+import com.aliyuncs.fc.request.InvokeFunctionRequest;
+import com.aliyuncs.fc.request.ListFunctionsRequest;
+import com.aliyuncs.fc.request.ListServicesRequest;
+import com.aliyuncs.fc.request.ListTriggersRequest;
+import com.aliyuncs.fc.request.UpdateFunctionRequest;
+import com.aliyuncs.fc.request.UpdateServiceRequest;
+import com.aliyuncs.fc.request.UpdateTriggerRequest;
+import com.aliyuncs.fc.response.CreateFunctionResponse;
+import com.aliyuncs.fc.response.CreateServiceResponse;
+import com.aliyuncs.fc.response.CreateTriggerResponse;
+import com.aliyuncs.fc.response.DeleteFunctionResponse;
+import com.aliyuncs.fc.response.DeleteServiceResponse;
+import com.aliyuncs.fc.response.DeleteTriggerResponse;
+import com.aliyuncs.fc.response.GetFunctionCodeResponse;
+import com.aliyuncs.fc.response.GetFunctionResponse;
+import com.aliyuncs.fc.response.GetServiceResponse;
+import com.aliyuncs.fc.response.GetTriggerResponse;
+import com.aliyuncs.fc.response.InvokeFunctionResponse;
+import com.aliyuncs.fc.response.ListFunctionsResponse;
+import com.aliyuncs.fc.response.ListServicesResponse;
+import com.aliyuncs.fc.response.ListTriggersResponse;
+import com.aliyuncs.fc.response.UpdateFunctionResponse;
+import com.aliyuncs.fc.response.UpdateServiceResponse;
+import com.aliyuncs.fc.response.UpdateTriggerResponse;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
@@ -31,6 +80,7 @@ import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -41,25 +91,31 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
-
-import com.google.gson.JsonObject;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Validation for FunctionComputeClient, tests including
- * create/list/get/update service/function/trigger
+ * Validation for FunctionComputeClient, tests including create/list/get/update
+ * service/function/trigger
  */
 public class FunctionComputeClientTest {
 
+    public static final String STS_API_VERSION = "2015-04-01";
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     private static final String VALIDATE_MSG = "cannot be blank";
     private static final String REGION = System.getenv("REGION");
     private static final String ENDPOINT = System.getenv("ENDPOINT");
     private static final String ROLE = System.getenv("ROLE");
+    private static final String STS_ROLE = System.getenv("STS_ROLE");
     private static final String ACCESS_KEY = System.getenv("ACCESS_KEY");
     private static final String SECRET_KEY = System.getenv("SECRET_KEY");
     private static final String ACCOUNT_ID = System.getenv("ACCOUNT_ID");
@@ -68,14 +124,20 @@ public class FunctionComputeClientTest {
     private static final String INVOCATION_ROLE = System.getenv("INVOCATION_ROLE");
     private static final String LOG_PROJECT = System.getenv("LOG_PROJECT");
     private static final String LOG_STORE = System.getenv("LOG_STORE");
+    private static final String VPC_ID = System.getenv("VPC_ID");
+    private static final String VSWITCH_IDS = System.getenv("VSWITCH_IDS");
+    private static final String SECURITY_GROUP_ID = System.getenv("SECURITY_GROUP_ID");
+    private static final String USER_ID = System.getenv("USER_ID");
+    private static final String GROUP_ID = System.getenv("GROUP_ID");
+    private static final String NAS_SERVER_ADDR = System.getenv("NAS_SERVER_ADDR");
+    private static final String NAS_MOUNT_DIR = System.getenv("NAS_MOUNT_DIR");
 
     private static final String OSS_SOURCE_ARN =
         String.format("acs:oss:%s:%s:%s", REGION, ACCOUNT_ID, CODE_BUCKET);
     private static final String LOG_SOURCE_ARN =
-            String.format("acs:log:%s:%s:project/%s", REGION, ACCOUNT_ID, LOG_PROJECT);
+        String.format("acs:log:%s:%s:project/%s", REGION, ACCOUNT_ID, LOG_PROJECT);
     private static final String CDN_SOURCE_ARN =
-            String.format("acs:cdn:*:%s", ACCOUNT_ID);
-
+        String.format("acs:cdn:*:%s", ACCOUNT_ID);
     private static final String SERVICE_NAME = "testServiceJavaSDK";
     private static final String SERVICE_DESC_OLD = "service desc";
     private static final String SERVICE_DESC_NEW = "service desc updated";
@@ -88,11 +150,16 @@ public class FunctionComputeClientTest {
     private static final String TRIGGER_TYPE_LOG = "log";
     private static final String TRIGGER_TYPE_CDN = "cdn_events";
     private static final String TRIGGER_TYPE_TIMER = "timer";
-    public static final String STS_API_VERSION = "2015-04-01";
-
+    private static final Gson gson = new Gson();
     private FunctionComputeClient client;
 
-    private static final Gson gson = new Gson();
+    @BeforeClass
+    public static void setupSuite() {
+        System.out.println("ENDPOINT: " + ENDPOINT);
+        System.out.println("ROLE: " + ROLE);
+        System.out.println("VPC_ID: " + VPC_ID);
+        System.out.println("STS_ROLE: " + STS_ROLE);
+    }
 
     @Before
     public void setup() {
@@ -101,13 +168,14 @@ public class FunctionComputeClientTest {
         if (!Strings.isNullOrEmpty(ENDPOINT)) {
             client.setEndpoint(ENDPOINT);
         }
-
         GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
         try {
             client.getService(getSReq);
 
             cleanUpFunctions(SERVICE_NAME);
             cleanupService(SERVICE_NAME);
+            cleanUpFunctions(SERVICE_NAME + "-nas");
+            cleanupService(SERVICE_NAME + "-nas");
         } catch (ClientException e) {
             if (!ErrorCodes.SERVICE_NOT_FOUND.equals(e.getErrorCode())) {
                 throw e;
@@ -119,9 +187,10 @@ public class FunctionComputeClientTest {
         throws com.aliyuncs.exceptions.ClientException {
         if (useSts) {
             Credentials creds = getAssumeRoleCredentials(null);
-            FunctionComputeClient fcClient = new FunctionComputeClient(new Config(REGION, ACCOUNT_ID,
-                creds.getAccessKeyId(), creds.getAccessKeySecret(), creds.getSecurityToken(),
-                useHttps));
+            FunctionComputeClient fcClient = new FunctionComputeClient(
+                new Config(REGION, ACCOUNT_ID,
+                    creds.getAccessKeyId(), creds.getAccessKeySecret(), creds.getSecurityToken(),
+                    useHttps));
 
             if (!Strings.isNullOrEmpty(ENDPOINT)) {
                 fcClient.setEndpoint(ENDPOINT);
@@ -169,8 +238,8 @@ public class FunctionComputeClientTest {
 
     private CreateFunctionResponse createFunction(String functionName) throws IOException {
         String source = "exports.handler = function(event, context, callback) {\n" +
-                "  callback(null, 'hello world');\n" +
-                "};";
+            "  callback(null, 'hello world');\n" +
+            "};";
 
         byte[] code = createZipByteData("hello_world.js", source);
 
@@ -220,7 +289,32 @@ public class FunctionComputeClientTest {
         return response;
     }
 
-    private CreateTriggerResponse createHttpTrigger(String triggerName, HttpAuthType authType, HttpMethod[] methods) {
+    private CreateServiceResponse createVPCService(String serviceName) {
+        CreateServiceRequest createSReq = new CreateServiceRequest();
+        createSReq.setServiceName(serviceName);
+        createSReq.setDescription(SERVICE_DESC_OLD);
+        createSReq.setRole(ROLE);
+        createSReq
+            .setVpcConfig(new VpcConfig(VPC_ID, new String[]{VSWITCH_IDS}, SECURITY_GROUP_ID));
+        createSReq.setNasConfig(new NasConfig(Integer.parseInt(USER_ID), Integer.parseInt(GROUP_ID),
+            new NasMountConfig[]{
+                new NasMountConfig(NAS_SERVER_ADDR, NAS_MOUNT_DIR)
+            }));
+
+        CreateServiceResponse response = client.createService(createSReq);
+
+        assertEquals(serviceName, response.getServiceName());
+        assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
+        assertFalse(Strings.isNullOrEmpty(response.getServiceId()));
+        assertEquals(SERVICE_DESC_OLD, response.getDescription());
+        assertEquals(ROLE, response.getRole());
+        assertEquals(VPC_ID, response.getVpcConfig().getVpcId());
+        assertEquals(SECURITY_GROUP_ID, response.getVpcConfig().getSecurityGroupId());
+        return response;
+    }
+
+    private CreateTriggerResponse createHttpTrigger(String triggerName, HttpAuthType authType,
+        HttpMethod[] methods) {
         CreateTriggerRequest createReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createReq.setTriggerName(triggerName);
         createReq.setTriggerType(TRIGGER_TYPE_HTTP);
@@ -229,7 +323,8 @@ public class FunctionComputeClientTest {
         return client.createTrigger(createReq);
     }
 
-    private CreateTriggerResponse createOssTrigger(String triggerName, String prefix, String suffix) {
+    private CreateTriggerResponse createOssTrigger(String triggerName, String prefix,
+        String suffix) {
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
         createTReq.setTriggerType(TRIGGER_TYPE_OSS);
@@ -247,7 +342,8 @@ public class FunctionComputeClientTest {
         return resp;
     }
 
-    private DeleteTriggerResponse deleteTrigger(String serviceName, String funcName, String triggerName) {
+    private DeleteTriggerResponse deleteTrigger(String serviceName, String funcName,
+        String triggerName) {
         DeleteTriggerRequest req = new DeleteTriggerRequest(serviceName, funcName, triggerName);
         DeleteTriggerResponse resp = client.deleteTrigger(req);
         try {
@@ -303,33 +399,93 @@ public class FunctionComputeClientTest {
 
     @Test
     public void testNewRegions() {
-        FunctionComputeClient clientHz = new FunctionComputeClient("cn-hangzhou", ACCOUNT_ID, ACCESS_KEY, SECRET_KEY);
+        FunctionComputeClient clientHz = new FunctionComputeClient("cn-hangzhou", ACCOUNT_ID,
+            ACCESS_KEY, SECRET_KEY);
         ListServicesResponse lrHz = clientHz.listServices(new ListServicesRequest());
         assertTrue(lrHz.getStatus() == HttpURLConnection.HTTP_OK);
 
-        FunctionComputeClient clientBj = new FunctionComputeClient("cn-beijing", ACCOUNT_ID, ACCESS_KEY, SECRET_KEY);
+        FunctionComputeClient clientBj = new FunctionComputeClient("cn-beijing", ACCOUNT_ID,
+            ACCESS_KEY, SECRET_KEY);
         ListServicesResponse lrBj = clientBj.listServices(new ListServicesRequest());
         assertTrue(lrBj.getStatus() == HttpURLConnection.HTTP_OK);
     }
 
     @Test
     public void testCRUD()
-            throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException, IOException {
+        throws ClientException, JSONException, NoSuchAlgorithmException, InterruptedException, ParseException, IOException {
         testCRUDHelper(true);
     }
 
     @Test
     public void testCRUDStsToken() throws com.aliyuncs.exceptions.ClientException,
-            ParseException, InterruptedException, IOException {
+        ParseException, InterruptedException, IOException {
         client = overrideFCClient(true, false);
         testCRUDHelper(false);
     }
 
     @Test
     public void testCRUDStsTokenHttps() throws com.aliyuncs.exceptions.ClientException,
-            ParseException, InterruptedException, IOException {
+        ParseException, InterruptedException, IOException {
         client = overrideFCClient(true, true);
         testCRUDHelper(false);
+    }
+
+    private String generateNASPythonCode() {
+        return "# -*- coding: utf-8 -*-\n"
+            + "import logging  \n"
+            + "import random\n"
+            + "import string\n"
+            + "import os.path\n"
+            + "import shutil\n"
+            + "from os import path\n"
+            + "\n"
+            + "def handler(event, context):\n"
+            + "  logger = logging.getLogger()\n"
+            + "  root_dir1 = \"" + NAS_MOUNT_DIR + "\"\n"
+            + "  logger.info('uid : ' + str(os.geteuid()))\n"
+            + "  logger.info('gid : ' + str(os.getgid()))\n"
+            + "  file_name = randomString(6)+'.txt'\n"
+            + "  dir1 = root_dir1 + '/rzhang-test/'\n"
+            + "  content = \"NAS here I come\"\n"
+            + "  os.makedirs(dir1)\n"
+            + "  fw = open(dir1+file_name, \"w+\")\n"
+            + "  fw.write(content)\n"
+            + "  fw.close()\n"
+            + "  fr = open(dir1+file_name)\n"
+            + "  line = fr.readline()\n"
+            + "  if line != content:\n"
+            + "      return False\n"
+            + "  fr.close()\n"
+            + "  os.remove(dir1+file_name)\n"
+            + "  os.rmdir(dir1)\n"
+            + "  return True\n"
+            + "  \n"
+            + "def randomString(n):\n"
+            + "  return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(n))\n";
+    }
+
+    @Test
+    public void testCreateNASService() throws IOException {
+        String service_name = SERVICE_NAME + "-test-nas";
+        createVPCService(service_name);
+        // Create a function that uses NAS
+        String source = generateNASPythonCode();
+
+        byte[] data = createZipByteData("main.py", source);
+        String funcName = FUNCTION_NAME + "-nas";
+        // create function
+        createFunction(service_name, funcName, "main.handler", "python2.7", data);
+
+        // Invoke the function
+        InvokeFunctionRequest request = new InvokeFunctionRequest(service_name, funcName);
+        request.setPayload("".getBytes());
+
+        InvokeFunctionResponse response = client.invokeFunction(request);
+        assertEquals("true", new String(response.getPayload()));
+
+        // Cleanups
+        client.deleteFunction(new DeleteFunctionRequest(service_name, funcName));
+        client.deleteService(new DeleteServiceRequest(service_name));
     }
 
     @Test
@@ -348,7 +504,7 @@ public class FunctionComputeClientTest {
             createService(SERVICE_NAME);
             fail("ClientException is expected");
         } catch (ClientException e) {
-            assertTrue(e.getErrorMessage()
+            assertTrue(e.getErrorMessage(), e.getErrorMessage()
                 .contains("the caller is not authorized to perform 'ram:PassRole'"));
         }
     }
@@ -363,7 +519,7 @@ public class FunctionComputeClientTest {
         createFunction(FUNCTION_NAME);
 
         // create http trigger
-        createHttpTrigger(TRIGGER_NAME, ANONYMOUS, new HttpMethod[] {GET, POST});
+        createHttpTrigger(TRIGGER_NAME, ANONYMOUS, new HttpMethod[]{GET, POST});
 
         // List Triggers
         ListTriggersRequest listTReq = new ListTriggersRequest(SERVICE_NAME, FUNCTION_NAME);
@@ -379,24 +535,24 @@ public class FunctionComputeClientTest {
 
         // retrieve http trigger
         GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
-                TRIGGER_NAME);
+            TRIGGER_NAME);
 
         GetTriggerResponse getTResp = client.getTrigger(getTReq);
         HttpTriggerConfig triggerConfig = gson
-                .fromJson(gson.toJson(getTResp.getTriggerConfig()), HttpTriggerConfig.class);
+            .fromJson(gson.toJson(getTResp.getTriggerConfig()), HttpTriggerConfig.class);
 
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(TRIGGER_NAME, getTResp.getTriggerName());
         assertEquals(TRIGGER_TYPE_HTTP, getTResp.getTriggerType());
-        assertTrue(Arrays.deepEquals(new HttpMethod[] {GET, POST}, triggerConfig.getMethods()));
+        assertTrue(Arrays.deepEquals(new HttpMethod[]{GET, POST}, triggerConfig.getMethods()));
 
         // update http trigger
         GetTriggerResponse triggerOld = getTResp;
         HttpTriggerConfig updateTriggerConfig = new HttpTriggerConfig(
-                FUNCTION, new HttpMethod[] {POST});
+            FUNCTION, new HttpMethod[]{POST});
 
         UpdateTriggerRequest updateTReq = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
-                TRIGGER_NAME);
+            TRIGGER_NAME);
         updateTReq.setTriggerConfig(updateTriggerConfig);
 
         Thread.sleep(1000);
@@ -406,9 +562,9 @@ public class FunctionComputeClientTest {
 
         Gson gson = new Gson();
         HttpTriggerConfig tcOld = gson
-                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), HttpTriggerConfig.class);
+            .fromJson(gson.toJson(triggerOld.getTriggerConfig()), HttpTriggerConfig.class);
         HttpTriggerConfig tcNew = gson
-                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), HttpTriggerConfig.class);
+            .fromJson(gson.toJson(updateTResp.getTriggerConfig()), HttpTriggerConfig.class);
         assertFalse(Arrays.deepEquals(tcOld.getMethods(), tcNew.getMethods()));
         assertNotEquals(tcOld.getAuthType(), tcNew.getAuthType());
 
@@ -424,14 +580,13 @@ public class FunctionComputeClientTest {
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME);
 
         getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
-                TRIGGER_NAME);
+            TRIGGER_NAME);
 
         try {
             client.getTrigger(getTReq);
         } catch (ClientException e) {
             assertEquals(404, e.getStatusCode());
         }
-
 
         cleanUpFunctions(SERVICE_NAME);
         cleanupService(SERVICE_NAME);
@@ -540,7 +695,7 @@ public class FunctionComputeClientTest {
 
         for (int i = 0; i < numTriggers; i++) {
             DeleteTriggerResponse deleteTResp = deleteTrigger(
-                    SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME + i);
+                SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME + i);
             assertFalse(Strings.isNullOrEmpty(deleteTResp.getRequestId()));
         }
     }
@@ -981,9 +1136,10 @@ public class FunctionComputeClientTest {
     @Test
     public void testInvokeFunctionLogTypeSyncNone() throws IOException {
         createService(SERVICE_NAME);
-        createFunction(FUNCTION_NAME);
+        String funcName = FUNCTION_NAME + "-logtype";
+        createFunction(funcName);
 
-        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, funcName);
         request.setLogType("None");
         InvokeFunctionResponse response = client.invokeFunction(request);
         assertNull(response.getLogResult());
@@ -1001,7 +1157,9 @@ public class FunctionComputeClientTest {
             client.invokeFunction(request);
         } catch (ClientException e) {
             assertEquals("InvalidArgument", e.getErrorCode());
-            assertEquals("LogType is set to an invalid value (allowed: Tail | None, actual: 'Invalid')", e.getErrorMessage());
+            assertEquals(
+                "LogType is set to an invalid value (allowed: Tail | None, actual: 'Invalid')",
+                e.getErrorMessage());
             return;
         }
 
@@ -1035,7 +1193,8 @@ public class FunctionComputeClientTest {
             client.invokeFunction(request);
         } catch (ClientException e) {
             assertEquals("InvalidArgument", e.getErrorCode());
-            assertEquals("LogType is set to an invalid value (allowed: None, actual: 'Tail')", e.getErrorMessage());
+            assertEquals("LogType is set to an invalid value (allowed: None, actual: 'Tail')",
+                e.getErrorMessage());
             return;
         }
 
@@ -1067,8 +1226,9 @@ public class FunctionComputeClientTest {
         return buffer;
     }
 
-    private void createFunction(String functionName, String handler, String runtime, byte[] data) {
-        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
+    private void createFunction(String serviceName, String functionName, String handler,
+        String runtime, byte[] data) {
+        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(serviceName);
 
         Code code = new Code().setZipFile(data);
         createFuncReq.setFunctionName(functionName);
@@ -1092,15 +1252,15 @@ public class FunctionComputeClientTest {
         byte[] data = createZipByteData("main.py", source);
 
         // create function
-        createFunction(FUNCTION_NAME, "main.echo_handler", "python2.7", data);
+        createFunction(SERVICE_NAME, FUNCTION_NAME, "main.echo_handler", "python2.7", data);
 
-
-        for (HttpAuthType auth : new HttpAuthType[] {ANONYMOUS, FUNCTION}) {
+        for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
             // create http trigger
-            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[] {GET, POST});
+            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[]{GET, POST});
 
             // Invoke the function
-            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, POST, "/test/path/中文");
+            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
+                FUNCTION_NAME, auth, POST, "/test/path/中文");
 
             request.addQuery("a", "1");
             request.addQuery("aaa", null);
@@ -1116,7 +1276,8 @@ public class FunctionComputeClientTest {
             assertTrue(response.getHeader("Content-Type").startsWith("application/json"));
             assertEquals("testHeaderValue", response.getHeader("Test-Header-Key"));
 
-            JsonObject jsonObject = gson.fromJson(new String(response.getPayload()), JsonObject.class);
+            JsonObject jsonObject = gson
+                .fromJson(new String(response.getPayload()), JsonObject.class);
 
             assertEquals("/test/path/中文", jsonObject.get("path").getAsString());
             assertEquals("aaa=&a=1", jsonObject.get("queries").getAsString());
@@ -1133,29 +1294,31 @@ public class FunctionComputeClientTest {
 
     private String generatePythonHttpCode() {
         return "import json\n" +
-                "from cgi import parse_qs, escape\n" +
-                "\n" +
-                "def echo_handler(environ, start_response):\n" +
-                "  \n" +
-                "    resp_body_map = {\n" +
-                "      \"headers\": {},\n" +
-                "      \"queries\": environ.get('QUERY_STRING',''),\n" +
-                "      \"body\": environ[\"wsgi.input\"].read(int(environ.get('CONTENT_LENGTH', 0))),\n" +
-                "      \"path\": environ[\"PATH_INFO\"],\n" +
-                "      \"request_uri\": environ['fc.request_uri']\n" +
-                "    }\n" +
-                "    \n" +
-                "    for k, v in environ.items():\n" +
-                "      if k.startswith(\"HTTP_\"):\n" +
-                "        resp_body_map[\"headers\"][k[5:]] = v\n" +
-                "      \n" +
-                "    body = json.dumps(resp_body_map)\n" +
-                "    \n" +
-                "    # do something here\n" +
-                "    status = '200 OK'\n" +
-                "    response_headers = [('Content-type', 'application/json'),('Test-Header-Key', environ['HTTP_TEST_HEADER_KEY'])]\n" +
-                "    start_response(status, response_headers)\n" +
-                "    return [body]";
+            "from cgi import parse_qs, escape\n" +
+            "\n" +
+            "def echo_handler(environ, start_response):\n" +
+            "  \n" +
+            "    resp_body_map = {\n" +
+            "      \"headers\": {},\n" +
+            "      \"queries\": environ.get('QUERY_STRING',''),\n" +
+            "      \"body\": environ[\"wsgi.input\"].read(int(environ.get('CONTENT_LENGTH', 0))),\n"
+            +
+            "      \"path\": environ[\"PATH_INFO\"],\n" +
+            "      \"request_uri\": environ['fc.request_uri']\n" +
+            "    }\n" +
+            "    \n" +
+            "    for k, v in environ.items():\n" +
+            "      if k.startswith(\"HTTP_\"):\n" +
+            "        resp_body_map[\"headers\"][k[5:]] = v\n" +
+            "      \n" +
+            "    body = json.dumps(resp_body_map)\n" +
+            "    \n" +
+            "    # do something here\n" +
+            "    status = '200 OK'\n" +
+            "    response_headers = [('Content-type', 'application/json'),('Test-Header-Key', environ['HTTP_TEST_HEADER_KEY'])]\n"
+            +
+            "    start_response(status, response_headers)\n" +
+            "    return [body]";
     }
 
     @Test
@@ -1168,15 +1331,15 @@ public class FunctionComputeClientTest {
         byte[] data = createZipByteData("main.py", source);
 
         // create function
-        createFunction(FUNCTION_NAME, "main.echo_handler", "python2.7", data);
+        createFunction(SERVICE_NAME, FUNCTION_NAME, "main.echo_handler", "python2.7", data);
 
-
-        for (HttpAuthType auth : new HttpAuthType[] {ANONYMOUS, FUNCTION}) {
+        for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
             // create http trigger
-            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[] {GET, POST, PUT, HEAD, DELETE});
+            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[]{GET, POST, PUT, HEAD, DELETE});
 
             // Invoke the function
-            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME, auth, POST, "/test/path");
+            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
+                FUNCTION_NAME, auth, POST, "/test/path");
 
             request.setHeader("Test-Header-Key", "testHeaderValue");
             request.setHeader("Content-Type", "application/json");
@@ -1187,7 +1350,8 @@ public class FunctionComputeClientTest {
             assertTrue(response.getHeader("Content-Type").startsWith("application/json"));
             assertEquals("testHeaderValue", response.getHeader("Test-Header-Key"));
 
-            JsonObject jsonObject = gson.fromJson(new String(response.getPayload()), JsonObject.class);
+            JsonObject jsonObject = gson
+                .fromJson(new String(response.getPayload()), JsonObject.class);
 
             assertEquals("/test/path", jsonObject.get("path").getAsString());
             assertEquals("", jsonObject.get("body").getAsString());
@@ -1260,7 +1424,7 @@ public class FunctionComputeClientTest {
         request.setVersion(STS_API_VERSION);
         request.setMethod(MethodType.POST);
         request.setProtocol(ProtocolType.HTTPS);
-        request.setRoleArn(ROLE);
+        request.setRoleArn(STS_ROLE);
         request.setRoleSessionName("test-session");
         if (policy != null) {
             request.setPolicy(policy);
@@ -1284,7 +1448,8 @@ public class FunctionComputeClientTest {
         return stsResponse.getCredentials();
     }
 
-    private void testCRUDHelper(boolean testTrigger) throws ParseException, InterruptedException, IOException {
+    private void testCRUDHelper(boolean testTrigger)
+        throws ParseException, InterruptedException, IOException {
         // Create Service
         createService(SERVICE_NAME);
 
@@ -1296,10 +1461,10 @@ public class FunctionComputeClientTest {
         Thread.sleep(1000L);
         UpdateServiceResponse updateSResp = client.updateService(updateSReq);
         verifyUpdate(svcOldResp.getServiceName(), updateSResp.getServiceName(),
-                svcOldResp.getServiceId(), updateSResp.getServiceId(),
-                svcOldResp.getLastModifiedTime(), updateSResp.getLastModifiedTime(),
-                svcOldResp.getCreatedTime(), updateSResp.getCreatedTime(),
-                svcOldResp.getDescription(), updateSResp.getDescription());
+            svcOldResp.getServiceId(), updateSResp.getServiceId(),
+            svcOldResp.getLastModifiedTime(), updateSResp.getLastModifiedTime(),
+            svcOldResp.getCreatedTime(), updateSResp.getCreatedTime(),
+            svcOldResp.getDescription(), updateSResp.getDescription());
 
         // Get Service
         GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
@@ -1352,7 +1517,7 @@ public class FunctionComputeClientTest {
         getFResp = client.getFunction(getFReq);
         Map<String, String> envGet = getFResp.getEnvironmentVariables();
         assertEquals(1, envGet.size());
-        assertEquals("testValueNew",envGet.get("testKey"));
+        assertEquals("testValueNew", envGet.get("testKey"));
         assertFalse(Strings.isNullOrEmpty(getFResp.getRequestId()));
         assertEquals(FUNCTION_NAME, getFResp.getFunctionName());
 
@@ -1530,7 +1695,8 @@ public class FunctionComputeClientTest {
         updateConfig.setNotes(NEW_NOTES);
         updateConfig.setFilter(newFilters);
 
-        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
+        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+            triggerName);
         req.setInvocationRole(INVOCATION_ROLE);
         req.setTriggerConfig(updateConfig);
 
@@ -1540,9 +1706,9 @@ public class FunctionComputeClientTest {
         assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
         Gson gson = new Gson();
         CdnEventsTriggerConfig tcOld = gson
-                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), CdnEventsTriggerConfig.class);
+            .fromJson(gson.toJson(triggerOld.getTriggerConfig()), CdnEventsTriggerConfig.class);
         CdnEventsTriggerConfig tcNew = gson
-                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), CdnEventsTriggerConfig.class);
+            .fromJson(gson.toJson(updateTResp.getTriggerConfig()), CdnEventsTriggerConfig.class);
         assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
         assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
@@ -1557,10 +1723,10 @@ public class FunctionComputeClientTest {
 
         // Get Trigger
         GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
-                triggerName);
+            triggerName);
         GetTriggerResponse getTResp = client.getTrigger(getTReq);
         config = gson
-                .fromJson(gson.toJson(getTResp.getTriggerConfig()), CdnEventsTriggerConfig.class);
+            .fromJson(gson.toJson(getTResp.getTriggerConfig()), CdnEventsTriggerConfig.class);
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(triggerName, getTResp.getTriggerName());
         assertEquals(CDN_SOURCE_ARN, getTResp.getSourceARN());
@@ -1575,8 +1741,10 @@ public class FunctionComputeClientTest {
     private void testLogTrigger() throws ParseException {
 
         String triggerName = TRIGGER_TYPE_LOG + "_" + TRIGGER_NAME;
-        LogTriggerConfig triggerConfig = new LogTriggerConfig().setSourceConfig(new LogTriggerConfig.SourceConfig(LOG_STORE)).
-                setJobConfig(new LogTriggerConfig.JobConfig().setMaxRetryTime(3).setTriggerInterval(60)).
+        LogTriggerConfig triggerConfig = new LogTriggerConfig()
+            .setSourceConfig(new LogTriggerConfig.SourceConfig(LOG_STORE)).
+                setJobConfig(
+                    new LogTriggerConfig.JobConfig().setMaxRetryTime(3).setTriggerInterval(60)).
                 setLogConfig(new LogTriggerConfig.LogConfig("", "")).
                 setFunctionParameter(new HashMap<String, Object>()).setEnable(true);
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
@@ -1599,20 +1767,22 @@ public class FunctionComputeClientTest {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
         }
-        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
+        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+            triggerName);
         req.setInvocationRole(INVOCATION_ROLE);
         req.setTriggerConfig(
-                new LogTriggerConfig().
-                        setJobConfig(new LogTriggerConfig.JobConfig().setMaxRetryTime(5).setTriggerInterval(120)));
+            new LogTriggerConfig().
+                setJobConfig(
+                    new LogTriggerConfig.JobConfig().setMaxRetryTime(5).setTriggerInterval(120)));
         UpdateTriggerResponse updateTResp = client.updateTrigger(req);
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
         assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
         Gson gson = new Gson();
         LogTriggerConfig tcOld = gson
-                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), LogTriggerConfig.class);
+            .fromJson(gson.toJson(triggerOld.getTriggerConfig()), LogTriggerConfig.class);
         LogTriggerConfig tcNew = gson
-                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), LogTriggerConfig.class);
+            .fromJson(gson.toJson(updateTResp.getTriggerConfig()), LogTriggerConfig.class);
         assertEquals(triggerOld.getCreatedTime(), updateTResp.getCreatedTime());
         assertEquals(triggerOld.getTriggerType(), updateTResp.getTriggerType());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
@@ -1627,10 +1797,10 @@ public class FunctionComputeClientTest {
 
         // Get Trigger
         GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
-                triggerName);
+            triggerName);
         GetTriggerResponse getTResp = client.getTrigger(getTReq);
         LogTriggerConfig getTConfig = gson
-                .fromJson(gson.toJson(getTResp.getTriggerConfig()), LogTriggerConfig.class);
+            .fromJson(gson.toJson(getTResp.getTriggerConfig()), LogTriggerConfig.class);
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(triggerName, getTResp.getTriggerName());
         assertEquals(LOG_SOURCE_ARN, getTResp.getSourceARN());
@@ -1661,7 +1831,8 @@ public class FunctionComputeClientTest {
         String createTime = createTriggerResponse.getCreatedTime();
         String lastModifiedTime = createTriggerResponse.getLastModifiedTime();
         TimeTriggerConfig tRConfig = gson
-                .fromJson(gson.toJson(createTriggerResponse.getTriggerConfig()), TimeTriggerConfig.class);
+            .fromJson(gson.toJson(createTriggerResponse.getTriggerConfig()),
+                TimeTriggerConfig.class);
         assertEquals(timeTriggerConfig.getCronExpression(), tRConfig.getCronExpression());
         assertEquals(timeTriggerConfig.getPayload(), tRConfig.getPayload());
         assertEquals(timeTriggerConfig.isEnable(), tRConfig.isEnable());
@@ -1669,7 +1840,7 @@ public class FunctionComputeClientTest {
         GetTriggerRequest getTReq = new GetTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
         GetTriggerResponse getTResp = client.getTrigger(getTReq);
         TimeTriggerConfig getTConfig = gson
-                .fromJson(gson.toJson(getTResp.getTriggerConfig()), TimeTriggerConfig.class);
+            .fromJson(gson.toJson(getTResp.getTriggerConfig()), TimeTriggerConfig.class);
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(triggerName, getTResp.getTriggerName());
         assertEquals(TRIGGER_TYPE_TIMER, getTResp.getTriggerType());
@@ -1692,14 +1863,17 @@ public class FunctionComputeClientTest {
         }
 
         // Update Triggers
-        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME, triggerName);
-        req.setTriggerConfig(new TimeTriggerConfig().setCronExpression(cronExpression).setPayload(payload).setEnable(true));
+        UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
+            triggerName);
+        req.setTriggerConfig(
+            new TimeTriggerConfig().setCronExpression(cronExpression).setPayload(payload)
+                .setEnable(true));
         UpdateTriggerResponse updateTResp = client.updateTrigger(req);
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
         TimeTriggerConfig tcOld = gson
-                .fromJson(gson.toJson(triggerOld.getTriggerConfig()), TimeTriggerConfig.class);
+            .fromJson(gson.toJson(triggerOld.getTriggerConfig()), TimeTriggerConfig.class);
         TimeTriggerConfig tcNew = gson
-                .fromJson(gson.toJson(updateTResp.getTriggerConfig()), TimeTriggerConfig.class);
+            .fromJson(gson.toJson(updateTResp.getTriggerConfig()), TimeTriggerConfig.class);
         Date dateOld = DATE_FORMAT.parse(triggerOld.getLastModifiedTime());
         Date dateNew = DATE_FORMAT.parse(updateTResp.getLastModifiedTime());
         assertTrue(dateOld.before(dateNew));

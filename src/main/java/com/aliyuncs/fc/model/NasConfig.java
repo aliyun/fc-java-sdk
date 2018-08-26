@@ -1,6 +1,8 @@
 package com.aliyuncs.fc.model;
 
 public class NasConfig {
+    public static Integer AnyUserId = -1;
+    public static Integer AnyGroupId = -1;
 
     private Integer userId;
 
