@@ -1,7 +1,12 @@
+1.2.0 / 2018-08-27
+==================
+
+  * Add NAS Support
+
 1.1.10 / 2018-06-01
 ==================
 
-  * add vpc and cdn events trigger support
+  * Add vpc and cdn events trigger support
 
 1.1.8 / 2018-05-04
 ==================
@@ -16,7 +21,7 @@
 1.1.6 / 2018-04-12
 ==================
 
-  * add environment variables support
+  * Add environment variables support
 
 1.1.5 / 2018-03-16
 ==================
@@ -32,7 +37,6 @@
 ==================
 
   * Fixed FC endpoints for newer regions
-  * bump to 1.1.3-SNAPSHOT
 
 1.1.2 / 2017-09-29
 ==================
