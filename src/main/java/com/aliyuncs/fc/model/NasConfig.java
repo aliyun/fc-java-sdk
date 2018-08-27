@@ -1,6 +1,8 @@
 package com.aliyuncs.fc.model;
 
 public class NasConfig {
+    public static Integer AnyUserId = -1;
+    public static Integer AnyGroupId = -1;
 
     private Integer userId;
 
@@ -14,7 +16,7 @@ public class NasConfig {
         this.mountPoints = mountPoints;
     }
 
-    public int getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
@@ -23,7 +25,7 @@ public class NasConfig {
         return this;
     }
 
-    public int getGroupId() {
+    public Integer getGroupId() {
         return groupId;
     }
 
