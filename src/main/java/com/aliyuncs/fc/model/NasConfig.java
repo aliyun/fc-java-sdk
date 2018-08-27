@@ -16,7 +16,7 @@ public class NasConfig {
         this.mountPoints = mountPoints;
     }
 
-    public int getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
@@ -25,7 +25,7 @@ public class NasConfig {
         return this;
     }
 
-    public int getGroupId() {
+    public Integer getGroupId() {
         return groupId;
     }
 

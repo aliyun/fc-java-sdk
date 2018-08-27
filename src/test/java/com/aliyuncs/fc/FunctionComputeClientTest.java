@@ -209,7 +209,7 @@ public class FunctionComputeClientTest {
     }
 
     private void cleanUpFunctions(String serviceName) {
-        ListFunctionsRequest listFReq = new ListFunctionsRequest(SERVICE_NAME);
+        ListFunctionsRequest listFReq = new ListFunctionsRequest(serviceName);
         ListFunctionsResponse listFResp = client.listFunctions(listFReq);
         FunctionMetadata[] functions = listFResp.getFunctions();
 
@@ -466,7 +466,7 @@ public class FunctionComputeClientTest {
 
     @Test
     public void testCreateNASService() throws IOException {
-        String service_name = SERVICE_NAME + "-test-nas";
+        String service_name = SERVICE_NAME + "-nas";
         createVPCService(service_name);
         // Create a function that uses NAS
         String source = generateNASPythonCode();
