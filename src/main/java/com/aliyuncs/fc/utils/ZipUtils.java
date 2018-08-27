@@ -17,8 +17,8 @@ import java.util.zip.ZipOutputStream;
 public class ZipUtils {
 
     public static void zipDir(File dir, String zipName) throws IOException {
-        Preconditions.checkArgument(dir != null, "dir cannot be null");
-        Preconditions.checkArgument(dir.isDirectory(), "dir must be a directory");
+        Preconditions.checkArgument(dir != null, "dir `"+ dir + "` cannot be null");
+        Preconditions.checkArgument(dir.isDirectory(), "dir `"+ dir + "` must be a directory");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(zipName), "zipName cannot be blank");
         List<String> fileNames = new ArrayList<String>();
         getFileNames(dir, fileNames);
