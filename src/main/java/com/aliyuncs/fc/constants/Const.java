@@ -9,6 +9,8 @@ public class Const {
     public final static String SINGLE_SERVICE_PATH = "/%s/services/%s";
     public final static String FUNCTION_PATH = "/%s/services/%s/functions";
     public final static String SINGLE_FUNCTION_PATH = "/%s/services/%s/functions/%s";
+    public final static String CUSTOM_DOMAIN_PATH = "/%s/custom-domains";
+    public final static String SINGLE_CUSTOM_DOMAIN_PATH = "/%s/custom-domains/%s";
     public final static String FUNCTION_CODE_PATH = "/%s/services/%s/functions/%s/code";
     public final static String TRIGGER_PATH = "/%s/services/%s/functions/%s/triggers";
     public final static String SINGLE_TRIGGER_PATH = "/%s/services/%s/functions/%s/triggers/%s";
