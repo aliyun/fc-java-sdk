@@ -72,6 +72,16 @@ public class FunctionComputeClient {
         return deleteFunctionResponse;
     }
 
+    public DeleteCustomDomainResponse deleteCustomDomain(DeleteCustomDomainRequest request)
+            throws ClientException, ServerException {
+
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
+        DeleteCustomDomainResponse deleteCustomDomainResponse = new DeleteCustomDomainResponse();
+        deleteCustomDomainResponse.setHeaders(response.getHeaders());
+        deleteCustomDomainResponse.setStatus(response.getStatus());
+        return deleteCustomDomainResponse;
+    }
+
     public GetServiceResponse getService(GetServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
@@ -111,6 +121,19 @@ public class FunctionComputeClient {
         return getFunctionCodeResponse;
     }
 
+    public GetCustomDomainResponse getCustomDomain(GetCustomDomainRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        CustomDomainMetaData customDomainMetadata = GSON.fromJson(
+                new String(response.getContent()), CustomDomainMetaData.class);
+        GetCustomDomainResponse getCustomDomainResponse = new GetCustomDomainResponse();
+        getCustomDomainResponse.setCustomDomainMetadata(customDomainMetadata);
+        getCustomDomainResponse.setHeaders(response.getHeaders());
+        getCustomDomainResponse.setContent(response.getContent());
+        getCustomDomainResponse.setStatus(response.getStatus());
+        return getCustomDomainResponse;
+    }
+
     public CreateServiceResponse createService(CreateServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
@@ -137,19 +160,6 @@ public class FunctionComputeClient {
         return createFunctionResponse;
     }
 
-    public UpdateServiceResponse updateService(UpdateServiceRequest request)
-        throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
-        ServiceMetadata serviceMetadata = GSON.fromJson(
-            new String(response.getContent()), ServiceMetadata.class);
-        UpdateServiceResponse updateServiceResponse = new UpdateServiceResponse();
-        updateServiceResponse.setServiceMetadata(serviceMetadata);
-        updateServiceResponse.setHeaders(response.getHeaders());
-        updateServiceResponse.setContent(response.getContent());
-        updateServiceResponse.setStatus(response.getStatus());
-        return updateServiceResponse;
-    }
-
     public UpdateFunctionResponse updateFunction(UpdateFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
@@ -161,6 +171,45 @@ public class FunctionComputeClient {
         updateFunctionResponse.setContent(response.getContent());
         updateFunctionResponse.setStatus(response.getStatus());
         return updateFunctionResponse;
+    }
+
+    public UpdateServiceResponse updateService(UpdateServiceRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
+        ServiceMetadata serviceMetadata = GSON.fromJson(
+                new String(response.getContent()), ServiceMetadata.class);
+        UpdateServiceResponse updateServiceResponse = new UpdateServiceResponse();
+        updateServiceResponse.setServiceMetadata(serviceMetadata);
+        updateServiceResponse.setHeaders(response.getHeaders());
+        updateServiceResponse.setContent(response.getContent());
+        updateServiceResponse.setStatus(response.getStatus());
+        return updateServiceResponse;
+    }
+
+    public CreateCustomDomainResponse createCustomDomain(CreateCustomDomainRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
+        CustomDomainMetaData customDomainMetaData = GSON.fromJson(
+                new String(response.getContent()), CustomDomainMetaData.class);
+        CreateCustomDomainResponse createCustomDomainResponse = new CreateCustomDomainResponse();
+        createCustomDomainResponse.setCustomDomainMetadata(customDomainMetaData);
+        createCustomDomainResponse.setHeaders(response.getHeaders());
+        createCustomDomainResponse.setContent(response.getContent());
+        createCustomDomainResponse.setStatus(response.getStatus());
+        return createCustomDomainResponse;
+    }
+
+    public UpdateCustomDomainResponse updateCustomDomain(UpdateCustomDomainRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
+        CustomDomainMetaData customDomainMetadata = GSON.fromJson(
+                new String(response.getContent()), CustomDomainMetaData.class);
+        UpdateCustomDomainResponse updateCustomDomainResponse = new UpdateCustomDomainResponse();
+        updateCustomDomainResponse.setCustomDomainMetadata(customDomainMetadata);
+        updateCustomDomainResponse.setHeaders(response.getHeaders());
+        updateCustomDomainResponse.setContent(response.getContent());
+        updateCustomDomainResponse.setStatus(response.getStatus());
+        return updateCustomDomainResponse;
     }
 
     public ListServicesResponse listServices(ListServicesRequest request)
@@ -183,6 +232,17 @@ public class FunctionComputeClient {
         listFunctionsResponse.setContent(response.getContent());
         listFunctionsResponse.setStatus(response.getStatus());
         return listFunctionsResponse;
+    }
+
+    public ListCustomDomainsResponse listCustomDomains(ListCustomDomainsRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        ListCustomDomainsResponse listCustomDomainsResponse = GSON.fromJson(
+                new String(response.getContent()), ListCustomDomainsResponse.class);
+        listCustomDomainsResponse.setHeaders(response.getHeaders());
+        listCustomDomainsResponse.setContent(response.getContent());
+        listCustomDomainsResponse.setStatus(response.getStatus());
+        return listCustomDomainsResponse;
     }
 
     public CreateTriggerResponse createTrigger(CreateTriggerRequest request)
