@@ -5,5 +5,6 @@ package com.aliyuncs.fc.exceptions;
  */
 public class ErrorCodes {
     public static final String SERVICE_NOT_FOUND = "ServiceNotFound";
+    public static final String DOMAIN_NAME_NOT_FOUND = "DomainNameNotFound";
     public static final String INVALID_ARGUMENT = "InvalidArgument";
 }
