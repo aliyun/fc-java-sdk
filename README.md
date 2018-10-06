@@ -31,16 +31,22 @@ Add Maven dependencies into pom.xml
 
 ## Example
 
-Create the code directory and write hello world nodejs code
+Create the code directory and write counter nodejs code
 
 ```bash
 mkdir /tmp/fc_code
-cat <<EOF > /tmp/fc_code/hello_world.js
+cat <<EOF > /tmp/fc_code/counter.js
 'use strict';
 
+var counter = 0;
+exports.initializer = function(ctx, callback) {
+    ++counter;
+    callback(null, "");
+};
+
 exports.handler = function(event, context, callback) {
-  console.log('hello world');
-  callback(null, 'hello world');
+  console.log('counter is %d', counter);
+  callback(null, String(counter));
 };
 EOF
 ```
@@ -88,8 +94,10 @@ public class FcSample {
         cfReq.setFunctionName(FUNCTION_NAME);
         cfReq.setDescription("Function for test");
         cfReq.setMemorySize(128);
-        cfReq.setHandler("hello_world.handler");
         cfReq.setRuntime("nodejs4.4");
+        cfReq.setHandler("counter.handler");
+        // Used in initializer situations.
+        cfReq.setInitializer("counter.initializer");
         Code code = new Code().setDir(CODE_DIR);
         cfReq.setCode(code);
         cfReq.setTimeout(10);
