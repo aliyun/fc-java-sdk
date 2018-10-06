@@ -1765,6 +1765,7 @@ public class FunctionComputeClientTest {
         TriggerMetadata triggerOld = triggers[0];
         assertEquals(triggerName, triggerOld.getTriggerName());
 
+        
         Thread.sleep(300);
 
         Map<String, List<String>> newFilters = new HashMap<String, List<String>>();
