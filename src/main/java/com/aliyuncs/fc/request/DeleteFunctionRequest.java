@@ -16,13 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
+
+import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
 
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.response.DeleteFunctionResponse;
-
 import com.google.common.base.Strings;
 import java.util.Map;
 
@@ -48,13 +50,13 @@ public class DeleteFunctionRequest extends HttpRequest {
         return functionName;
     }
 
+    public String getIfMatch() {
+        return ifMatch;
+    }
+
     public DeleteFunctionRequest setIfMatch(String IfMatch) {
         this.ifMatch = IfMatch;
         return this;
-    }
-
-    public String getIfMatch() {
-        return ifMatch;
     }
 
     public String getPath() {
@@ -68,7 +70,7 @@ public class DeleteFunctionRequest extends HttpRequest {
 
     public Map<String, String> getHeaders() {
         if (!Strings.isNullOrEmpty(ifMatch)) {
-            headers.put("If-Match", ifMatch);
+            headers.put(IF_MATCH_HEADER, ifMatch);
         }
         return headers;
     }
@@ -89,5 +91,4 @@ public class DeleteFunctionRequest extends HttpRequest {
     public Class<DeleteFunctionResponse> getResponseClass() {
         return DeleteFunctionResponse.class;
     }
-
 }

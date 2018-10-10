@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
 
+import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.model.ListRequestUrlHelper;
 import com.aliyuncs.fc.response.ListFunctionsResponse;
-
 import com.google.common.base.Strings;
 import java.util.Map;
 
@@ -37,9 +37,14 @@ public class ListFunctionsRequest extends HttpRequest {
     private String startKey;
     private String nextToken;
     private Integer limit;
+    private String qualifier;
 
     public ListFunctionsRequest(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public String getPrefix() {
+        return prefix;
     }
 
     public ListFunctionsRequest setPrefix(String prefix) {
@@ -47,8 +52,8 @@ public class ListFunctionsRequest extends HttpRequest {
         return this;
     }
 
-    public String getPrefix() {
-        return prefix;
+    public String getStartKey() {
+        return startKey;
     }
 
     public ListFunctionsRequest setStartKey(String startKey) {
@@ -56,8 +61,8 @@ public class ListFunctionsRequest extends HttpRequest {
         return this;
     }
 
-    public String getStartKey() {
-        return startKey;
+    public String getNextToken() {
+        return nextToken;
     }
 
     public ListFunctionsRequest setNextToken(String nextToken) {
@@ -65,8 +70,8 @@ public class ListFunctionsRequest extends HttpRequest {
         return this;
     }
 
-    public String getNextToken() {
-        return nextToken;
+    public Integer getLimit() {
+        return limit;
     }
 
     public ListFunctionsRequest setLimit(Integer limit) {
@@ -74,12 +79,23 @@ public class ListFunctionsRequest extends HttpRequest {
         return this;
     }
 
-    public Integer getLimit() {
-        return limit;
+    public String getQualifier() {
+        return qualifier;
+    }
+
+    public ListFunctionsRequest setQualifier(String qualifier) {
+        this.qualifier = qualifier;
+        return this;
     }
 
     public String getPath() {
-        return String.format(Const.FUNCTION_PATH, Const.API_VERSION, this.serviceName);
+        if (Strings.isNullOrEmpty(qualifier)) {
+            return String.format(Const.FUNCTION_PATH, Const.API_VERSION, this.serviceName);
+        } else {
+            return String
+                .format(Const.FUNCTION_WITH_QUALIFIER_PATH, Const.API_VERSION, this.serviceName,
+                    this.qualifier);
+        }
     }
 
     public Map<String, String> getQueryParams() {
@@ -103,5 +119,4 @@ public class ListFunctionsRequest extends HttpRequest {
     public Class<ListFunctionsResponse> getResponseClass() {
         return ListFunctionsResponse.class;
     }
-
 }

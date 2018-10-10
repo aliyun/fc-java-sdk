@@ -16,7 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
+
+import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
 
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
@@ -60,7 +63,7 @@ public class DeleteServiceRequest extends HttpRequest {
 
     public Map<String, String> getHeaders() {
         if (!Strings.isNullOrEmpty(ifMatch)) {
-            headers.put("If-Match", ifMatch);
+            headers.put(IF_MATCH_HEADER, ifMatch);
         }
         return headers;
     }
