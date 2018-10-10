@@ -22,53 +22,65 @@ package com.aliyuncs.fc.request;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.response.GetFunctionResponse;
+import com.aliyuncs.fc.model.ListRequestUrlHelper;
+import com.aliyuncs.fc.response.ListVersionsResponse;
 import com.google.common.base.Strings;
 import java.util.Map;
 
-/**
- * TODO: add javadoc
- */
-public class GetFunctionRequest extends HttpRequest {
+public class ListVersionsRequest extends HttpRequest {
 
     private final String serviceName;
-    private final String functionName;
-    private String qualifier;
+    private String startKey;
+    private String nextToken;
+    private Integer limit;
+    private String direction;
 
-    public GetFunctionRequest(String serviceName, String functionName) {
+    public ListVersionsRequest(String serviceName) {
         this.serviceName = serviceName;
-        this.functionName = functionName;
     }
 
     public String getServiceName() {
         return serviceName;
     }
 
-    public String getFunctionName() {
-        return functionName;
+    public String getStartKey() {
+        return startKey;
     }
 
-    public String getQualifier() {
-        return qualifier;
-    }
-
-    public GetFunctionRequest setQualifier(String qualifier) {
-        this.qualifier = qualifier;
+    public ListVersionsRequest setStartKey(String startKey) {
+        this.startKey = startKey;
         return this;
     }
 
-    public String getPath() {
-        if (Strings.isNullOrEmpty(qualifier)) {
-            return String.format(Const.SINGLE_FUNCTION_PATH, Const.API_VERSION, this.serviceName,
-                this.functionName);
-        } else {
-            return String.format(Const.SINGLE_FUNCTION_WITH_QUALIFIER_PATH, Const.API_VERSION,
-                this.serviceName, this.qualifier, this.functionName);
-        }
+    public String getNextToken() {
+        return nextToken;
+    }
+
+    public ListVersionsRequest setNextToken(String nextToken) {
+        this.nextToken = nextToken;
+        return this;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public ListVersionsRequest setLimit(Integer limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    public String getDirection() {
+        return direction;
+    }
+
+    public ListVersionsRequest setDirection(String direction) {
+        this.direction = direction;
+        return this;
     }
 
     public Map<String, String> getQueryParams() {
-        return null;
+        return ListRequestUrlHelper.buildListVersionParams(startKey, nextToken, limit, direction);
     }
 
     public byte[] getPayload() {
@@ -76,16 +88,17 @@ public class GetFunctionRequest extends HttpRequest {
     }
 
     public void validate() throws ClientException {
-        if (Strings.isNullOrEmpty(serviceName)) {
+        if (Strings.isNullOrEmpty(this.serviceName)) {
             throw new ClientException("Service name cannot be blank");
         }
-        if (Strings.isNullOrEmpty(functionName)) {
-            throw new ClientException("Function name cannot be blank");
-        }
     }
 
-    public Class<GetFunctionResponse> getResponseClass() {
-        return GetFunctionResponse.class;
+    public String getPath() {
+        return String
+            .format(Const.SERVICE_VERSION_PATH, Const.API_VERSION, this.serviceName);
     }
 
+    public Class<ListVersionsResponse> getResponseClass() {
+        return ListVersionsResponse.class;
+    }
 }

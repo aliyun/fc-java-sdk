@@ -22,52 +22,44 @@ package com.aliyuncs.fc.request;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.response.GetServiceResponse;
+import com.aliyuncs.fc.response.GetAliasResponse;
 import com.google.common.base.Strings;
 
-/**
- * TODO: add javadoc
- */
-public class GetServiceRequest extends HttpRequest {
+public class GetAliasRequest extends HttpRequest {
 
-    private final String serviceName;
-    private String qualifier;
+    private final transient String serviceName;
+    private final transient String aliasName;
 
-    public GetServiceRequest(String serviceName) {
+    public GetAliasRequest(String serviceName, String aliasName) {
         this.serviceName = serviceName;
+        this.aliasName = aliasName;
     }
 
     public String getServiceName() {
         return serviceName;
     }
 
-    public String getQualifier() {
-        return qualifier;
+    public String getAliasName() {
+        return aliasName;
     }
 
-    public GetServiceRequest setQualifier(String qualifier) {
-        this.qualifier = qualifier;
-        return this;
-    }
-
+    @Override
     public String getPath() {
-        if (Strings.isNullOrEmpty(qualifier)) {
-            return String.format(Const.SINGLE_SERVICE_PATH, Const.API_VERSION, serviceName);
-        } else {
-            return String
-                .format(Const.SINGLE_SERVICE_WITH_QUALIFIER_PATH, Const.API_VERSION, serviceName,
-                    qualifier);
-        }
+        return String
+            .format(Const.SINGLE_ALIAS_PATH, Const.API_VERSION, this.serviceName, this.aliasName);
     }
 
+    @Override
     public void validate() throws ClientException {
         if (Strings.isNullOrEmpty(serviceName)) {
             throw new ClientException("Service name cannot be blank");
         }
+        if (Strings.isNullOrEmpty(aliasName)) {
+            throw new ClientException("Alias name cannot be blank");
+        }
     }
 
-    public Class<GetServiceResponse> getResponseClass() {
-        return GetServiceResponse.class;
+    public Class<GetAliasResponse> getResponseClass() {
+        return GetAliasResponse.class;
     }
-
 }

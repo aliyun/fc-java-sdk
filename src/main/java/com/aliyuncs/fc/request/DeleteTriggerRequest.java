@@ -16,7 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
+import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
+
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
@@ -74,7 +77,7 @@ public class DeleteTriggerRequest extends HttpRequest {
 
     public Map<String, String> getHeaders() {
         if (!Strings.isNullOrEmpty(ifMatch)) {
-            headers.put("If-Match", this.ifMatch);
+            headers.put(IF_MATCH_HEADER, this.ifMatch);
         }
         return headers;
     }

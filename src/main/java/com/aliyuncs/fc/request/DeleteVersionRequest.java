@@ -22,52 +22,42 @@ package com.aliyuncs.fc.request;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.response.GetServiceResponse;
+import com.aliyuncs.fc.response.DeleteFunctionResponse;
 import com.google.common.base.Strings;
 
-/**
- * TODO: add javadoc
- */
-public class GetServiceRequest extends HttpRequest {
+public class DeleteVersionRequest extends HttpRequest {
 
     private final String serviceName;
-    private String qualifier;
+    private final Integer versionID;
 
-    public GetServiceRequest(String serviceName) {
+    public DeleteVersionRequest(String serviceName, Integer versionID) {
         this.serviceName = serviceName;
+        this.versionID = versionID;
     }
 
     public String getServiceName() {
         return serviceName;
     }
 
-    public String getQualifier() {
-        return qualifier;
-    }
-
-    public GetServiceRequest setQualifier(String qualifier) {
-        this.qualifier = qualifier;
-        return this;
+    public Integer getVersionID() {
+        return versionID;
     }
 
     public String getPath() {
-        if (Strings.isNullOrEmpty(qualifier)) {
-            return String.format(Const.SINGLE_SERVICE_PATH, Const.API_VERSION, serviceName);
-        } else {
-            return String
-                .format(Const.SINGLE_SERVICE_WITH_QUALIFIER_PATH, Const.API_VERSION, serviceName,
-                    qualifier);
-        }
+        return String.format(Const.SINGLE_VERSION_PATH, Const.API_VERSION, this.serviceName,
+            this.versionID);
     }
 
     public void validate() throws ClientException {
         if (Strings.isNullOrEmpty(serviceName)) {
             throw new ClientException("Service name cannot be blank");
         }
+        if (versionID <= 0) {
+            throw new ClientException("Version ID has to be positive");
+        }
     }
 
-    public Class<GetServiceResponse> getResponseClass() {
-        return GetServiceResponse.class;
+    public Class<DeleteFunctionResponse> getResponseClass() {
+        return DeleteFunctionResponse.class;
     }
-
 }

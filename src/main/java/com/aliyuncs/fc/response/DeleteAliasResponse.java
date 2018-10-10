@@ -17,28 +17,10 @@
  * under the License.
  */
 
-package com.aliyuncs.fc.request;
+package com.aliyuncs.fc.response;
 
-import com.aliyuncs.fc.constants.Const;
-import com.google.common.base.Strings;
+import com.aliyuncs.fc.http.HttpResponse;
 
-/**
- * TODO: add javadoc
- */
-public class GetFunctionCodeRequest extends GetFunctionRequest {
+public class DeleteAliasResponse extends HttpResponse {
 
-    public GetFunctionCodeRequest(String serviceName, String functionName) {
-        super(serviceName, functionName);
-    }
-
-    public String getPath() {
-        if (Strings.isNullOrEmpty(getQualifier())) {
-            return String.format(Const.FUNCTION_CODE_PATH, Const.API_VERSION, getServiceName(),
-                getFunctionName());
-        }
-        else {
-            return String.format(Const.FUNCTION_CODE_WITH_QUALIFIER_PATH, Const.API_VERSION,
-                getServiceName(), getQualifier(), getFunctionName());
-        }
-    }
 }

@@ -18,6 +18,7 @@
  */
 package com.aliyuncs.fc.http;
 
+import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -27,19 +28,17 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.aliyuncs.fc.constants.Const;
-
 public abstract class HttpRequest {
 
     protected Map<String, String> headers;
-    public abstract String getPath();
-    public abstract Map<String, String> getQueryParams();
-    public abstract byte[] getPayload();
-    public abstract void validate() throws ClientException;
 
     public HttpRequest() {
         headers = new HashMap<String, String>();
     }
+
+    public abstract String getPath();
+
+    public abstract void validate() throws ClientException;
 
     public HttpURLConnection getHttpConnection(String urls, String method)
         throws IOException {
@@ -69,6 +68,14 @@ public abstract class HttpRequest {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(key), "Header key cannot be blank");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(value), "Header value cannot be blank");
         headers.put(key, value);
+    }
+
+    public byte[] getPayload() {
+        return null;
+    }
+
+    public Map<String, String> getQueryParams() {
+        return null;
     }
 
     public Map<String, String> getHeaders() {
