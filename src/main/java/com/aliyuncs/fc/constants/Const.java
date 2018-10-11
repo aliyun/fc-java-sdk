@@ -33,9 +33,20 @@ public class Const {
     public final static String INVOKE_FUNCTION_WITH_QUALIFIER_PATH =
         SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/invocations";
 
+    /**
+     * 3 seconds
+     *
+     * Used for http request connect timeout
+     */
+    public final static int CONNECT_TIMEOUT = 60 * 1000;
 
-    public final static int CONNECT_TIMEOUT = 1000;
-    public final static int READ_TIMEOUT = 100000;
+    /**
+     * 10 minutes 3 seconds
+     *
+     * Used for http request read timeout
+     */
+    public final static int READ_TIMEOUT = 10 * 60 * 1000 + 3000;
+
     public final static String API_VERSION = "2016-08-15";
     public final static String INVOCATION_TYPE_ASYNC = "Async";
     public final static String INVOCATION_TYPE_HTTP = "http";

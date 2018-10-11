@@ -1,5 +1,6 @@
 package com.aliyuncs.fc.config;
 
+import com.aliyuncs.fc.constants.Const;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.io.IOException;
@@ -21,8 +22,9 @@ public class Config {
     private Boolean isDebug = false;
     private String accountId;
     private String uid;
-    private int connectTimeoutMillis = 60000;
-    private int readTimeoutMillis = 60000;
+
+    private int connectTimeoutMillis = Const.READ_TIMEOUT;
+    private int readTimeoutMillis = Const.READ_TIMEOUT;
 
     private String host;
     private String userAgent;
