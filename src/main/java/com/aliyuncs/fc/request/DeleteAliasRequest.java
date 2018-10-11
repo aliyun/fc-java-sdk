@@ -19,55 +19,66 @@
 
 package com.aliyuncs.fc.request;
 
+import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
+
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.response.GetServiceResponse;
+import com.aliyuncs.fc.response.DeleteAliasResponse;
 import com.google.common.base.Strings;
+import java.util.Map;
 
-/**
- * TODO: add javadoc
- */
-public class GetServiceRequest extends HttpRequest {
+public class DeleteAliasRequest extends HttpRequest {
 
-    private final String serviceName;
-    private String qualifier;
+    private final transient String serviceName;
+    private final transient String aliasName;
+    private transient String ifMatch;
 
-    public GetServiceRequest(String serviceName) {
+    public DeleteAliasRequest(String serviceName, String aliasName) {
         this.serviceName = serviceName;
+        this.aliasName = aliasName;
     }
 
     public String getServiceName() {
         return serviceName;
     }
 
-    public String getQualifier() {
-        return qualifier;
+    public String getAliasName() {
+        return aliasName;
     }
 
-    public GetServiceRequest setQualifier(String qualifier) {
-        this.qualifier = qualifier;
-        return this;
+    public String getIfMatch() {
+        return ifMatch;
     }
 
+    public void setIfMatch(String ifMatch) {
+        this.ifMatch = ifMatch;
+    }
+
+    @Override
     public String getPath() {
-        if (Strings.isNullOrEmpty(qualifier)) {
-            return String.format(Const.SINGLE_SERVICE_PATH, Const.API_VERSION, serviceName);
-        } else {
-            return String
-                .format(Const.SINGLE_SERVICE_WITH_QUALIFIER_PATH, Const.API_VERSION, serviceName,
-                    qualifier);
-        }
+        return String
+            .format(Const.SINGLE_ALIAS_PATH, Const.API_VERSION, this.serviceName, this.aliasName);
     }
 
+    public Map<String, String> getHeaders() {
+        if (this.ifMatch != null && this.ifMatch.length() < 0) {
+            headers.put(IF_MATCH_HEADER, this.ifMatch);
+        }
+        return headers;
+    }
+
+    @Override
     public void validate() throws ClientException {
         if (Strings.isNullOrEmpty(serviceName)) {
             throw new ClientException("Service name cannot be blank");
         }
+        if (Strings.isNullOrEmpty(aliasName)) {
+            throw new ClientException("Alias name cannot be blank");
+        }
     }
 
-    public Class<GetServiceResponse> getResponseClass() {
-        return GetServiceResponse.class;
+    public Class<DeleteAliasResponse> getResponseClass() {
+        return DeleteAliasResponse.class;
     }
-
 }

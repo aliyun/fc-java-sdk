@@ -17,28 +17,35 @@
  * under the License.
  */
 
-package com.aliyuncs.fc.request;
+package com.aliyuncs.fc.response;
 
-import com.aliyuncs.fc.constants.Const;
-import com.google.common.base.Strings;
+import com.aliyuncs.fc.http.HttpResponse;
+import com.aliyuncs.fc.model.AliasMetaData;
+import com.google.gson.annotations.SerializedName;
 
-/**
- * TODO: add javadoc
- */
-public class GetFunctionCodeRequest extends GetFunctionRequest {
+public class ListAliasesResponse extends HttpResponse {
 
-    public GetFunctionCodeRequest(String serviceName, String functionName) {
-        super(serviceName, functionName);
+    @SerializedName("aliases")
+    private AliasMetaData[] aliases;
+
+    @SerializedName("nextToken")
+    private String nextToken;
+
+    public AliasMetaData[] getAliases() {
+        return aliases;
     }
 
-    public String getPath() {
-        if (Strings.isNullOrEmpty(getQualifier())) {
-            return String.format(Const.FUNCTION_CODE_PATH, Const.API_VERSION, getServiceName(),
-                getFunctionName());
-        }
-        else {
-            return String.format(Const.FUNCTION_CODE_WITH_QUALIFIER_PATH, Const.API_VERSION,
-                getServiceName(), getQualifier(), getFunctionName());
-        }
+    public ListAliasesResponse setAliases(AliasMetaData[] aliases) {
+        this.aliases = aliases;
+        return this;
+    }
+
+    public String getNextToken() {
+        return nextToken;
+    }
+
+    public ListAliasesResponse setNextToken(String nextToken) {
+        this.nextToken = nextToken;
+        return this;
     }
 }

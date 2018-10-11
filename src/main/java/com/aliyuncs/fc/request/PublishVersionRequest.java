@@ -19,82 +19,82 @@
 
 package com.aliyuncs.fc.request;
 
+import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
+
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.model.RouteConfig;
-import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
+import com.aliyuncs.fc.response.PublishVersionResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
 
-public class UpdateCustomDomainRequest extends HttpRequest {
+public class PublishVersionRequest extends HttpRequest {
 
-    private transient final String domainName;
+    private transient final String serviceName;
+    private transient String ifMatch;
 
-    @SerializedName("protocol")
-    private String protocol;
+    @SerializedName("description")
+    private String description;
 
-    @SerializedName("routeConfig")
-    private RouteConfig routeConfig;
-
-    public UpdateCustomDomainRequest(String domainName, String protocol, RouteConfig routeConfig) {
-        this.domainName = domainName;
-        this.protocol = protocol;
-        this.routeConfig = routeConfig;
+    public PublishVersionRequest(String serviceName) {
+        this.serviceName = serviceName;
     }
 
-    public UpdateCustomDomainRequest(String domainName) {
-        this.domainName = domainName;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public String getDomainName() {
-        return domainName;
+    public String getDescription() {
+        return description;
     }
 
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public UpdateCustomDomainRequest setProtocol(String protocol) {
-        this.protocol = protocol;
+    public PublishVersionRequest setDescription(String description) {
+        this.description = description;
         return this;
     }
 
-    public RouteConfig getRouteConfig() {
-        return routeConfig;
+    public String getIfMatch() {
+        return ifMatch;
     }
 
-    public UpdateCustomDomainRequest setRouteConfig(RouteConfig routeConfig) {
-        this.routeConfig = routeConfig;
+    public PublishVersionRequest setIfMatch(String ifMatch) {
+        this.ifMatch = ifMatch;
         return this;
     }
 
+    @Override
+    public String getPath() {
+        return String.format(Const.SERVICE_VERSION_PATH, Const.API_VERSION, this.serviceName);
+    }
+
+    public Map<String, String> getHeaders() {
+        if (!Strings.isNullOrEmpty(ifMatch)) {
+            headers.put(IF_MATCH_HEADER, ifMatch);
+        }
+        return headers;
+    }
+
+    @Override
     public Map<String, String> getQueryParams() {
         return null;
     }
 
-    public String getPath() {
-        return String.format(Const.SINGLE_CUSTOM_DOMAIN_PATH, Const.API_VERSION, this.domainName);
-    }
-
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
+    @Override
     public byte[] getPayload() {
         return ParameterHelper.ObjectToJson(this).getBytes();
     }
 
+    @Override
     public void validate() throws ClientException {
-        if (Strings.isNullOrEmpty(domainName)) {
-            throw new ClientException("Domain name cannot be blank");
+        if (Strings.isNullOrEmpty(serviceName)) {
+            throw new ClientException("Service name cannot be blank");
         }
     }
 
-    public Class<UpdateCustomDomainResponse> getResponseClass() {
-        return UpdateCustomDomainResponse.class;
+    public Class<PublishVersionResponse> getResponseClass() {
+        return PublishVersionResponse.class;
     }
 
 }

@@ -16,7 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
+
+import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
 
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
@@ -24,7 +27,6 @@ import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.Code;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
-
 import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
@@ -74,17 +76,12 @@ public class UpdateFunctionRequest extends HttpRequest {
         return functionName;
     }
 
-    public UpdateFunctionRequest setDescription(String description) {
-        this.description = description;
-        return this;
-    }
-
     public String getDescription() {
         return description;
     }
 
-    public UpdateFunctionRequest setRuntime(String runtime) {
-        this.runtime = runtime;
+    public UpdateFunctionRequest setDescription(String description) {
+        this.description = description;
         return this;
     }
 
@@ -92,8 +89,8 @@ public class UpdateFunctionRequest extends HttpRequest {
         return runtime;
     }
 
-    public UpdateFunctionRequest setHandler(String handler) {
-        this.handler = handler;
+    public UpdateFunctionRequest setRuntime(String runtime) {
+        this.runtime = runtime;
         return this;
     }
 
@@ -101,8 +98,8 @@ public class UpdateFunctionRequest extends HttpRequest {
         return handler;
     }
 
-    public UpdateFunctionRequest setTimeout(Integer timeout) {
-        this.timeout = timeout;
+    public UpdateFunctionRequest setHandler(String handler) {
+        this.handler = handler;
         return this;
     }
 
@@ -110,8 +107,8 @@ public class UpdateFunctionRequest extends HttpRequest {
         return timeout;
     }
 
-    public UpdateFunctionRequest setMemorySize(Integer memorySize) {
-        this.memorySize = memorySize;
+    public UpdateFunctionRequest setTimeout(Integer timeout) {
+        this.timeout = timeout;
         return this;
     }
 
@@ -119,8 +116,8 @@ public class UpdateFunctionRequest extends HttpRequest {
         return memorySize;
     }
 
-    public UpdateFunctionRequest setCode(Code code) {
-        this.code = code;
+    public UpdateFunctionRequest setMemorySize(Integer memorySize) {
+        this.memorySize = memorySize;
         return this;
     }
 
@@ -128,8 +125,8 @@ public class UpdateFunctionRequest extends HttpRequest {
         return code;
     }
 
-    public UpdateFunctionRequest setIfMatch(String ifMatch) {
-        this.ifMatch = ifMatch;
+    public UpdateFunctionRequest setCode(Code code) {
+        this.code = code;
         return this;
     }
 
@@ -145,6 +142,11 @@ public class UpdateFunctionRequest extends HttpRequest {
         return ifMatch;
     }
 
+    public UpdateFunctionRequest setIfMatch(String ifMatch) {
+        this.ifMatch = ifMatch;
+        return this;
+    }
+
     public String getPath() {
         return String.format(Const.SINGLE_FUNCTION_PATH, Const.API_VERSION, this.serviceName,
             this.functionName);
@@ -152,7 +154,7 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     public Map<String, String> getHeaders() {
         if (this.ifMatch != null && this.ifMatch.length() < 0) {
-            headers.put("If-Match", this.ifMatch);
+            headers.put(IF_MATCH_HEADER, this.ifMatch);
         }
         return headers;
     }
