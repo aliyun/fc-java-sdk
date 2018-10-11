@@ -439,12 +439,12 @@ public class FunctionComputeClient {
     public ListAliasesResponse listAliases(ListAliasesRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListAliasesResponse listAliassResponse = GSON.fromJson(
+        ListAliasesResponse listAliasesResponse = GSON.fromJson(
             new String(response.getContent()), ListAliasesResponse.class);
-        listAliassResponse.setHeaders(response.getHeaders());
-        listAliassResponse.setContent(response.getContent());
-        listAliassResponse.setStatus(response.getStatus());
-        return listAliassResponse;
+        listAliasesResponse.setHeaders(response.getHeaders());
+        listAliasesResponse.setContent(response.getContent());
+        listAliasesResponse.setStatus(response.getStatus());
+        return listAliasesResponse;
     }
 
     public PublishVersionResponse publishVersion(PublishVersionRequest request)
@@ -452,11 +452,11 @@ public class FunctionComputeClient {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
         VersionMetaData versionMetaData = GSON.fromJson(
             new String(response.getContent()), VersionMetaData.class);
-        PublishVersionResponse createVersionResponse = new PublishVersionResponse(versionMetaData);
-        createVersionResponse.setHeaders(response.getHeaders());
-        createVersionResponse.setContent(response.getContent());
-        createVersionResponse.setStatus(response.getStatus());
-        return createVersionResponse;
+        PublishVersionResponse publishVersionResponse = new PublishVersionResponse(versionMetaData);
+        publishVersionResponse.setHeaders(response.getHeaders());
+        publishVersionResponse.setContent(response.getContent());
+        publishVersionResponse.setStatus(response.getStatus());
+        return publishVersionResponse;
     }
 
     public DeleteVersionResponse deleteVersion(DeleteVersionRequest request)

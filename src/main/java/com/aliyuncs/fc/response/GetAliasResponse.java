@@ -46,7 +46,7 @@ public class GetAliasResponse extends HttpResponse {
         return aliasMetaData.getDescription();
     }
 
-    public Integer getVersionId() {
+    public String getVersionId() {
         Preconditions.checkArgument(aliasMetaData != null);
         return aliasMetaData.getVersionId();
     }
@@ -56,7 +56,7 @@ public class GetAliasResponse extends HttpResponse {
         return aliasMetaData.getAliasName();
     }
 
-    public Map<Integer, Float> getAdditionalVersionWeight() {
+    public Map<String, Float> getAdditionalVersionWeight() {
         Preconditions.checkArgument(aliasMetaData != null);
         return aliasMetaData.getAdditionalVersionWeight();
     }

@@ -30,13 +30,13 @@ public class AliasMetaData {
     private String description;
 
     @SerializedName("versionId")
-    private Integer versionId;
+    private String versionId;
 
     @SerializedName("additionalVersionWeight")
-    private Map<Integer, Float> additionalVersionWeight;
+    private Map<String, Float> additionalVersionWeight;
 
-    public AliasMetaData(String description, String aliasName, Integer versionId,
-        Map<Integer, Float> additionalVersionWeight) {
+    public AliasMetaData(String description, String aliasName, String versionId,
+        Map<String, Float> additionalVersionWeight) {
         this.description = description;
         this.versionId = versionId;
         this.aliasName = aliasName;
@@ -61,21 +61,21 @@ public class AliasMetaData {
         return this;
     }
 
-    public Integer getVersionId() {
+    public String getVersionId() {
         return versionId;
     }
 
-    public AliasMetaData setVersionId(Integer versionId) {
+    public AliasMetaData setVersionId(String versionId) {
         this.versionId = versionId;
         return this;
     }
 
-    public Map<Integer, Float> getAdditionalVersionWeight() {
+    public Map<String, Float> getAdditionalVersionWeight() {
         return additionalVersionWeight;
     }
 
     public AliasMetaData setAdditionalVersionWeight(
-        Map<Integer, Float> additionalVersionWeight) {
+        Map<String, Float> additionalVersionWeight) {
         this.additionalVersionWeight = additionalVersionWeight;
         return this;
     }

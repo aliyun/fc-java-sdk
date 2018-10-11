@@ -51,6 +51,9 @@ public class CreateTriggerRequest extends HttpRequest {
     @SerializedName("triggerConfig")
     private Object triggerConfig;
 
+    @SerializedName("triggerConfig")
+    private String qualifier;
+
     public CreateTriggerRequest(String serviceName, String functionName) {
         this.serviceName = serviceName;
         this.functionName = functionName;
@@ -107,6 +110,14 @@ public class CreateTriggerRequest extends HttpRequest {
 
     public Object getTriggerConfig() {
         return triggerConfig;
+    }
+
+    public String getQualifier() {
+        return qualifier;
+    }
+
+    public void setQualifier(String qualifier) {
+        this.qualifier = qualifier;
     }
 
     public String getPath() {

@@ -28,9 +28,9 @@ import com.google.common.base.Strings;
 public class DeleteVersionRequest extends HttpRequest {
 
     private final String serviceName;
-    private final Integer versionID;
+    private final String versionID;
 
-    public DeleteVersionRequest(String serviceName, Integer versionID) {
+    public DeleteVersionRequest(String serviceName, String versionID) {
         this.serviceName = serviceName;
         this.versionID = versionID;
     }
@@ -39,7 +39,7 @@ public class DeleteVersionRequest extends HttpRequest {
         return serviceName;
     }
 
-    public Integer getVersionID() {
+    public String getVersionID() {
         return versionID;
     }
 
@@ -52,8 +52,8 @@ public class DeleteVersionRequest extends HttpRequest {
         if (Strings.isNullOrEmpty(serviceName)) {
             throw new ClientException("Service name cannot be blank");
         }
-        if (versionID <= 0) {
-            throw new ClientException("Version ID has to be positive");
+        if (Strings.isNullOrEmpty(versionID)) {
+            throw new ClientException("Service name cannot be blank");
         }
     }
 

@@ -43,7 +43,7 @@ public class PublishVersionResponse extends HttpResponse {
         return this;
     }
 
-    public Integer getVersionId() {
+    public String getVersionId() {
         Preconditions.checkArgument(versionMetadata != null);
         return versionMetadata.getVersionId();
     }
