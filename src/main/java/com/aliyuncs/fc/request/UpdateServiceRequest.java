@@ -16,7 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
+
+import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
 
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
@@ -26,7 +29,6 @@ import com.aliyuncs.fc.model.NasConfig;
 import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
-
 import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
@@ -62,17 +64,21 @@ public class UpdateServiceRequest extends HttpRequest {
         this.serviceName = serviceName;
     }
 
+    public String getIfMatch() {
+        return serviceName;
+    }
+
     public UpdateServiceRequest setIfMatch(String ifMatch) {
         this.ifMatch = ifMatch;
         return this;
     }
 
-    public String getIfMatch() {
+    public String getServiceName() {
         return serviceName;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getDescription() {
+        return description;
     }
 
     public UpdateServiceRequest setDescription(String description) {
@@ -80,12 +86,8 @@ public class UpdateServiceRequest extends HttpRequest {
         return this;
     }
 
-    public void setInternetAccess(Boolean internetAccess) {
-        this.internetAccess = internetAccess;
-    }
-
-    public String getDescription() {
-        return description;
+    public String getRole() {
+        return role;
     }
 
     public UpdateServiceRequest setRole(String role) {
@@ -93,21 +95,13 @@ public class UpdateServiceRequest extends HttpRequest {
         return this;
     }
 
-    public String getRole() {
-        return role;
+    public LogConfig getLogConfig() {
+        return logConfig;
     }
 
     public UpdateServiceRequest setLogConfig(LogConfig logConfig) {
         this.logConfig = logConfig;
         return this;
-    }
-
-    public void setVpcConfig(VpcConfig vpcConfig) {
-        this.vpcConfig = vpcConfig;
-    }
-
-    public LogConfig getLogConfig() {
-        return logConfig;
     }
 
     public Map<String, String> getQueryParams() {
@@ -120,7 +114,7 @@ public class UpdateServiceRequest extends HttpRequest {
 
     public Map<String, String> getHeaders() {
         if (this.ifMatch != null && this.ifMatch.length() > 0) {
-            headers.put("If-Match", this.getIfMatch());
+            headers.put(IF_MATCH_HEADER, this.getIfMatch());
         }
         return headers;
     }
@@ -143,8 +137,16 @@ public class UpdateServiceRequest extends HttpRequest {
         return vpcConfig;
     }
 
+    public void setVpcConfig(VpcConfig vpcConfig) {
+        this.vpcConfig = vpcConfig;
+    }
+
     public Boolean getInternetAccess() {
         return internetAccess;
+    }
+
+    public void setInternetAccess(Boolean internetAccess) {
+        this.internetAccess = internetAccess;
     }
 
     public NasConfig getNasConfig() {

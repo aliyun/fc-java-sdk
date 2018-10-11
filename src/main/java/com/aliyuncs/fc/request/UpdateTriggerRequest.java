@@ -16,14 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
 
+import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
+
+import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.response.UpdateTriggerResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
-
 import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
@@ -71,22 +73,22 @@ public class UpdateTriggerRequest extends HttpRequest {
         return triggerName;
     }
 
+    public Object getTriggerConfig() {
+        return triggerConfig;
+    }
+
     public UpdateTriggerRequest setTriggerConfig(Object triggerConfig) {
         this.triggerConfig = triggerConfig;
         return this;
     }
 
-    public Object getTriggerConfig() {
-        return triggerConfig;
+    public String getInvocationRole() {
+        return invocationRole;
     }
 
     public UpdateTriggerRequest setInvocationRole(String invocationRole) {
         this.invocationRole = invocationRole;
         return this;
-    }
-
-    public String getInvocationRole() {
-        return invocationRole;
     }
 
     public String getPath() {
@@ -96,7 +98,7 @@ public class UpdateTriggerRequest extends HttpRequest {
 
     public Map<String, String> getHeaders() {
         if (!Strings.isNullOrEmpty(ifMatch)) {
-            headers.put("If-Match", ifMatch);
+            headers.put(IF_MATCH_HEADER, ifMatch);
         }
         return headers;
     }

@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
 
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.response.GetFunctionResponse;
-
 import com.google.common.base.Strings;
 import java.util.Map;
 
@@ -33,6 +33,7 @@ public class GetFunctionRequest extends HttpRequest {
 
     private final String serviceName;
     private final String functionName;
+    private String qualifier;
 
     public GetFunctionRequest(String serviceName, String functionName) {
         this.serviceName = serviceName;
@@ -47,9 +48,23 @@ public class GetFunctionRequest extends HttpRequest {
         return functionName;
     }
 
+    public String getQualifier() {
+        return qualifier;
+    }
+
+    public GetFunctionRequest setQualifier(String qualifier) {
+        this.qualifier = qualifier;
+        return this;
+    }
+
     public String getPath() {
-        return String.format(Const.SINGLE_FUNCTION_PATH, Const.API_VERSION, this.serviceName,
-            this.functionName);
+        if (Strings.isNullOrEmpty(qualifier)) {
+            return String.format(Const.SINGLE_FUNCTION_PATH, Const.API_VERSION, this.serviceName,
+                this.functionName);
+        } else {
+            return String.format(Const.SINGLE_FUNCTION_WITH_QUALIFIER_PATH, Const.API_VERSION,
+                this.serviceName, this.qualifier, this.functionName);
+        }
     }
 
     public Map<String, String> getQueryParams() {

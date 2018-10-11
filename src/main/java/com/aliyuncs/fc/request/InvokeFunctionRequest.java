@@ -16,18 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.aliyuncs.fc.request;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
 
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.constants.HeaderKeys;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.response.InvokeFunctionResponse;
-
+import com.google.common.base.Strings;
 import java.util.Map;
-
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.lang.String.format;
 
 /**
  * TODO: add javadoc
@@ -38,6 +39,7 @@ public class InvokeFunctionRequest extends HttpRequest {
     private final String functionName;
     private String invocationType;
     private String logType;
+    private String qualifier;
 
     private byte[] payload;
 
@@ -54,17 +56,12 @@ public class InvokeFunctionRequest extends HttpRequest {
         return functionName;
     }
 
-    public InvokeFunctionRequest setInvocationType(String invocationType) {
-        this.invocationType = invocationType;
-        return this;
-    }
-
     public String getInvocationType() {
         return invocationType;
     }
 
-    public InvokeFunctionRequest setLogType(String logType) {
-        this.logType = logType;
+    public InvokeFunctionRequest setInvocationType(String invocationType) {
+        this.invocationType = invocationType;
         return this;
     }
 
@@ -72,8 +69,17 @@ public class InvokeFunctionRequest extends HttpRequest {
         return logType;
     }
 
-    public InvokeFunctionRequest setPayload(byte[] payload) {
-        this.payload = payload;
+    public InvokeFunctionRequest setLogType(String logType) {
+        this.logType = logType;
+        return this;
+    }
+
+    public String getQualifier() {
+        return qualifier;
+    }
+
+    public InvokeFunctionRequest setQualifier(String qualifier) {
+        this.qualifier = qualifier;
         return this;
     }
 
@@ -82,11 +88,17 @@ public class InvokeFunctionRequest extends HttpRequest {
     }
 
     public String getPath() {
-        return format(Const.INVOKE_FUNCTION_PATH, Const.API_VERSION, serviceName, functionName);
+        if (Strings.isNullOrEmpty(qualifier)) {
+            return format(Const.INVOKE_FUNCTION_PATH, Const.API_VERSION, serviceName, functionName);
+        } else {
+            return format(Const.INVOKE_FUNCTION_WITH_QUALIFIER_PATH, Const.API_VERSION, serviceName,
+                qualifier, functionName);
+        }
     }
 
     public Map<String, String> getHeaders() {
-        if (!isNullOrEmpty(invocationType) && !Const.INVOCATION_TYPE_HTTP.equalsIgnoreCase(invocationType)) {
+        if (!isNullOrEmpty(invocationType) && !Const.INVOCATION_TYPE_HTTP
+            .equalsIgnoreCase(invocationType)) {
             headers.put(HeaderKeys.INVOCATION_TYPE, invocationType);
         }
 
@@ -111,6 +123,11 @@ public class InvokeFunctionRequest extends HttpRequest {
             return null;
         }
         return payload;
+    }
+
+    public InvokeFunctionRequest setPayload(byte[] payload) {
+        this.payload = payload;
+        return this;
     }
 
     public Class<InvokeFunctionResponse> getResponseClass() {
