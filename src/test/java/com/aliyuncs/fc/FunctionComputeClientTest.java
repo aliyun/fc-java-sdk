@@ -202,7 +202,8 @@ public class FunctionComputeClientTest {
         GetServiceRequest getSReq = new GetServiceRequest(SERVICE_NAME);
         try {
             client.getService(getSReq);
-
+            cleanUpAliases(SERVICE_NAME);
+            cleanUpVersions(SERVICE_NAME);
             cleanUpFunctions(SERVICE_NAME);
             cleanupService(SERVICE_NAME);
             cleanUpFunctions(SERVICE_NAME + "-nas");
@@ -302,7 +303,7 @@ public class FunctionComputeClientTest {
                 alias.getAliasName());
             DeleteAliasResponse response = client.deleteAlias(deleteAliasRequest);
             assertTrue(response.isSuccess());
-            System.out.println(" " + alias.getAliasName() + " is deleted");
+            System.out.println(alias.getAliasName() + " is deleted");
         }
     }
 
@@ -2036,41 +2037,46 @@ public class FunctionComputeClientTest {
 
     @Test
     public void testVersions() throws ClientException {
-        String lastVersion = cleanUpVersions(SERVICE_NAME);
+        createService(SERVICE_NAME);
+        String lastVersion = "0";
         // publish a version
         PublishVersionRequest publishVersionRequest = new PublishVersionRequest(SERVICE_NAME);
         PublishVersionResponse publishVersionResponse = client
             .publishVersion(publishVersionRequest);
-        assertEquals(String.format("%d", Integer.parseInt(lastVersion)+1), publishVersionResponse.getVersionId());
+        assertEquals(String.format("%d", Integer.parseInt(lastVersion) + 1),
+            publishVersionResponse.getVersionId());
 
         // List versions
         ListVersionsRequest listVersionsRequest = new ListVersionsRequest(SERVICE_NAME);
         ListVersionsResponse listVersionsResponse = client.listVersions(listVersionsRequest);
         assertTrue(listVersionsResponse.getStatus() == HttpURLConnection.HTTP_OK);
         assertEquals(1, listVersionsResponse.getVersions().length);
-        assertEquals(publishVersionResponse.getVersionId(), listVersionsResponse.getVersions()[0].getVersionId());
+        assertEquals(publishVersionResponse.getVersionId(),
+            listVersionsResponse.getVersions()[0].getVersionId());
 
         // Delete version
-        DeleteVersionRequest deleteVersionRequest = new DeleteVersionRequest(SERVICE_NAME, publishVersionResponse.getVersionId());
-        DeleteVersionResponse deleteVersionResponse = client
-            .deleteVersion(deleteVersionRequest);
-        assertTrue(deleteVersionResponse.getStatus() == HttpURLConnection.HTTP_OK);
+        DeleteVersionRequest deleteVersionRequest = new DeleteVersionRequest(SERVICE_NAME,
+            publishVersionResponse.getVersionId());
+        DeleteVersionResponse deleteVersionResponse = client.deleteVersion(deleteVersionRequest);
+        assertEquals(HttpURLConnection.HTTP_NO_CONTENT, deleteVersionResponse.getStatus());
     }
 
     @Test
-    public void testAlis() throws ClientException{
-        cleanUpAliases(SERVICE_NAME);
+    public void testAlis() throws ClientException {
+        createService(SERVICE_NAME);
         String lastVersion = cleanUpVersions(SERVICE_NAME);
         // publish a version
         PublishVersionRequest publishVersionRequest = new PublishVersionRequest(SERVICE_NAME);
         PublishVersionResponse publishVersionResponse = client
             .publishVersion(publishVersionRequest);
-        assertEquals(String.format("%d", Integer.parseInt(lastVersion)+1), publishVersionResponse.getVersionId());
+        assertEquals(String.format("%d", Integer.parseInt(lastVersion) + 1),
+            publishVersionResponse.getVersionId());
         lastVersion = publishVersionResponse.getVersionId();
 
         //Create a Alias against it
         String aliasName = "myAlias";
-        CreateAliasRequest createAliasRequest = new CreateAliasRequest(SERVICE_NAME, aliasName, lastVersion);
+        CreateAliasRequest createAliasRequest = new CreateAliasRequest(SERVICE_NAME, aliasName,
+            lastVersion);
         CreateAliasResponse createAliasResponse = client.createAlias(createAliasRequest);
         assertEquals(HttpURLConnection.HTTP_OK, createAliasResponse.getStatus());
         assertEquals(lastVersion, createAliasResponse.getVersionId());
@@ -2083,16 +2089,17 @@ public class FunctionComputeClientTest {
         assertEquals(lastVersion, getAliasResponse.getVersionId());
         assertEquals(aliasName, getAliasResponse.getAliasName());
         assertEquals(0, getAliasResponse.getDescription().length());
-        assertEquals(0, getAliasResponse.getAdditionalVersionWeight().size());
+        assertNull(getAliasResponse.getAdditionalVersionWeight());
 
         //Update the Alias
         String description = "my test Alias";
         UpdateAliasRequest updateAliasRequest = new UpdateAliasRequest(SERVICE_NAME, aliasName);
+        updateAliasRequest.setDescription(description);
         UpdateAliasResponse updateAliasResponse = client.updateAlias(updateAliasRequest);
         assertEquals(HttpURLConnection.HTTP_OK, updateAliasResponse.getStatus());
         assertEquals(lastVersion, updateAliasResponse.getVersionId());
         assertEquals(aliasName, updateAliasResponse.getAliasName());
-        assertEquals(description, getAliasResponse.getDescription());
+        assertEquals(description, updateAliasResponse.getDescription());
 
         //Get Alias
         getAliasResponse = client.getAlias(getAliasRequest);
@@ -2100,7 +2107,6 @@ public class FunctionComputeClientTest {
         assertEquals(lastVersion, getAliasResponse.getVersionId());
         assertEquals(aliasName, getAliasResponse.getAliasName());
         assertEquals(description, getAliasResponse.getDescription());
-        assertEquals(0, getAliasResponse.getAdditionalVersionWeight().size());
 
         // List Alias
         ListAliasesRequest listAliasesRequest = new ListAliasesRequest(SERVICE_NAME);
@@ -2115,7 +2121,7 @@ public class FunctionComputeClientTest {
         DeleteAliasRequest deleteAliasRequest = new DeleteAliasRequest(SERVICE_NAME, aliasName);
         DeleteAliasResponse deleteAliasResponse = client
             .deleteAlias(deleteAliasRequest);
-        assertEquals(HttpURLConnection.HTTP_OK, deleteAliasResponse.getStatus());
+        assertEquals(HttpURLConnection.HTTP_NO_CONTENT, deleteAliasResponse.getStatus());
     }
 
 
