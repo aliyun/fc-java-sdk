@@ -51,7 +51,7 @@ public class CreateTriggerRequest extends HttpRequest {
     @SerializedName("triggerConfig")
     private Object triggerConfig;
 
-    @SerializedName("triggerConfig")
+    @SerializedName("qualifier")
     private String qualifier;
 
     public CreateTriggerRequest(String serviceName, String functionName) {
