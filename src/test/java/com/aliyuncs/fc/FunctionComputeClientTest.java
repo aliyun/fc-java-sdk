@@ -279,7 +279,7 @@ public class FunctionComputeClientTest {
         }
     }
 
-    private int cleanUpVersions(String serviceName) {
+    private String cleanUpVersions(String serviceName) {
         ListVersionsRequest listVersionsReq = new ListVersionsRequest(serviceName);
         ListVersionsResponse listVersionResp = client.listVersions(listVersionsReq);
         VersionMetaData[] versions = listVersionResp.getVersions();
@@ -290,7 +290,7 @@ public class FunctionComputeClientTest {
             assertTrue(response.isSuccess());
             System.out.println("Version " + version.getVersionId() + " is deleted");
         }
-        return (versions.length > 0) ? versions[0].getVersionId() : -1;
+        return (versions.length > 0) ? versions[0].getVersionId() : "0";
     }
 
     private void cleanUpAliases(String serviceName) {
@@ -2036,15 +2036,12 @@ public class FunctionComputeClientTest {
 
     @Test
     public void testVersions() throws ClientException {
-        int lastVersion = cleanUpVersions(SERVICE_NAME);
-        if (lastVersion < 0) {
-            lastVersion = 0;
-        }
+        String lastVersion = cleanUpVersions(SERVICE_NAME);
         // publish a version
         PublishVersionRequest publishVersionRequest = new PublishVersionRequest(SERVICE_NAME);
         PublishVersionResponse publishVersionResponse = client
             .publishVersion(publishVersionRequest);
-        assertEquals(lastVersion + 1, publishVersionResponse.getVersionId().intValue());
+        assertEquals(String.format("%d", Integer.parseInt(lastVersion)+1), publishVersionResponse.getVersionId());
 
         // List versions
         ListVersionsRequest listVersionsRequest = new ListVersionsRequest(SERVICE_NAME);
@@ -2063,30 +2060,27 @@ public class FunctionComputeClientTest {
     @Test
     public void testAlis() throws ClientException{
         cleanUpAliases(SERVICE_NAME);
-        int lastVersion = cleanUpVersions(SERVICE_NAME);
-        if (lastVersion < 0) {
-            lastVersion = 0;
-        }
+        String lastVersion = cleanUpVersions(SERVICE_NAME);
         // publish a version
         PublishVersionRequest publishVersionRequest = new PublishVersionRequest(SERVICE_NAME);
         PublishVersionResponse publishVersionResponse = client
             .publishVersion(publishVersionRequest);
-        assertEquals(lastVersion + 1, publishVersionResponse.getVersionId().intValue());
-        lastVersion = publishVersionResponse.getVersionId().intValue();
+        assertEquals(String.format("%d", Integer.parseInt(lastVersion)+1), publishVersionResponse.getVersionId());
+        lastVersion = publishVersionResponse.getVersionId();
 
         //Create a Alias against it
         String aliasName = "myAlias";
         CreateAliasRequest createAliasRequest = new CreateAliasRequest(SERVICE_NAME, aliasName, lastVersion);
         CreateAliasResponse createAliasResponse = client.createAlias(createAliasRequest);
         assertEquals(HttpURLConnection.HTTP_OK, createAliasResponse.getStatus());
-        assertEquals(lastVersion, createAliasResponse.getVersionId().intValue());
+        assertEquals(lastVersion, createAliasResponse.getVersionId());
         assertEquals(aliasName, createAliasResponse.getAliasName());
 
         //Get Alias
         GetAliasRequest getAliasRequest = new GetAliasRequest(SERVICE_NAME, aliasName);
         GetAliasResponse getAliasResponse = client.getAlias(getAliasRequest);
         assertEquals(HttpURLConnection.HTTP_OK, getAliasResponse.getStatus());
-        assertEquals(lastVersion, getAliasResponse.getVersionId().intValue());
+        assertEquals(lastVersion, getAliasResponse.getVersionId());
         assertEquals(aliasName, getAliasResponse.getAliasName());
         assertEquals(0, getAliasResponse.getDescription().length());
         assertEquals(0, getAliasResponse.getAdditionalVersionWeight().size());
@@ -2096,14 +2090,14 @@ public class FunctionComputeClientTest {
         UpdateAliasRequest updateAliasRequest = new UpdateAliasRequest(SERVICE_NAME, aliasName);
         UpdateAliasResponse updateAliasResponse = client.updateAlias(updateAliasRequest);
         assertEquals(HttpURLConnection.HTTP_OK, updateAliasResponse.getStatus());
-        assertEquals(lastVersion, updateAliasResponse.getVersionId().intValue());
+        assertEquals(lastVersion, updateAliasResponse.getVersionId());
         assertEquals(aliasName, updateAliasResponse.getAliasName());
         assertEquals(description, getAliasResponse.getDescription());
 
         //Get Alias
         getAliasResponse = client.getAlias(getAliasRequest);
         assertEquals(HttpURLConnection.HTTP_OK, getAliasResponse.getStatus());
-        assertEquals(lastVersion, getAliasResponse.getVersionId().intValue());
+        assertEquals(lastVersion, getAliasResponse.getVersionId());
         assertEquals(aliasName, getAliasResponse.getAliasName());
         assertEquals(description, getAliasResponse.getDescription());
         assertEquals(0, getAliasResponse.getAdditionalVersionWeight().size());
@@ -2114,7 +2108,7 @@ public class FunctionComputeClientTest {
         assertEquals(HttpURLConnection.HTTP_OK, listAliasesResponse.getStatus());
         assertEquals(1, listAliasesResponse.getAliases().length);
         assertEquals(aliasName, listAliasesResponse.getAliases()[0].getAliasName());
-        assertEquals(lastVersion, listAliasesResponse.getAliases()[0].getVersionId().intValue());
+        assertEquals(lastVersion, listAliasesResponse.getAliases()[0].getVersionId());
         assertEquals(description, listAliasesResponse.getAliases()[0].getDescription());
 
         // Delete Alias

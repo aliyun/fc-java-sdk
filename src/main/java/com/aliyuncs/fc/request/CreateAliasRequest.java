@@ -35,13 +35,13 @@ public class CreateAliasRequest extends HttpRequest {
     @SerializedName("aliasName")
     private final String aliasName;
     @SerializedName("versionId")
-    private final Integer versionId;
+    private final String versionId;
     @SerializedName("description")
     private String description;
     @SerializedName("additionalVersionWeight")
-    private Map<Integer, Float> additionalVersionWeight;
+    private Map<String, Float> additionalVersionWeight;
 
-    public CreateAliasRequest(String serviceName, String aliasName, Integer versionId) {
+    public CreateAliasRequest(String serviceName, String aliasName, String versionId) {
         this.serviceName = serviceName;
         this.aliasName = aliasName;
         this.versionId = versionId;
@@ -55,7 +55,7 @@ public class CreateAliasRequest extends HttpRequest {
         return aliasName;
     }
 
-    public Integer getVersionId() {
+    public String getVersionId() {
         return versionId;
     }
 
@@ -68,12 +68,12 @@ public class CreateAliasRequest extends HttpRequest {
         return this;
     }
 
-    public Map<Integer, Float> getAdditionalVersionWeight() {
+    public Map<String, Float> getAdditionalVersionWeight() {
         return additionalVersionWeight;
     }
 
     public CreateAliasRequest setAdditionalVersionWeight(
-        Map<Integer, Float> additionalVersionWeight) {
+        Map<String, Float> additionalVersionWeight) {
         this.additionalVersionWeight = additionalVersionWeight;
         return this;
     }
@@ -91,9 +91,6 @@ public class CreateAliasRequest extends HttpRequest {
     public void validate() throws ClientException {
         if (Strings.isNullOrEmpty(serviceName)) {
             throw new ClientException("Service name cannot be blank");
-        }
-        if (Strings.isNullOrEmpty(aliasName)) {
-            throw new ClientException("Alias name cannot be blank");
         }
     }
 

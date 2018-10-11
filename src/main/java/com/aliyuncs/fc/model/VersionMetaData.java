@@ -24,7 +24,7 @@ import com.google.gson.annotations.SerializedName;
 public class VersionMetaData {
 
     @SerializedName("versionId")
-    private Integer versionId;
+    private String versionId;
 
     @SerializedName("description")
     private String description;
@@ -35,7 +35,7 @@ public class VersionMetaData {
     @SerializedName("lastModifiedTime")
     private String lastModifiedTime;
 
-    public VersionMetaData(Integer versionId, String description, String createdTime,
+    public VersionMetaData(String versionId, String description, String createdTime,
         String lastModifiedTime) {
         this.versionId = versionId;
         this.description = description;
@@ -43,11 +43,11 @@ public class VersionMetaData {
         this.lastModifiedTime = lastModifiedTime;
     }
 
-    public Integer getVersionId() {
+    public String getVersionId() {
         return versionId;
     }
 
-    public VersionMetaData setVersionId(Integer versionId) {
+    public VersionMetaData setVersionId(String versionId) {
         this.versionId = versionId;
         return this;
     }

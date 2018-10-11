@@ -28,6 +28,8 @@ import com.google.common.base.Strings;
 import java.util.Map;
 
 public class ListVersionsRequest extends HttpRequest {
+    public final static String LIST_DIRECTION_BACKWARD = "BACKWARD";
+    public final static String LIST_DIRECTION_FORWARD = "FORWARD";
 
     private final String serviceName;
     private String startKey;

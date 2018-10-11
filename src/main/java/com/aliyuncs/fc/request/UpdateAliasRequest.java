@@ -38,11 +38,11 @@ public class UpdateAliasRequest extends HttpRequest {
     private transient String ifMatch;
 
     @SerializedName("versionId")
-    private Integer versionId;
+    private String versionId;
     @SerializedName("description")
     private String description;
     @SerializedName("additionalVersionWeight")
-    private Map<Integer, Float> additionalVersionWeight;
+    private Map<String, Float> additionalVersionWeight;
 
     public UpdateAliasRequest(String serviceName, String aliasName) {
         this.serviceName = serviceName;
@@ -57,7 +57,7 @@ public class UpdateAliasRequest extends HttpRequest {
         return aliasName;
     }
 
-    public Integer getVersionId() {
+    public String getVersionId() {
         return versionId;
     }
 
@@ -78,12 +78,12 @@ public class UpdateAliasRequest extends HttpRequest {
         this.ifMatch = ifMatch;
     }
 
-    public Map<Integer, Float> getAdditionalVersionWeight() {
+    public Map<String, Float> getAdditionalVersionWeight() {
         return additionalVersionWeight;
     }
 
     public UpdateAliasRequest setAdditionalVersionWeight(
-        Map<Integer, Float> additionalVersionWeight) {
+        Map<String, Float> additionalVersionWeight) {
         this.additionalVersionWeight = additionalVersionWeight;
         return this;
     }
