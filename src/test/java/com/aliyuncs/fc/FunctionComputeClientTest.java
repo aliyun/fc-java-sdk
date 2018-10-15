@@ -1204,6 +1204,19 @@ public class FunctionComputeClientTest {
         assertEquals("hello world", new String(response.getPayload()));
     }
 
+    @Test(expected = ClientException.class)
+    public void testInvokeFunctionTimeout() throws IOException {
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+
+        // 1 milliseconds timeout
+        client.getConfig().setReadTimeoutMillis(1);
+
+        client.invokeFunction(request);
+    }
+
     @Test
     public void testInvokeFunctionLogTypeSyncNone() throws IOException {
         createService(SERVICE_NAME);
