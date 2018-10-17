@@ -1899,6 +1899,15 @@ public class FunctionComputeClientTest {
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
     }
 
+    private CreateTriggerResponse createTimeTrigger(String triggerName, TimeTriggerConfig timeTriggerConfig) {
+        CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
+        createTReq.setTriggerName(triggerName);
+        createTReq.setTriggerType(TRIGGER_TYPE_TIMER);
+        createTReq.setTriggerConfig(timeTriggerConfig);
+
+        return client.createTrigger(createTReq);
+    }
+
     @Test
     public void testInvokeFunctionWithInitializer()
             throws ParseException, InterruptedException, IOException {
