@@ -1,19 +1,18 @@
 package com.aliyuncs.fc.request;
 
+import static com.aliyuncs.fc.auth.AcsURLEncoder.decode;
+import static java.lang.String.format;
+
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.model.HttpAuthType;
 import com.aliyuncs.fc.model.HttpMethod;
-import com.google.common.net.UrlEscapers;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
-
+import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.aliyuncs.fc.auth.AcsURLEncoder.decode;
-import static java.lang.String.format;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  * used for http invocation
@@ -28,11 +27,13 @@ public class HttpInvokeFunctionRequest extends InvokeFunctionRequest {
 
     private final Map<String, String> queryParams = new HashMap<String, String>();
 
-    public HttpInvokeFunctionRequest(String serviceName, String functionName, HttpAuthType authType, HttpMethod method) {
+    public HttpInvokeFunctionRequest(String serviceName, String functionName, HttpAuthType authType,
+        HttpMethod method) {
         this(serviceName, functionName, authType, method, "");
     }
 
-    public HttpInvokeFunctionRequest(String serviceName, String functionName, HttpAuthType authType, HttpMethod method, String path) {
+    public HttpInvokeFunctionRequest(String serviceName, String functionName, HttpAuthType authType,
+        HttpMethod method, String path) {
         super(serviceName, functionName);
 
         this.setInvocationType(Const.INVOCATION_TYPE_HTTP);
@@ -61,7 +62,9 @@ public class HttpInvokeFunctionRequest extends InvokeFunctionRequest {
     }
 
     public void addQuery(String name, String value) {
-        if (value == null) value = "";
+        if (value == null) {
+            value = "";
+        }
         this.queryParams.put(name, value);
     }
 
@@ -72,7 +75,13 @@ public class HttpInvokeFunctionRequest extends InvokeFunctionRequest {
 
     @Override
     public String getPath() {
-        return format(Const.HTTP_INVOKE_FUNCTION_PATH, Const.API_VERSION, getServiceName(), getFunctionName(), path);
+        if (Strings.isNullOrEmpty(getQualifier())) {
+            return format(Const.HTTP_INVOKE_FUNCTION_PATH, Const.API_VERSION, getServiceName(),
+                getFunctionName(), path);
+        } else {
+            return format(Const.HTTP_INVOKE_FUNCTION_WITH_QUALIFIER_PATH, Const.API_VERSION,
+                getServiceName(), getQualifier(), getFunctionName(), path);
+        }
     }
 
     public HttpMethod getMethod() {
