@@ -22,8 +22,6 @@ import com.aliyuncs.fc.http.HttpResponse;
 import com.aliyuncs.fc.model.TriggerMetadata;
 import com.google.common.base.Preconditions;
 
-import java.util.Map;
-
 /**
  * TODO: add javadoc
  */
@@ -40,26 +38,37 @@ public class CreateTriggerResponse extends HttpResponse {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getTriggerName();
     }
+
     public String getSourceARN() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getSourceArn();
     }
+
     public String getTriggerType() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getTriggerType();
     }
+
     public String getInvocationRole() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getInvocationRole();
     }
+
     public String getCreatedTime() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getCreatedTime();
     }
+
     public String getLastModifiedTime() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getLastModifiedTime();
     }
+
+    public String getQualifier() {
+        Preconditions.checkArgument(triggerMetadata != null);
+        return triggerMetadata.getQualifier();
+    }
+
     public Object getTriggerConfig() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getTriggerConfig();
