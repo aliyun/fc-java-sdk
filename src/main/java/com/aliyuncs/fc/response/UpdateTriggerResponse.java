@@ -66,6 +66,11 @@ public class UpdateTriggerResponse extends HttpResponse {
         return triggerMetadata.getLastModifiedTime();
     }
 
+    public String getQualifier() {
+        Preconditions.checkArgument(triggerMetadata != null);
+        return triggerMetadata.getQualifier();
+    }
+
     public Object getTriggerConfig() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getTriggerConfig();

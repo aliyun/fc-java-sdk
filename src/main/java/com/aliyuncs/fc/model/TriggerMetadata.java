@@ -25,11 +25,14 @@ public class TriggerMetadata {
     @SerializedName("lastModifiedTime")
     private String lastModifiedTime;
 
+    @SerializedName("qualifier")
+    private String qualifier;
+
     @SerializedName("triggerConfig")
     private Object triggerConfig;
 
     public TriggerMetadata(String triggerName, String sourceArn, String triggerType,
-        String invocationRole, String createdTime, String lastModifiedTime,
+        String invocationRole, String createdTime, String lastModifiedTime, String qualifier,
         Object triggerConfig) {
         this.triggerName = triggerName;
         this.sourceArn = sourceArn;
@@ -37,6 +40,7 @@ public class TriggerMetadata {
         this.invocationRole = invocationRole;
         this.createdTime = createdTime;
         this.lastModifiedTime = lastModifiedTime;
+        this.qualifier = qualifier;
         this.triggerConfig = triggerConfig;
     }
 
@@ -62,6 +66,10 @@ public class TriggerMetadata {
 
     public String getLastModifiedTime() {
         return lastModifiedTime;
+    }
+
+    public String getQualifier() {
+        return qualifier;
     }
 
     public Object getTriggerConfig() {
