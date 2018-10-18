@@ -396,7 +396,9 @@ public class FunctionComputeClientTest {
         createReq.setTriggerName(triggerName);
         createReq.setTriggerType(TRIGGER_TYPE_HTTP);
         createReq.setTriggerConfig(new HttpTriggerConfig(authType, methods));
-        createReq.setQualifier(qualifier);
+        if (!qualifier.isEmpty()) {
+            createReq.setQualifier(qualifier);
+        }
         return client.createTrigger(createReq);
     }
 
@@ -2143,7 +2145,7 @@ public class FunctionComputeClientTest {
         assertEquals(HttpURLConnection.HTTP_NO_CONTENT, deleteAliasResponse.getStatus());
     }
 
-    public void testHTTPTriggerWithVersions() throws ClientException, IOException {
+    public void testHTTPTriggerWithVersion() throws ClientException, IOException {
         createService(SERVICE_NAME);
         String lastVersion = "0";
 
