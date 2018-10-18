@@ -386,11 +386,19 @@ public class FunctionComputeClientTest {
 
     private CreateTriggerResponse createHttpTrigger(String triggerName, HttpAuthType authType,
         HttpMethod[] methods) {
+        return createHttpTriggerWithQualifier(triggerName, "", authType, methods);
+    }
+
+    private CreateTriggerResponse createHttpTriggerWithQualifier(String triggerName,
+        String qualifier,
+        HttpAuthType authType, HttpMethod[] methods) {
         CreateTriggerRequest createReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createReq.setTriggerName(triggerName);
         createReq.setTriggerType(TRIGGER_TYPE_HTTP);
         createReq.setTriggerConfig(new HttpTriggerConfig(authType, methods));
-
+        if (!qualifier.isEmpty()) {
+            createReq.setQualifier(qualifier);
+        }
         return client.createTrigger(createReq);
     }
 
@@ -2075,7 +2083,7 @@ public class FunctionComputeClientTest {
     }
 
     @Test
-    public void testAlis() throws ClientException {
+    public void testAlias() throws ClientException {
         createService(SERVICE_NAME);
         String lastVersion = cleanUpVersions(SERVICE_NAME);
         // publish a version
@@ -2135,6 +2143,71 @@ public class FunctionComputeClientTest {
         DeleteAliasResponse deleteAliasResponse = client
             .deleteAlias(deleteAliasRequest);
         assertEquals(HttpURLConnection.HTTP_NO_CONTENT, deleteAliasResponse.getStatus());
+    }
+
+    public void testHTTPTriggerWithVersion() throws ClientException, IOException {
+        createService(SERVICE_NAME);
+        String lastVersion = "0";
+
+        // Create a function
+        String source = generatePythonHttpCode();
+
+        byte[] data = createZipByteData("main.py", source);
+
+        // create function
+        createFunction(SERVICE_NAME, FUNCTION_NAME, "main.echo_handler", "python2.7", data);
+
+        // publish a version
+        PublishVersionRequest publishVersionRequest = new PublishVersionRequest(SERVICE_NAME);
+        PublishVersionResponse publishVersionResponse = client
+            .publishVersion(publishVersionRequest);
+        assertEquals(String.format("%d", Integer.parseInt(lastVersion) + 1),
+            publishVersionResponse.getVersionId());
+
+        for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
+            // create http trigger
+            CreateTriggerResponse createTriggerResponse =
+                createHttpTriggerWithQualifier(TRIGGER_NAME, publishVersionResponse.getVersionId(),
+                    auth, new HttpMethod[]{GET, POST});
+
+            // Invoke the function
+            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
+                FUNCTION_NAME, auth, POST, "/test/path/中文");
+            request.setQualifier(publishVersionResponse.getVersionId());
+            request.addQuery("a", "1");
+            request.addQuery("aaa", null);
+
+            request.setHeader("Test-Header-Key", "testHeaderValue");
+            request.setHeader("Content-Type", "application/json");
+
+            request.setPayload(new String("data").getBytes());
+
+            InvokeFunctionResponse response = client.invokeFunction(request);
+
+            assertEquals(200, response.getStatus());
+            assertTrue(response.getHeader("Content-Type").startsWith("application/json"));
+            assertEquals("testHeaderValue", response.getHeader("Test-Header-Key"));
+
+            JsonObject jsonObject = gson
+                .fromJson(new String(response.getPayload()), JsonObject.class);
+
+            assertEquals("/test/path/中文", jsonObject.get("path").getAsString());
+            assertEquals("aaa=&a=1", jsonObject.get("queries").getAsString());
+            assertEquals("data", jsonObject.get("body").getAsString());
+
+            // delete trigger
+            deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME);
+        }
+
+        // Delete version
+        DeleteVersionRequest deleteVersionRequest = new DeleteVersionRequest(SERVICE_NAME,
+            publishVersionResponse.getVersionId());
+        DeleteVersionResponse deleteVersionResponse = client.deleteVersion(deleteVersionRequest);
+        assertEquals(HttpURLConnection.HTTP_NO_CONTENT, deleteVersionResponse.getStatus());
+
+        // Cleanups
+        client.deleteFunction(new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME));
+        client.deleteService(new DeleteServiceRequest(SERVICE_NAME));
     }
 
 

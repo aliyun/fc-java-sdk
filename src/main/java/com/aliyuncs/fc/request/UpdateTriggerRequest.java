@@ -44,6 +44,10 @@ public class UpdateTriggerRequest extends HttpRequest {
 
     @SerializedName("triggerConfig")
     private Object triggerConfig;
+
+    @SerializedName("qualifier")
+    private String qualifier;
+
     private transient String ifMatch;
 
     public UpdateTriggerRequest(String serviveName, String functionName, String triggerName) {
@@ -91,11 +95,22 @@ public class UpdateTriggerRequest extends HttpRequest {
         return this;
     }
 
+    public String getQualifier() {
+        return qualifier;
+    }
+
+    public UpdateTriggerRequest setQualifier(String qualifier) {
+        this.qualifier = qualifier;
+        return this;
+    }
+
+    @Override
     public String getPath() {
         return String.format(Const.SINGLE_TRIGGER_PATH, Const.API_VERSION,
             serviceName, functionName, triggerName);
     }
 
+    @Override
     public Map<String, String> getHeaders() {
         if (!Strings.isNullOrEmpty(ifMatch)) {
             headers.put(IF_MATCH_HEADER, ifMatch);
@@ -103,14 +118,17 @@ public class UpdateTriggerRequest extends HttpRequest {
         return headers;
     }
 
+    @Override
     public byte[] getPayload() {
         return ParameterHelper.ObjectToJson(this).getBytes();
     }
 
+    @Override
     public Map<String, String> getQueryParams() {
         return null;
     }
 
+    @Override
     public void validate() throws ClientException {
         if (Strings.isNullOrEmpty(serviceName)) {
             throw new ClientException("Service name cannot be blank");
