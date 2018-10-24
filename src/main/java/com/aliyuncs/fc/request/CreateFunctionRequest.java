@@ -49,8 +49,14 @@ public class CreateFunctionRequest extends HttpRequest {
     @SerializedName("handler")
     private String handler;
 
+    @SerializedName("initializer")
+    private String initializer;
+
     @SerializedName("timeout")
     private Integer timeout;
+
+    @SerializedName("initializationTimeout")
+    private Integer initializationTimeout;
 
     @SerializedName("memorySize")
     private Integer memorySize;
@@ -114,6 +120,15 @@ public class CreateFunctionRequest extends HttpRequest {
         return handler;
     }
 
+    public CreateFunctionRequest setInitializer(String initializer) {
+        this.initializer = initializer;
+        return this;
+    }
+
+    public String getInitializer() {
+        return initializer;
+    }
+
     public CreateFunctionRequest setTimeout(Integer timeout) {
         this.timeout = timeout;
         return this;
@@ -121,6 +136,15 @@ public class CreateFunctionRequest extends HttpRequest {
 
     public Integer getTimeout() {
         return timeout;
+    }
+
+    public CreateFunctionRequest setInitializationTimeout(Integer initializationTimeout) {
+        this.initializationTimeout = initializationTimeout;
+        return this;
+    }
+
+    public Integer getInitializationTimeout() {
+        return initializationTimeout;
     }
 
     public CreateFunctionRequest setMemorySize(Integer memorySize) {

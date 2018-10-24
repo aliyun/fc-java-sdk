@@ -23,8 +23,14 @@ public class FunctionMetadata {
     @SerializedName("handler")
     private String handler;
 
+    @SerializedName("initializer")
+    private String initializer;
+
     @SerializedName("timeout")
     private Integer timeout;
+
+    @SerializedName("initializationTimeout")
+    private Integer initializationTimeout;
 
     @SerializedName("memorySize")
     private Integer memorySize;
@@ -45,14 +51,16 @@ public class FunctionMetadata {
     private Map<String, String> environmentVariables;
 
     public FunctionMetadata(String functionId, String functionName, String description,
-        String runtime, String handler, Integer timeout, Integer memorySize,
+        String runtime, String handler, String initializer, Integer timeout, Integer initializationTimeout, Integer memorySize,
         int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, Map<String, String> environmentVariables) {
         this.functionId = functionId;
         this.functionName = functionName;
         this.description = description;
         this.runtime = runtime;
         this.handler = handler;
+        this.initializer = initializer;
         this.timeout = timeout;
+        this.initializationTimeout = initializationTimeout;
         this.memorySize = memorySize;
         this.codeSize = codeSize;
         this.codeChecksum = codeChecksum;
@@ -81,8 +89,16 @@ public class FunctionMetadata {
         return handler;
     }
 
+    public String getInitializer() {
+        return initializer;
+    }
+
     public Integer getTimeout() {
         return timeout;
+    }
+
+    public Integer getInitializationTimeout() {
+        return initializationTimeout;
     }
 
     public Integer getMemorySize() {
