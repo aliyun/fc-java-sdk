@@ -1904,6 +1904,71 @@ public class FunctionComputeClientTest {
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
     }
 
+    @Test
+    public void testInvokeFunctionWithInitializer()
+        throws ParseException, InterruptedException, IOException {
+        createService(SERVICE_NAME);
+        String functionName = "testInitializer";
+        String source = "'use strict';\n" +
+            "var counter = 0;\n" +
+            "exports.initializer = function(ctx, callback) {\n" +
+            "++counter;\n" +
+            "callback(null, '');};\n" +
+            "exports.handler = function(event, context, callback) {\n" +
+            "console.log('hello world, counter is %d', counter);\n" +
+            "callback(null, String(counter));};\n";
+
+        byte[] data = createZipByteData("counter.js", source);
+
+        // Create a function
+        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
+        createFuncReq.setFunctionName(functionName);
+        createFuncReq.setDescription("Function for initializer test");
+        createFuncReq.setMemorySize(128);
+        createFuncReq.setHandler("counter.handler");
+        createFuncReq.setInitializer("counter.initializer");
+        createFuncReq.setRuntime("nodejs4.4");
+
+        Code code = new Code().setZipFile(data);
+        createFuncReq.setCode(code);
+        createFuncReq.setTimeout(10);
+        client.createFunction(createFuncReq);
+
+        // Update Function
+        ListFunctionsRequest listFReq = new ListFunctionsRequest(SERVICE_NAME);
+        ListFunctionsResponse listFResp = client.listFunctions(listFReq);
+        FunctionMetadata funcOld = listFResp.getFunctions()[0];
+        UpdateFunctionRequest updateFReq = new UpdateFunctionRequest(SERVICE_NAME, functionName);
+        updateFReq.setDescription(FUNCTION_DESC_NEW);
+        GetFunctionRequest getFReq = new GetFunctionRequest(SERVICE_NAME, functionName);
+        GetFunctionResponse getFResp = client.getFunction(getFReq);
+        Map<String, String> envOriginal = getFResp.getEnvironmentVariables();
+        envOriginal.put("testKey", "testValueNew");
+        updateFReq.setEnvironmentVariables(envOriginal);
+        Thread.sleep(1000L);
+        UpdateFunctionResponse updateFResp = client.updateFunction(updateFReq);
+        listFResp = client.listFunctions(listFReq);
+        Assert.assertEquals("testValueNew", updateFResp.getEnvironmentVariables().get("testKey"));
+        assertFalse(Strings.isNullOrEmpty(listFResp.getRequestId()));
+        assertEquals(1, listFResp.getFunctions().length);
+        FunctionMetadata funcNew = listFResp.getFunctions()[0];
+        verifyUpdate(funcOld.getFunctionName(), funcNew.getFunctionName(),
+            funcOld.getFunctionId(), funcNew.getFunctionId(),
+            funcOld.getLastModifiedTime(), funcNew.getLastModifiedTime(),
+            funcOld.getCreatedTime(), funcNew.getCreatedTime(),
+            funcOld.getDescription(), funcNew.getDescription());
+
+        // Invoke the function
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, functionName);
+        InvokeFunctionResponse response = client.invokeFunction(request);
+
+        assertEquals("1", new String(response.getPayload()));
+
+        // Cleanups
+        client.deleteFunction(new DeleteFunctionRequest(SERVICE_NAME, functionName));
+        client.deleteService(new DeleteServiceRequest(SERVICE_NAME));
+    }
+
     private void testTimeTrigger() throws ParseException {
         String cronEvery = "@every 5m";
         String cronExpression = "0 2 * * * *";

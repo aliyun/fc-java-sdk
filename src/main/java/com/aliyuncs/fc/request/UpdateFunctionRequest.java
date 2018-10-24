@@ -48,8 +48,14 @@ public class UpdateFunctionRequest extends HttpRequest {
     @SerializedName("handler")
     private String handler;
 
+    @SerializedName("initializer")
+    private String initializer;
+
     @SerializedName("timeout")
     private Integer timeout;
+
+    @SerializedName("initializationTimeout")
+    private Integer initializationTimeout;
 
     @SerializedName("memorySize")
     private Integer memorySize;
@@ -103,13 +109,31 @@ public class UpdateFunctionRequest extends HttpRequest {
         return this;
     }
 
-    public Integer getTimeout() {
-        return timeout;
+    public UpdateFunctionRequest setInitializer(String initializer) {
+        this.initializer = initializer;
+        return this;
+    }
+
+    public String getInitializer() {
+        return initializer;
     }
 
     public UpdateFunctionRequest setTimeout(Integer timeout) {
         this.timeout = timeout;
         return this;
+    }
+
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    public UpdateFunctionRequest setInitializationTimeout(Integer initializationTimeout) {
+        this.initializationTimeout = initializationTimeout;
+        return this;
+    }
+
+    public Integer getInitializationTimeout() {
+        return initializationTimeout;
     }
 
     public Integer getMemorySize() {
