@@ -1851,8 +1851,7 @@ public class FunctionComputeClientTest {
 
         try {
             Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
+        } catch (InterruptedException e) {}
 
         UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
             triggerName);
