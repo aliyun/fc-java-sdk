@@ -4,7 +4,7 @@
     <groupId>com.aliyun</groupId>
     <artifactId>aliyun-java-sdk-fc</artifactId>
     <packaging>jar</packaging>
-    <version>1.2.1</version>
+    <version>1.2.2-SNAPSHOT</version>
     <name>aliyun-java-sdk-fc</name>
     <url>https://www.aliyun.com/product/fc</url>
     <description>Aliyun Java SDK for FunctionCompute</description>
