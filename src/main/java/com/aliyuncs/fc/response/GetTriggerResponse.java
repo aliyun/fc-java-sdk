@@ -18,12 +18,9 @@
  */
 package com.aliyuncs.fc.response;
 
-import com.aliyuncs.fc.model.OSSTriggerConfig;
-import com.aliyuncs.fc.model.TriggerMetadata;
 import com.aliyuncs.fc.http.HttpResponse;
-
+import com.aliyuncs.fc.model.TriggerMetadata;
 import com.google.common.base.Preconditions;
-import java.util.Map;
 
 /**
  * TODO: add javadoc
@@ -72,4 +69,8 @@ public class GetTriggerResponse extends HttpResponse {
         return triggerMetadata.getTriggerConfig();
     }
 
+    public String getQualifier() {
+        Preconditions.checkArgument(triggerMetadata != null);
+        return triggerMetadata.getQualifier();
+    }
 }
