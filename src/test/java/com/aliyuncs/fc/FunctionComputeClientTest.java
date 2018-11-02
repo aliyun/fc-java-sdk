@@ -301,6 +301,11 @@ public class FunctionComputeClientTest {
         }
     }
 
+    private void getAccountSettings() throws IOException {
+        GetAccountSettingsOutput response = client.getAccountSettings(new GetAccountSettingsInput());
+        assertTrue(response.getAccountSettings().getAvailableAZs().length > 0);
+    }
+
     private CreateFunctionResponse createFunction(String functionName) throws IOException {
         String source = "exports.handler = function(event, context, callback) {\n" +
             "  callback(null, 'hello world');\n" +

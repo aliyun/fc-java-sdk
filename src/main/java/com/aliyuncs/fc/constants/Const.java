@@ -5,6 +5,7 @@ package com.aliyuncs.fc.constants;
  */
 public class Const {
 
+    public final static String GET_ACCOUNT_SETTING = "/%s/account-settings";
     public final static String SERVICE_PATH = "/%s/services";
     public final static String SINGLE_SERVICE_PATH = SERVICE_PATH + "/%s";
     public final static String FUNCTION_PATH = SINGLE_SERVICE_PATH + "/functions";
