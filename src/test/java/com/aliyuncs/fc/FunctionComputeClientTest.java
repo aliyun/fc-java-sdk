@@ -96,7 +96,6 @@ import com.aliyuncs.profile.IClientProfile;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleRequest;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
-
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -1773,7 +1772,7 @@ public class FunctionComputeClientTest {
         TriggerMetadata triggerOld = triggers[0];
         assertEquals(triggerName, triggerOld.getTriggerName());
 
-        
+
         Thread.sleep(300);
 
         Map<String, List<String>> newFilters = new HashMap<String, List<String>>();
