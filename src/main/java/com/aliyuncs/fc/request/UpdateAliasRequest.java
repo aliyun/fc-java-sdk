@@ -61,6 +61,11 @@ public class UpdateAliasRequest extends HttpRequest {
         return versionId;
     }
 
+    public UpdateAliasRequest setVersionId(String versionId) {
+        this.versionId = versionId;
+        return this;
+    }
+
     public String getDescription() {
         return description;
     }
