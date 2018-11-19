@@ -56,7 +56,7 @@ import com.aliyuncs.fc.request.UpdateCustomDomainRequest;
 import com.aliyuncs.fc.request.UpdateFunctionRequest;
 import com.aliyuncs.fc.request.UpdateServiceRequest;
 import com.aliyuncs.fc.request.UpdateTriggerRequest;
-import com.aliyuncs.fc.request.GetAccountSettingsInput;
+import com.aliyuncs.fc.request.GetAccountSettingsRequest;
 import com.aliyuncs.fc.response.CreateAliasResponse;
 import com.aliyuncs.fc.response.CreateCustomDomainResponse;
 import com.aliyuncs.fc.response.CreateFunctionResponse;
@@ -87,7 +87,7 @@ import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.response.UpdateTriggerResponse;
-import com.aliyuncs.fc.response.GetAccountSettingsOutput;
+import com.aliyuncs.fc.response.GetAccountSettingsResponse;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
@@ -304,7 +304,7 @@ public class FunctionComputeClientTest {
     }
 
     private void getAccountSettings() throws IOException {
-        GetAccountSettingsOutput response = client.getAccountSettings(new GetAccountSettingsInput());
+        GetAccountSettingsResponse response = client.getAccountSettings(new GetAccountSettingsRequest());
         assertTrue(response.getAccountSettings().getAvailableAZs().length > 0);
     }
 

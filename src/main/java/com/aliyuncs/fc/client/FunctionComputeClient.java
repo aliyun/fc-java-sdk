@@ -98,8 +98,8 @@ import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.response.UpdateTriggerResponse;
-import com.aliyuncs.fc.response.GetAccountSettingsOutput;
-import com.aliyuncs.fc.request.GetAccountSettingsInput;
+import com.aliyuncs.fc.response.GetAccountSettingsResponse;
+import com.aliyuncs.fc.request.GetAccountSettingsRequest;
 import com.aliyuncs.fc.utils.Base64Helper;
 import com.google.gson.Gson;
 import java.io.IOException;
@@ -143,10 +143,10 @@ public class FunctionComputeClient {
         config.setEndpoint(endpoint);
     }
 
-    public GetAccountSettingsOutput getAccountSettings(GetAccountSettingsInput request) throws ClientException, ServerException {
+    public GetAccountSettingsResponse getAccountSettings(GetAccountSettingsRequest request) throws ClientException, ServerException {
 
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        GetAccountSettingsOutput getAccountSettingsOutput = new GetAccountSettingsOutput();
+        GetAccountSettingsResponse getAccountSettingsOutput = new GetAccountSettingsResponse();
         AccountSettings accountSettings = GSON.fromJson(
             new String(response.getContent()), AccountSettings.class);
         getAccountSettingsOutput.setHeaders(response.getHeaders());

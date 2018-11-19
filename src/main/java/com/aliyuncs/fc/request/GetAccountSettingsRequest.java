@@ -22,16 +22,16 @@ package com.aliyuncs.fc.request;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.response.GetFunctionResponse;
+import com.aliyuncs.fc.response.GetAccountSettingsResponse;
 
 import java.util.Map;
 
 /**
  * TODO: add javadoc
  */
-public class GetAccountSettingsInput extends HttpRequest {
+public class GetAccountSettingsRequest extends HttpRequest {
 
-    public GetAccountSettingsInput() {}
+    public GetAccountSettingsRequest() {}
 
     public String getPath() {
         return String.format(Const.GET_ACCOUNT_SETTING, Const.API_VERSION);
@@ -48,8 +48,8 @@ public class GetAccountSettingsInput extends HttpRequest {
     public void validate() throws ClientException {
     }
 
-    public Class<GetFunctionResponse> getResponseClass() {
-        return GetFunctionResponse.class;
+    public Class<GetAccountSettingsResponse> getResponseClass() {
+        return GetAccountSettingsResponse.class;
     }
 
 }

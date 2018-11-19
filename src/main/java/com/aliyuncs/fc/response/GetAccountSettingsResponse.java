@@ -24,7 +24,7 @@ import com.aliyuncs.fc.model.AccountSettings;
 /**
  * TODO: add javadoc
  */
-public class GetAccountSettingsOutput extends HttpResponse {
+public class GetAccountSettingsResponse extends HttpResponse {
 
     private AccountSettings accountSettings;
 
