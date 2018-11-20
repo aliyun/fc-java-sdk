@@ -34,15 +34,7 @@ public class GetAccountSettingsRequest extends HttpRequest {
     public GetAccountSettingsRequest() {}
 
     public String getPath() {
-        return String.format(Const.GET_ACCOUNT_SETTING, Const.API_VERSION);
-    }
-
-    public Map<String, String> getQueryParams() {
-        return null;
-    }
-
-    public byte[] getPayload() {
-        return null;
+        return String.format(Const.ACCOUNT_SETTING_PATH, Const.API_VERSION);
     }
 
     public void validate() throws ClientException {
