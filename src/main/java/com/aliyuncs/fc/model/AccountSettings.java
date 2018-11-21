@@ -10,8 +10,4 @@ public class AccountSettings {
     public String[] getAvailableAZs() {
         return availableAZs;
     }
-
-    public void setAvailableAZs(String[] availableAZs) {
-        this.availableAZs = availableAZs;
-    }
 }
