@@ -36,6 +36,7 @@ import com.aliyuncs.fc.model.FunctionMetadata;
 import com.aliyuncs.fc.model.ServiceMetadata;
 import com.aliyuncs.fc.model.TriggerMetadata;
 import com.aliyuncs.fc.model.VersionMetaData;
+import com.aliyuncs.fc.model.AccountSettings;
 import com.aliyuncs.fc.request.CreateAliasRequest;
 import com.aliyuncs.fc.request.CreateCustomDomainRequest;
 import com.aliyuncs.fc.request.CreateFunctionRequest;
@@ -97,6 +98,8 @@ import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.response.UpdateTriggerResponse;
+import com.aliyuncs.fc.response.GetAccountSettingsResponse;
+import com.aliyuncs.fc.request.GetAccountSettingsRequest;
 import com.aliyuncs.fc.utils.Base64Helper;
 import com.google.gson.Gson;
 import java.io.IOException;
@@ -138,6 +141,18 @@ public class FunctionComputeClient {
      */
     public void setEndpoint(String endpoint) {
         config.setEndpoint(endpoint);
+    }
+
+    public GetAccountSettingsResponse getAccountSettings(GetAccountSettingsRequest request) throws ClientException, ServerException {
+
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        GetAccountSettingsResponse getAccountSettingsOutput = new GetAccountSettingsResponse();
+        AccountSettings accountSettings = GSON.fromJson(
+            new String(response.getContent()), AccountSettings.class);
+        getAccountSettingsOutput.setHeaders(response.getHeaders());
+        getAccountSettingsOutput.setStatus(response.getStatus());
+        getAccountSettingsOutput.setAccountSettings(accountSettings);
+        return getAccountSettingsOutput;
     }
 
     public DeleteServiceResponse deleteService(DeleteServiceRequest request)

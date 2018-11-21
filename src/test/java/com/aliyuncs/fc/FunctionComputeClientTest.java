@@ -56,6 +56,7 @@ import com.aliyuncs.fc.request.UpdateCustomDomainRequest;
 import com.aliyuncs.fc.request.UpdateFunctionRequest;
 import com.aliyuncs.fc.request.UpdateServiceRequest;
 import com.aliyuncs.fc.request.UpdateTriggerRequest;
+import com.aliyuncs.fc.request.GetAccountSettingsRequest;
 import com.aliyuncs.fc.response.CreateAliasResponse;
 import com.aliyuncs.fc.response.CreateCustomDomainResponse;
 import com.aliyuncs.fc.response.CreateFunctionResponse;
@@ -86,6 +87,7 @@ import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.response.UpdateTriggerResponse;
+import com.aliyuncs.fc.response.GetAccountSettingsResponse;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
@@ -299,6 +301,11 @@ public class FunctionComputeClientTest {
             assertTrue(response.isSuccess());
             System.out.println(alias.getAliasName() + " is deleted");
         }
+    }
+
+    private void getAccountSettings() throws IOException {
+        GetAccountSettingsResponse response = client.getAccountSettings(new GetAccountSettingsRequest());
+        assertTrue(response.getAccountSettings().getAvailableAZs().length > 0);
     }
 
     private CreateFunctionResponse createFunction(String functionName) throws IOException {
@@ -1764,6 +1771,7 @@ public class FunctionComputeClientTest {
         TriggerMetadata triggerOld = triggers[0];
         assertEquals(triggerName, triggerOld.getTriggerName());
 
+
         Thread.sleep(300);
 
         Map<String, List<String>> newFilters = new HashMap<String, List<String>>();
@@ -1850,8 +1858,7 @@ public class FunctionComputeClientTest {
 
         try {
             Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
+        } catch (InterruptedException e) {}
 
         UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
             triggerName);
@@ -1896,6 +1903,15 @@ public class FunctionComputeClientTest {
 
         // Delete Trigger
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
+    }
+
+    private CreateTriggerResponse createTimeTrigger(String triggerName, TimeTriggerConfig timeTriggerConfig) {
+        CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
+        createTReq.setTriggerName(triggerName);
+        createTReq.setTriggerType(TRIGGER_TYPE_TIMER);
+        createTReq.setTriggerConfig(timeTriggerConfig);
+
+        return client.createTrigger(createTReq);
     }
 
     @Test
@@ -1961,15 +1977,6 @@ public class FunctionComputeClientTest {
         // Cleanups
         client.deleteFunction(new DeleteFunctionRequest(SERVICE_NAME, functionName));
         client.deleteService(new DeleteServiceRequest(SERVICE_NAME));
-    }
-
-    private CreateTriggerResponse createTimeTrigger(String triggerName, TimeTriggerConfig timeTriggerConfig) {
-        CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
-        createTReq.setTriggerName(triggerName);
-        createTReq.setTriggerType(TRIGGER_TYPE_TIMER);
-        createTReq.setTriggerConfig(timeTriggerConfig);
-
-        return client.createTrigger(createTReq);
     }
 
     private void testTimeTrigger() throws ParseException {
