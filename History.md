@@ -1,3 +1,9 @@
+1.3.0 / 2018-11-21
+==================
+
+  * add Initializer support
+  * add Versioning support 
+
 1.2.1 / 2018-09-20
 ==================
 
