@@ -549,13 +549,12 @@ public class FunctionComputeClientTest {
         // create function
         createFunction(service_name, funcName, "main.handler", "python2.7", data);
 
-        // todo: restore when nas support zone c
         // Invoke the function
-        //InvokeFunctionRequest request = new InvokeFunctionRequest(service_name, funcName);
-        //request.setPayload("".getBytes());
+        InvokeFunctionRequest request = new InvokeFunctionRequest(service_name, funcName);
+        request.setPayload("".getBytes());
 
-        //InvokeFunctionResponse response = client.invokeFunction(request);
-        //assertEquals("true", new String(response.getPayload()));
+        InvokeFunctionResponse response = client.invokeFunction(request);
+        assertEquals("true", new String(response.getPayload()));
 
         // Cleanups
         client.deleteFunction(new DeleteFunctionRequest(service_name, funcName));
