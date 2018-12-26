@@ -23,8 +23,23 @@ import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
-import com.aliyuncs.fc.model.*;
+import com.aliyuncs.fc.model.AliasMetaData;
+import com.aliyuncs.fc.model.CdnEventsTriggerConfig;
+import com.aliyuncs.fc.model.Code;
+import com.aliyuncs.fc.model.FunctionMetadata;
+import com.aliyuncs.fc.model.HttpAuthType;
+import com.aliyuncs.fc.model.HttpMethod;
+import com.aliyuncs.fc.model.HttpTriggerConfig;
+import com.aliyuncs.fc.model.LogTriggerConfig;
+import com.aliyuncs.fc.model.NasConfig;
 import com.aliyuncs.fc.model.NasConfig.NasMountConfig;
+import com.aliyuncs.fc.model.OSSTriggerConfig;
+import com.aliyuncs.fc.model.PathConfig;
+import com.aliyuncs.fc.model.RouteConfig;
+import com.aliyuncs.fc.model.TimeTriggerConfig;
+import com.aliyuncs.fc.model.TriggerMetadata;
+import com.aliyuncs.fc.model.VersionMetaData;
+import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.request.CreateAliasRequest;
 import com.aliyuncs.fc.request.CreateCustomDomainRequest;
 import com.aliyuncs.fc.request.CreateFunctionRequest;
@@ -36,6 +51,7 @@ import com.aliyuncs.fc.request.DeleteFunctionRequest;
 import com.aliyuncs.fc.request.DeleteServiceRequest;
 import com.aliyuncs.fc.request.DeleteTriggerRequest;
 import com.aliyuncs.fc.request.DeleteVersionRequest;
+import com.aliyuncs.fc.request.GetAccountSettingsRequest;
 import com.aliyuncs.fc.request.GetAliasRequest;
 import com.aliyuncs.fc.request.GetCustomDomainRequest;
 import com.aliyuncs.fc.request.GetFunctionCodeRequest;
@@ -56,7 +72,6 @@ import com.aliyuncs.fc.request.UpdateCustomDomainRequest;
 import com.aliyuncs.fc.request.UpdateFunctionRequest;
 import com.aliyuncs.fc.request.UpdateServiceRequest;
 import com.aliyuncs.fc.request.UpdateTriggerRequest;
-import com.aliyuncs.fc.request.GetAccountSettingsRequest;
 import com.aliyuncs.fc.response.CreateAliasResponse;
 import com.aliyuncs.fc.response.CreateCustomDomainResponse;
 import com.aliyuncs.fc.response.CreateFunctionResponse;
@@ -68,6 +83,7 @@ import com.aliyuncs.fc.response.DeleteFunctionResponse;
 import com.aliyuncs.fc.response.DeleteServiceResponse;
 import com.aliyuncs.fc.response.DeleteTriggerResponse;
 import com.aliyuncs.fc.response.DeleteVersionResponse;
+import com.aliyuncs.fc.response.GetAccountSettingsResponse;
 import com.aliyuncs.fc.response.GetAliasResponse;
 import com.aliyuncs.fc.response.GetCustomDomainResponse;
 import com.aliyuncs.fc.response.GetFunctionCodeResponse;
@@ -87,7 +103,6 @@ import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.response.UpdateTriggerResponse;
-import com.aliyuncs.fc.response.GetAccountSettingsResponse;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
@@ -109,7 +124,6 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -241,7 +255,7 @@ public class FunctionComputeClientTest {
 
     private TriggerMetadata[] listTriggers(String serviceName, String functionName) {
         ListTriggersRequest listReq = new ListTriggersRequest(serviceName,
-                functionName);
+            functionName);
 
         ListTriggersResponse listResp = client.listTriggers(listReq);
 
@@ -304,7 +318,8 @@ public class FunctionComputeClientTest {
     }
 
     private void getAccountSettings() throws IOException {
-        GetAccountSettingsResponse response = client.getAccountSettings(new GetAccountSettingsRequest());
+        GetAccountSettingsResponse response = client
+            .getAccountSettings(new GetAccountSettingsRequest());
         assertTrue(response.getAccountSettings().getAvailableAZs().length > 0);
     }
 
@@ -1330,7 +1345,7 @@ public class FunctionComputeClientTest {
     }
 
     @Test
-    public void testHttpInvokeFunction() throws IOException {
+    public void testHttpInvokeFunction() throws IOException, InterruptedException {
         createService(SERVICE_NAME);
 
         // Create a function
@@ -1343,8 +1358,12 @@ public class FunctionComputeClientTest {
 
         for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
             // create http trigger
-            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[]{GET, POST});
-
+            createHttpTrigger(TRIGGER_NAME.concat(auth.toString()), auth,
+                new HttpMethod[]{GET, POST});
+            // sleep sometime so that the function cache in the API server will
+            // be updated (default is 10 seconds)
+            Thread.sleep(15000);
+        
             // Invoke the function
             HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
                 FUNCTION_NAME, auth, POST, "/test/path/中文");
@@ -1371,7 +1390,7 @@ public class FunctionComputeClientTest {
             assertEquals("data", jsonObject.get("body").getAsString());
 
             // delete trigger
-            deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME);
+            deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME.concat(auth.toString()));
         }
 
         // Cleanups
@@ -1771,7 +1790,6 @@ public class FunctionComputeClientTest {
         TriggerMetadata triggerOld = triggers[0];
         assertEquals(triggerName, triggerOld.getTriggerName());
 
-
         Thread.sleep(300);
 
         Map<String, List<String>> newFilters = new HashMap<String, List<String>>();
@@ -1824,7 +1842,8 @@ public class FunctionComputeClientTest {
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
     }
 
-    private CreateTriggerResponse createLogTrigger(String triggerName, LogTriggerConfig triggerConfig) {
+    private CreateTriggerResponse createLogTrigger(String triggerName,
+        LogTriggerConfig triggerConfig) {
 
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
@@ -1858,7 +1877,8 @@ public class FunctionComputeClientTest {
 
         try {
             Thread.sleep(1000);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+        }
 
         UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
             triggerName);
@@ -1905,7 +1925,8 @@ public class FunctionComputeClientTest {
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
     }
 
-    private CreateTriggerResponse createTimeTrigger(String triggerName, TimeTriggerConfig timeTriggerConfig) {
+    private CreateTriggerResponse createTimeTrigger(String triggerName,
+        TimeTriggerConfig timeTriggerConfig) {
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
         createTReq.setTriggerType(TRIGGER_TYPE_TIMER);
@@ -1916,17 +1937,17 @@ public class FunctionComputeClientTest {
 
     @Test
     public void testInvokeFunctionWithInitializer()
-            throws ParseException, InterruptedException, IOException {
+        throws ParseException, InterruptedException, IOException {
         createService(SERVICE_NAME);
         String functionName = "testInitializer";
         String source = "'use strict';\n" +
-                "var counter = 0;\n" +
-                "exports.initializer = function(ctx, callback) {\n" +
-                "++counter;\n" +
-                "callback(null, '');};\n" +
-                "exports.handler = function(event, context, callback) {\n" +
-                "console.log('hello world, counter is %d', counter);\n" +
-                "callback(null, String(counter));};\n";
+            "var counter = 0;\n" +
+            "exports.initializer = function(ctx, callback) {\n" +
+            "++counter;\n" +
+            "callback(null, '');};\n" +
+            "exports.handler = function(event, context, callback) {\n" +
+            "console.log('hello world, counter is %d', counter);\n" +
+            "callback(null, String(counter));};\n";
 
         byte[] data = createZipByteData("counter.js", source);
 
@@ -1963,10 +1984,10 @@ public class FunctionComputeClientTest {
         assertEquals(1, listFResp.getFunctions().length);
         FunctionMetadata funcNew = listFResp.getFunctions()[0];
         verifyUpdate(funcOld.getFunctionName(), funcNew.getFunctionName(),
-                funcOld.getFunctionId(), funcNew.getFunctionId(),
-                funcOld.getLastModifiedTime(), funcNew.getLastModifiedTime(),
-                funcOld.getCreatedTime(), funcNew.getCreatedTime(),
-                funcOld.getDescription(), funcNew.getDescription());
+            funcOld.getFunctionId(), funcNew.getFunctionId(),
+            funcOld.getLastModifiedTime(), funcNew.getLastModifiedTime(),
+            funcOld.getCreatedTime(), funcNew.getCreatedTime(),
+            funcOld.getDescription(), funcNew.getDescription());
 
         // Invoke the function
         InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, functionName);
@@ -1989,7 +2010,8 @@ public class FunctionComputeClientTest {
         // Create Trigger
         TimeTriggerConfig timeTriggerConfig = new TimeTriggerConfig(cronEvery, payload, true);
 
-        CreateTriggerResponse createTriggerResponse = createTimeTrigger(triggerName, timeTriggerConfig);
+        CreateTriggerResponse createTriggerResponse = createTimeTrigger(triggerName,
+            timeTriggerConfig);
 
         assertEquals(triggerName, createTriggerResponse.getTriggerName());
         assertEquals(TRIGGER_TYPE_TIMER, createTriggerResponse.getTriggerType());
@@ -2019,7 +2041,6 @@ public class FunctionComputeClientTest {
         assertEquals(lastModifiedTime, getTResp.getLastModifiedTime());
         // List Triggers
         TriggerMetadata[] triggers = listTriggers(SERVICE_NAME, FUNCTION_NAME);
-
 
         assertEquals(1, triggers.length);
         TriggerMetadata triggerOld = triggers[0];
