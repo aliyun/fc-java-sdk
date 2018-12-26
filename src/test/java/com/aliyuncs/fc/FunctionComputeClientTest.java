@@ -16,8 +16,11 @@ import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 import com.aliyuncs.DefaultAcsClient;
+import com.aliyuncs.auth.BasicSessionCredentials;
+import com.aliyuncs.auth.InstanceProfileCredentialsProvider;
 import com.aliyuncs.fc.client.FunctionComputeClient;
 import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
@@ -214,7 +217,7 @@ public class FunctionComputeClientTest {
                 throw e;
             }
         }
-    }
+    } 
 
     public FunctionComputeClient overrideFCClient(boolean useSts, boolean useHttps)
         throws com.aliyuncs.exceptions.ClientException {
@@ -2321,5 +2324,110 @@ public class FunctionComputeClientTest {
                 routeConfigResp.getRoutes()[i].getQualifier());
         }
     }
+    
+    @Test
+    public void testClientCredentialProviderMock() {
+    	// init CredentialProvider
+    	String ak = "ak";
+    	String sk = "sk";
+    	String stsToken = "sts_token";
+    	BasicSessionCredentials creds = new BasicSessionCredentials(ak, sk, stsToken);
+    	
+    	// mock
+    	InstanceProfileCredentialsProvider credsProvider = mock(InstanceProfileCredentialsProvider.class);
+    	try {
+			when(credsProvider.getCredentials()).thenReturn(creds);
+		} catch (com.aliyuncs.exceptions.ClientException e) {
+			e.printStackTrace();
+		}
+    
+    	// init fc client
+    	Config config = new Config(REGION, ACCOUNT_ID, credsProvider, false);
+    	FunctionComputeClient fcClient = new FunctionComputeClient(config);
+    	
+		// Create a service
+		try{
+			CreateServiceRequest csReq = new CreateServiceRequest();
+			csReq.setServiceName(SERVICE_NAME);
+			csReq.setDescription("FC test service");
+			csReq.setRole("");
+			fcClient.createService(csReq);
+		}catch (Exception e) {
+		}
+		
+		assertEquals(creds.getAccessKeyId(), config.getAccessKeyID());
+		assertEquals(creds.getAccessKeySecret(), config.getAccessKeySecret());
+		assertEquals(creds.getSessionToken(), config.getSecurityToken());
+    }
+    
+    /**
+     *  run only on aliyun ecs, and that ecs need bind a RAM Role
+     */
+    public void testClientCredentialProvider() {
+    	// init CredentialProvider
+        String roleName = "ECSAccessingFCTestRole";
+    	InstanceProfileCredentialsProvider credsProvider = new InstanceProfileCredentialsProvider(roleName);
+
+    	// init fc client
+    	Config config = new Config(REGION, ACCOUNT_ID, credsProvider, false);
+    	FunctionComputeClient fcClient = new FunctionComputeClient(config);
+    	
+		// Create a service
+		CreateServiceRequest csReq = new CreateServiceRequest();
+		csReq.setServiceName(SERVICE_NAME);
+		csReq.setDescription("FC test service");
+		csReq.setRole("");
+		CreateServiceResponse csResp = fcClient.createService(csReq);
+		System.out.println("Created service, request ID " + csResp.getRequestId());
+		
+		// create a function
+		try {
+	        String source = "exports.handler = function(event, context, callback) {\n" +
+	                "  callback(null, 'hello world');\n" +
+	                "};";
+
+	        byte[] code = createZipByteData("hello_world.js", source);
+
+	        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
+	        createFuncReq.setFunctionName(FUNCTION_NAME);
+	        createFuncReq.setDescription(FUNCTION_DESC_OLD);
+	        createFuncReq.setMemorySize(128);
+	        createFuncReq.setHandler("hello_world.handler");
+	        createFuncReq.setRuntime("nodejs4.4");
+	        createFuncReq.setCode(new Code().setZipFile(code));
+	        createFuncReq.setTimeout(10);
+	        
+	        fcClient.createFunction(createFuncReq);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// Invoke the function with a string as function event parameter, Sync mode
+		InvokeFunctionRequest invkReq = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+		String payload = "Hello FunctionCompute!";
+		invkReq.setPayload(payload.getBytes());
+		InvokeFunctionResponse invkResp = fcClient.invokeFunction(invkReq);
+		System.out.println(new String(invkResp.getContent()));
+
+		// Invoke the function, Async mode
+		invkReq.setInvocationType(Const.INVOCATION_TYPE_ASYNC);
+		invkResp = fcClient.invokeFunction(invkReq);
+		if (HttpURLConnection.HTTP_ACCEPTED == invkResp.getStatus()) {
+			System.out.println("Async invocation has been queued for execution, request ID: " + invkResp.getRequestId());
+		} else {
+			System.out.println("Async invocation was not accepted");
+		}
+		
+		// Delete the function
+		DeleteFunctionRequest dfReq = new DeleteFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+		DeleteFunctionResponse dfResp = fcClient.deleteFunction(dfReq);
+		System.out.println("Deleted function, request ID " + dfResp.getRequestId());
+
+		// Delete the service
+		DeleteServiceRequest dsReq = new DeleteServiceRequest(SERVICE_NAME);
+		DeleteServiceResponse dsResp = fcClient.deleteService(dsReq);
+		System.out.println("Deleted service, request ID " + dsResp.getRequestId());
+    }
+    
 }
 

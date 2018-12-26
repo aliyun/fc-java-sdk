@@ -1,5 +1,8 @@
 package com.aliyuncs.fc.config;
 
+import com.aliyuncs.auth.AlibabaCloudCredentials;
+import com.aliyuncs.auth.AlibabaCloudCredentialsProvider;
+import com.aliyuncs.auth.BasicSessionCredentials;
 import com.aliyuncs.fc.constants.Const;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -22,6 +25,7 @@ public class Config {
     private Boolean isDebug = false;
     private String accountId;
     private String uid;
+    private AlibabaCloudCredentialsProvider credsProvider = null;
 
     private int connectTimeoutMillis = Const.READ_TIMEOUT;
     private int readTimeoutMillis = Const.READ_TIMEOUT;
@@ -29,12 +33,12 @@ public class Config {
     private String host;
     private String userAgent;
 
-    public Config(String region, String uid, String accessKeyID, String accessKeySecret,
-        String securityToken, boolean isHttps) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(region),"Region cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(uid),"Account ID cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeyID),"Access key cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeySecret),"Secret key cannot be blank");
+    public Config(String region, String uid, String accessKeyID, String accessKeySecret, String securityToken,
+            boolean isHttps) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(region), "Region cannot be blank");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(uid), "Account ID cannot be blank");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeyID), "Access key cannot be blank");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeySecret), "Secret key cannot be blank");
 
         this.endpoint = buildEndpoint(region, uid, isHttps);
         this.accessKeyID = accessKeyID;
@@ -46,7 +50,35 @@ public class Config {
             Properties props = new Properties();
             InputStream input = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE);
             props.load(input);
-            if (props.get("useragent.version") != null ) {
+            if (props.get("useragent.version") != null) {
+                this.userAgent = "java-sdk-" + props.get("useragent.version");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Properties file " + PROPERTIES_FILE + " is not found");
+        }
+    }
+
+    /**
+     * init with CredentialProvider for non-AK accessing (ECS instance)
+     * 
+     * @param region
+     * @param uid
+     * @param credsProvider
+     * @param isHttps
+     */
+    public Config(String region, String uid, AlibabaCloudCredentialsProvider credsProvider, boolean isHttps) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(region), "Region cannot be blank");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(uid), "Account ID cannot be blank");
+
+        this.endpoint = buildEndpoint(region, uid, isHttps);
+        this.uid = uid;
+        this.credsProvider = credsProvider;
+        this.userAgent = "";
+        try {
+            Properties props = new Properties();
+            InputStream input = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE);
+            props.load(input);
+            if (props.get("useragent.version") != null) {
                 this.userAgent = "java-sdk-" + props.get("useragent.version");
             }
         } catch (IOException e) {
@@ -122,12 +154,15 @@ public class Config {
     }
 
     /**
-     * Sets a specified timeout value, in milliseconds, to be used when opening a communications
-     * link to the resource referenced by this URLConnection. If the timeout expires before the
-     * connection can be established, a java.net.SocketTimeoutException is raised.
-     * A timeout of zero is interpreted as an infinite timeout.
+     * Sets a specified timeout value, in milliseconds, to be used when opening a
+     * communications link to the resource referenced by this URLConnection. If the
+     * timeout expires before the connection can be established, a
+     * java.net.SocketTimeoutException is raised. A timeout of zero is interpreted
+     * as an infinite timeout.
      *
-     * Also see http://docs.oracle.com/javase/6/docs/api/java/net/URLConnection.html#setReadTimeout%28int%29
+     * Also see
+     * http://docs.oracle.com/javase/6/docs/api/java/net/URLConnection.html#setReadTimeout%28int%29
+     * 
      * @return
      */
     public Config setConnectTimeoutMillis(int connectTimeoutMillis) {
@@ -140,13 +175,15 @@ public class Config {
     }
 
     /**
-     * Sets the read timeout to a specified timeout, in milliseconds.
-     * A non-zero value specifies the timeout when reading from Input stream when a connection
-     * is established to a resource. If the timeout expires before there is data available for read,
-     * a java.net.SocketTimeoutException is raised.
-     * A timeout of zero is interpreted as an infinite timeout.
+     * Sets the read timeout to a specified timeout, in milliseconds. A non-zero
+     * value specifies the timeout when reading from Input stream when a connection
+     * is established to a resource. If the timeout expires before there is data
+     * available for read, a java.net.SocketTimeoutException is raised. A timeout of
+     * zero is interpreted as an infinite timeout.
      *
-     * Also see http://docs.oracle.com/javase/6/docs/api/java/net/URLConnection.html#setReadTimeout%28int%29
+     * Also see
+     * http://docs.oracle.com/javase/6/docs/api/java/net/URLConnection.html#setReadTimeout%28int%29
+     * 
      * @param readTimeoutMillis
      * @return
      */
@@ -179,7 +216,37 @@ public class Config {
 
     private String buildEndpoint(String region, String uid, boolean isHttps) {
         String endpoint = String.format(ENDPOINT_FMT, uid, region);
-            String protocol = isHttps ? "https" : "http";
-            return protocol + "://" + endpoint;
+        String protocol = isHttps ? "https" : "http";
+        return protocol + "://" + endpoint;
     }
+
+    /**
+     * refresh credentials if CredentialProvider set
+     */
+    public void refreshCredentials() {
+        if (this.credsProvider == null)
+            return;
+
+        try {
+            AlibabaCloudCredentials creds = this.credsProvider.getCredentials();
+            this.accessKeyID = creds.getAccessKeyId();
+            this.accessKeySecret = creds.getAccessKeySecret();
+
+            if (creds instanceof BasicSessionCredentials) {
+                this.securityToken = ((BasicSessionCredentials) creds).getSessionToken();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public AlibabaCloudCredentialsProvider getCredsProvider() {
+        return credsProvider;
+    }
+
+    public void setCredsProvider(AlibabaCloudCredentialsProvider credsProvider) {
+        this.credsProvider = credsProvider;
+    }
+
 }
