@@ -33,18 +33,12 @@ public class Config {
     private String host;
     private String userAgent;
 
-    public Config(String region, String uid, String accessKeyID, String accessKeySecret, String securityToken,
-            boolean isHttps) {
+    private Config(String region, String uid, boolean isHttps) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(region), "Region cannot be blank");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(uid), "Account ID cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeyID), "Access key cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeySecret), "Secret key cannot be blank");
 
         this.endpoint = buildEndpoint(region, uid, isHttps);
-        this.accessKeyID = accessKeyID;
-        this.accessKeySecret = accessKeySecret;
         this.uid = uid;
-        this.securityToken = securityToken;
         this.userAgent = "";
         try {
             Properties props = new Properties();
@@ -57,6 +51,18 @@ public class Config {
             throw new RuntimeException("Properties file " + PROPERTIES_FILE + " is not found");
         }
     }
+    
+    public Config(String region, String uid, String accessKeyID, String accessKeySecret, String securityToken,
+            boolean isHttps) {
+        this(region, uid, isHttps);
+        
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeyID), "Access key cannot be blank");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(accessKeySecret), "Secret key cannot be blank");
+        
+        this.accessKeyID = accessKeyID;
+        this.accessKeySecret = accessKeySecret;
+        this.securityToken = securityToken;
+    }
 
     /**
      * init with CredentialProvider for non-AK accessing (ECS instance)
@@ -67,23 +73,9 @@ public class Config {
      * @param isHttps
      */
     public Config(String region, String uid, AlibabaCloudCredentialsProvider credsProvider, boolean isHttps) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(region), "Region cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(uid), "Account ID cannot be blank");
-
-        this.endpoint = buildEndpoint(region, uid, isHttps);
-        this.uid = uid;
+        this(region, uid, isHttps);
+        
         this.credsProvider = credsProvider;
-        this.userAgent = "";
-        try {
-            Properties props = new Properties();
-            InputStream input = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE);
-            props.load(input);
-            if (props.get("useragent.version") != null) {
-                this.userAgent = "java-sdk-" + props.get("useragent.version");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Properties file " + PROPERTIES_FILE + " is not found");
-        }
     }
 
     public String getUid() {
