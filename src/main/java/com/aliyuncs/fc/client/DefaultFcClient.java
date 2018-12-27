@@ -181,6 +181,10 @@ public class DefaultFcClient {
     public HttpResponse doAction(HttpRequest request, String form, HttpMethod method)
         throws ClientException, ServerException {
         request.validate();
+        
+        // try refresh credentials if CredentialProvider set
+        this.config.refreshCredentials();
+        
         try {
             int retryTimes = 0;
             HttpResponse response = null;
