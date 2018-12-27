@@ -16,8 +16,11 @@ import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 import com.aliyuncs.DefaultAcsClient;
+import com.aliyuncs.auth.BasicSessionCredentials;
+import com.aliyuncs.auth.InstanceProfileCredentialsProvider;
 import com.aliyuncs.fc.client.FunctionComputeClient;
 import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
@@ -51,7 +54,6 @@ import com.aliyuncs.fc.request.DeleteFunctionRequest;
 import com.aliyuncs.fc.request.DeleteServiceRequest;
 import com.aliyuncs.fc.request.DeleteTriggerRequest;
 import com.aliyuncs.fc.request.DeleteVersionRequest;
-import com.aliyuncs.fc.request.GetAccountSettingsRequest;
 import com.aliyuncs.fc.request.GetAliasRequest;
 import com.aliyuncs.fc.request.GetCustomDomainRequest;
 import com.aliyuncs.fc.request.GetFunctionCodeRequest;
@@ -78,12 +80,10 @@ import com.aliyuncs.fc.response.CreateFunctionResponse;
 import com.aliyuncs.fc.response.CreateServiceResponse;
 import com.aliyuncs.fc.response.CreateTriggerResponse;
 import com.aliyuncs.fc.response.DeleteAliasResponse;
-import com.aliyuncs.fc.response.DeleteCustomDomainResponse;
 import com.aliyuncs.fc.response.DeleteFunctionResponse;
 import com.aliyuncs.fc.response.DeleteServiceResponse;
 import com.aliyuncs.fc.response.DeleteTriggerResponse;
 import com.aliyuncs.fc.response.DeleteVersionResponse;
-import com.aliyuncs.fc.response.GetAccountSettingsResponse;
 import com.aliyuncs.fc.response.GetAliasResponse;
 import com.aliyuncs.fc.response.GetCustomDomainResponse;
 import com.aliyuncs.fc.response.GetFunctionCodeResponse;
@@ -114,6 +114,7 @@ import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -214,7 +215,7 @@ public class FunctionComputeClientTest {
                 throw e;
             }
         }
-    }
+    } 
 
     public FunctionComputeClient overrideFCClient(boolean useSts, boolean useHttps)
         throws com.aliyuncs.exceptions.ClientException {
@@ -317,12 +318,6 @@ public class FunctionComputeClientTest {
         }
     }
 
-    private void getAccountSettings() throws IOException {
-        GetAccountSettingsResponse response = client
-            .getAccountSettings(new GetAccountSettingsRequest());
-        assertTrue(response.getAccountSettings().getAvailableAZs().length > 0);
-    }
-
     private CreateFunctionResponse createFunction(String functionName) throws IOException {
         String source = "exports.handler = function(event, context, callback) {\n" +
             "  callback(null, 'hello world');\n" +
@@ -360,22 +355,28 @@ public class FunctionComputeClientTest {
     }
 
     private CreateServiceResponse createService(String serviceName) {
+        return createSerivce(serviceName, true);
+    }
+    
+    private CreateServiceResponse createSerivce(String serviceName, boolean check) {
         CreateServiceRequest createSReq = new CreateServiceRequest();
         createSReq.setServiceName(serviceName);
         createSReq.setDescription(SERVICE_DESC_OLD);
         createSReq.setRole(ROLE);
 
         CreateServiceResponse response = client.createService(createSReq);
-
-        assertEquals(serviceName, response.getServiceName());
-        assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
-        assertFalse(Strings.isNullOrEmpty(response.getServiceId()));
-        assertEquals(SERVICE_DESC_OLD, response.getDescription());
-        assertEquals(ROLE, response.getRole());
-
+        
+        if (check) {
+            assertEquals(serviceName, response.getServiceName());
+            assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
+            assertFalse(Strings.isNullOrEmpty(response.getServiceId()));
+            assertEquals(SERVICE_DESC_OLD, response.getDescription());
+            assertEquals(ROLE, response.getRole());
+        }
+        
         return response;
     }
-
+    
     private CreateServiceResponse createVPCService(String serviceName) {
         CreateServiceRequest createSReq = new CreateServiceRequest();
         createSReq.setServiceName(serviceName);
@@ -2149,8 +2150,7 @@ public class FunctionComputeClientTest {
         // Delete custom domain
         DeleteCustomDomainRequest deleteCustomDomainRequest = new DeleteCustomDomainRequest(
             CUSTOMDOMAIN_NAME);
-        DeleteCustomDomainResponse deleteCustomDomainResponse = client
-            .deleteCustomDomain(deleteCustomDomainRequest);
+        client.deleteCustomDomain(deleteCustomDomainRequest);
     }
 
     @Test
@@ -2263,9 +2263,8 @@ public class FunctionComputeClientTest {
 
         for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
             // create http trigger
-            CreateTriggerResponse createTriggerResponse =
-                createHttpTriggerWithQualifier(TRIGGER_NAME, publishVersionResponse.getVersionId(),
-                    auth, new HttpMethod[]{GET, POST});
+            createHttpTriggerWithQualifier(TRIGGER_NAME, publishVersionResponse.getVersionId(),
+                auth, new HttpMethod[]{GET, POST});
 
             // Invoke the function
             HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
@@ -2321,5 +2320,77 @@ public class FunctionComputeClientTest {
                 routeConfigResp.getRoutes()[i].getQualifier());
         }
     }
+    
+    @Test
+    public void testClientCredentialProviderMock() {
+    	// init CredentialProvider
+        String ak = "ak";
+        String sk = "sk";
+        String stsToken = "sts_token";
+        BasicSessionCredentials creds = new BasicSessionCredentials(ak, sk, stsToken);
+        
+        // mock
+        InstanceProfileCredentialsProvider credsProvider = mock(InstanceProfileCredentialsProvider.class);
+        
+        try {
+            when(credsProvider.getCredentials()).thenReturn(creds);
+        } catch (com.aliyuncs.exceptions.ClientException e) {
+            e.printStackTrace();
+        }
+        
+        // init fc client
+        Config config = new Config(REGION, ACCOUNT_ID, credsProvider, false);
+        FunctionComputeClient fcClient = new FunctionComputeClient(config);
+        client = fcClient;
+        
+        // Create a service
+        try{
+            createService(SERVICE_NAME);
+        }catch (Exception e) {
+        }
+        
+        assertEquals(creds.getAccessKeyId(), config.getAccessKeyID());
+        assertEquals(creds.getAccessKeySecret(), config.getAccessKeySecret());
+        assertEquals(creds.getSessionToken(), config.getSecurityToken());
+    }
+    
+    /**
+     *  run only on aliyun ecs, and that ecs need bind a RAM Role
+     */
+    public void testClientCredentialProvider() {
+        // init CredentialProvider
+        String roleName = "ECSAccessingFCTestRole";
+        InstanceProfileCredentialsProvider credsProvider = new InstanceProfileCredentialsProvider(roleName);
+        
+        // init fc client
+        Config config = new Config(REGION, ACCOUNT_ID, credsProvider, false);
+        FunctionComputeClient fcClient = new FunctionComputeClient(config);
+        client = fcClient;
+        
+        // Create a service
+        try{
+            createSerivce(SERVICE_NAME, false);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // create a function
+        try {
+            createFunction(FUNCTION_NAME);
+        }catch (Exception e) {
+        	e.printStackTrace();
+        }
+        
+        // Invoke the function with a string as function event parameter, Sync mode
+        InvokeFunctionRequest invkReq = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        String payload = "Hello FunctionCompute!";
+        invkReq.setPayload(payload.getBytes());
+        InvokeFunctionResponse invkResp = client.invokeFunction(invkReq);
+        System.out.println(new String(invkResp.getContent()));
+        
+        cleanUpFunctions(SERVICE_NAME);
+        cleanupService(SERVICE_NAME);
+    }
+    
 }
 
