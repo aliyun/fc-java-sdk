@@ -1,3 +1,7 @@
+1.3.2 / 2018-12-27
+==================
+  * add CredentialProvider support for FC client
+
 1.3.1 / 2018-11-22
 ==================
   * add Get Account Setting
