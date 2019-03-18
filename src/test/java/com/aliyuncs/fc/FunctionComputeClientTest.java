@@ -401,16 +401,18 @@ public class FunctionComputeClientTest {
         return response;
     }
 
-    private CreateTriggerResponse createHttpTrigger(String triggerName, HttpAuthType authType,
+    private CreateTriggerResponse createHttpTrigger(String triggerName, String description, HttpAuthType authType,
         HttpMethod[] methods) {
-        return createHttpTriggerWithQualifier(triggerName, "", authType, methods);
+        return createHttpTriggerWithQualifier(triggerName, description, "", authType, methods);
     }
 
     private CreateTriggerResponse createHttpTriggerWithQualifier(String triggerName,
+        String description,
         String qualifier,
         HttpAuthType authType, HttpMethod[] methods) {
         CreateTriggerRequest createReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createReq.setTriggerName(triggerName);
+        createReq.setDescription(description);
         createReq.setTriggerType(TRIGGER_TYPE_HTTP);
         createReq.setTriggerConfig(new HttpTriggerConfig(authType, methods));
         if (!qualifier.isEmpty()) {
@@ -419,10 +421,11 @@ public class FunctionComputeClientTest {
         return client.createTrigger(createReq);
     }
 
-    private CreateTriggerResponse createOssTrigger(String triggerName, String prefix,
+    private CreateTriggerResponse createOssTrigger(String triggerName, String desc, String prefix,
         String suffix) {
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
+        createTReq.setDescription(desc);
         createTReq.setTriggerType(TRIGGER_TYPE_OSS);
         createTReq.setInvocationRole(INVOCATION_ROLE);
         createTReq.setSourceArn(OSS_SOURCE_ARN);
@@ -614,8 +617,9 @@ public class FunctionComputeClientTest {
         // Create Function
         createFunction(FUNCTION_NAME);
 
+        String desc = "create http trigger";
         // create http trigger
-        createHttpTrigger(TRIGGER_NAME, ANONYMOUS, new HttpMethod[]{GET, POST});
+        createHttpTrigger(TRIGGER_NAME, desc, ANONYMOUS, new HttpMethod[]{GET, POST});
 
         // List Triggers
         TriggerMetadata[] triggers = listTriggers(SERVICE_NAME, FUNCTION_NAME);
@@ -625,6 +629,7 @@ public class FunctionComputeClientTest {
         TriggerMetadata trigger = triggers[0];
 
         assertEquals(TRIGGER_NAME, trigger.getTriggerName());
+        assertEquals(desc, trigger.getDescription());
         assertEquals("http", trigger.getTriggerType());
 
         // retrieve http trigger
@@ -637,6 +642,7 @@ public class FunctionComputeClientTest {
 
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(TRIGGER_NAME, getTResp.getTriggerName());
+        assertEquals(desc, getTResp.getDescription());
         assertEquals(TRIGGER_TYPE_HTTP, getTResp.getTriggerType());
         assertTrue(deepEquals(new HttpMethod[]{GET, POST}, triggerConfig.getMethods()));
 
@@ -645,13 +651,17 @@ public class FunctionComputeClientTest {
         HttpTriggerConfig updateTriggerConfig = new HttpTriggerConfig(
             FUNCTION, new HttpMethod[]{POST});
 
+        String desc_update_trigger = "update http trigger";
+
         UpdateTriggerRequest updateTReq = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
             TRIGGER_NAME);
         updateTReq.setTriggerConfig(updateTriggerConfig);
+        updateTReq.setDescription(desc_update_trigger);
 
         Thread.sleep(1000);
 
         UpdateTriggerResponse updateTResp = updateTrigger(updateTReq);
+        assertEquals(desc_update_trigger, updateTResp.getDescription());
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
 
         Gson gson = new Gson();
@@ -768,7 +778,7 @@ public class FunctionComputeClientTest {
         for (int i = 0; i < numTriggers; i++) {
             String prefix = "prefix";
             String suffix = "suffix";
-            CreateTriggerResponse createTResp = createOssTrigger(TRIGGER_NAME + i,
+            CreateTriggerResponse createTResp = createOssTrigger(TRIGGER_NAME + i, "",
                 prefix + i, suffix + i);
             assertFalse(Strings.isNullOrEmpty(createTResp.getRequestId()));
         }
@@ -1359,7 +1369,7 @@ public class FunctionComputeClientTest {
 
         for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
             // create http trigger
-            createHttpTrigger(TRIGGER_NAME.concat(auth.toString()), auth,
+            createHttpTrigger(TRIGGER_NAME.concat(auth.toString()), "", auth,
                 new HttpMethod[]{GET, POST});
             // sleep sometime so that the function cache in the API server will
             // be updated (default is 10 seconds)
@@ -1442,7 +1452,7 @@ public class FunctionComputeClientTest {
 
         for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
             // create http trigger
-            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[]{GET, POST, PUT, HEAD, DELETE});
+            createHttpTrigger(TRIGGER_NAME, "", auth, new HttpMethod[]{GET, POST, PUT, HEAD, DELETE});
 
             // Invoke the function
             HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
@@ -1650,8 +1660,9 @@ public class FunctionComputeClientTest {
             // Create Trigger
             String tfPrefix = "prefix";
             String tfSuffix = "suffix";
+            String oss_trigger_desc = "create oss trigger";
 
-            createOssTrigger(TRIGGER_NAME, tfPrefix, tfSuffix);
+            createOssTrigger(TRIGGER_NAME, oss_trigger_desc, tfPrefix, tfSuffix);
 
             // List Triggers
             TriggerMetadata[] triggers = listTriggers(SERVICE_NAME, FUNCTION_NAME);
@@ -1659,9 +1670,11 @@ public class FunctionComputeClientTest {
             assertEquals(1, triggers.length);
             TriggerMetadata triggerOld = triggers[0];
             assertEquals(TRIGGER_NAME, triggerOld.getTriggerName());
+            assertEquals(oss_trigger_desc, triggerOld.getDescription());
 
             // Update Trigger
             String newInvocationRole = INVOCATION_ROLE + "_new";
+            String update_oss_trigger = "update oss trigger";
             String tfPrefixNew = "prefix_new";
             String tfSuffixNew = "suffix_new";
             String[] eventsNew = new String[]{"oss:ObjectCreated:PutObject"};
@@ -1670,10 +1683,12 @@ public class FunctionComputeClientTest {
 
             UpdateTriggerRequest updateTReq = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
                 TRIGGER_NAME);
+            updateFReq.setDescription(update_oss_trigger);
             updateTReq.setInvocationRole(newInvocationRole);
             updateTReq.setTriggerConfig(updateTriggerConfig);
             UpdateTriggerResponse updateTResp = updateTrigger(updateTReq);
             assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+            assertEquals(update_oss_trigger, updateTResp.getDescription());
             assertNotEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
             assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
             Gson gson = new Gson();
@@ -1702,6 +1717,7 @@ public class FunctionComputeClientTest {
                 .fromJson(gson.toJson(getTResp.getTriggerConfig()), OSSTriggerConfig.class);
             assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
             assertEquals(TRIGGER_NAME, getTResp.getTriggerName());
+            assertEquals(updateTResp, getTResp.getDescription());
             assertEquals(OSS_SOURCE_ARN, getTResp.getSourceARN());
             assertEquals(TRIGGER_TYPE_OSS, getTResp.getTriggerType());
             assertEquals(newInvocationRole, getTResp.getInvocationRole());
@@ -1757,6 +1773,7 @@ public class FunctionComputeClientTest {
 
     private void testCdnEventsTrigger() throws ParseException, InterruptedException {
         String triggerName = TRIGGER_TYPE_CDN + "_" + TRIGGER_NAME;
+        String desc = "create cdn event trigger";
 
         String EVENT_NAME = "LogFileCreated";
 
@@ -1778,6 +1795,7 @@ public class FunctionComputeClientTest {
 
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
+        createTReq.setDescription(desc);
         createTReq.setTriggerType(TRIGGER_TYPE_CDN);
         createTReq.setInvocationRole(INVOCATION_ROLE);
         createTReq.setSourceArn(CDN_SOURCE_ARN);
@@ -1790,6 +1808,7 @@ public class FunctionComputeClientTest {
         assertEquals(1, triggers.length);
         TriggerMetadata triggerOld = triggers[0];
         assertEquals(triggerName, triggerOld.getTriggerName());
+        assertEquals(desc, triggerOld.getDescription());
 
         Thread.sleep(300);
 
@@ -1802,11 +1821,14 @@ public class FunctionComputeClientTest {
 
         UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
             triggerName);
+        String update_trigger_desc = "update cdn event trigger";
         req.setInvocationRole(INVOCATION_ROLE);
+        req.setDescription(update_trigger_desc);
         req.setTriggerConfig(updateConfig);
 
         UpdateTriggerResponse updateTResp = client.updateTrigger(req);
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+        assertEquals(update_trigger_desc, updateTResp.getDescription());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
         assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
         Gson gson = new Gson();
@@ -1834,6 +1856,7 @@ public class FunctionComputeClientTest {
             .fromJson(gson.toJson(getTResp.getTriggerConfig()), CdnEventsTriggerConfig.class);
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(triggerName, getTResp.getTriggerName());
+        assertEquals(update_trigger_desc, getTResp.getDescription());
         assertEquals(CDN_SOURCE_ARN, getTResp.getSourceARN());
         assertEquals(TRIGGER_TYPE_CDN, getTResp.getTriggerType());
         assertEquals(EVENT_NAME, config.getEventName());
@@ -1843,11 +1866,12 @@ public class FunctionComputeClientTest {
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
     }
 
-    private CreateTriggerResponse createLogTrigger(String triggerName,
+    private CreateTriggerResponse createLogTrigger(String triggerName, String desc,
         LogTriggerConfig triggerConfig) {
 
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
+        createTReq.setDescription(desc);
         createTReq.setTriggerType(TRIGGER_TYPE_LOG);
         createTReq.setInvocationRole(INVOCATION_ROLE);
         createTReq.setSourceArn(LOG_SOURCE_ARN);
@@ -1866,7 +1890,9 @@ public class FunctionComputeClientTest {
                 setLogConfig(new LogTriggerConfig.LogConfig("", "")).
                 setFunctionParameter(new HashMap<String, Object>()).setEnable(true);
 
-        createLogTrigger(triggerName, triggerConfig);
+        String desc = "create log trigger";
+
+        createLogTrigger(triggerName, desc, triggerConfig);
 
         // List Triggers
         TriggerMetadata[] triggers = listTriggers(SERVICE_NAME, FUNCTION_NAME);
@@ -1875,6 +1901,7 @@ public class FunctionComputeClientTest {
         TriggerMetadata triggerOld = triggers[0];
 
         assertEquals(triggerName, triggerOld.getTriggerName());
+        assertEquals(desc, triggerOld.getDescription());
 
         try {
             Thread.sleep(1000);
@@ -1883,13 +1910,16 @@ public class FunctionComputeClientTest {
 
         UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
             triggerName);
+        String update_trigger_desc = "update log trigger";
         req.setInvocationRole(INVOCATION_ROLE);
+        req.setDescription(update_trigger_desc);
         req.setTriggerConfig(
             new LogTriggerConfig().
                 setJobConfig(
                     new LogTriggerConfig.JobConfig().setMaxRetryTime(5).setTriggerInterval(120)));
         UpdateTriggerResponse updateTResp = client.updateTrigger(req);
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+        assertEquals(updateTResp, updateTResp.getDescription());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
         assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
         Gson gson = new Gson();
@@ -1917,6 +1947,7 @@ public class FunctionComputeClientTest {
             .fromJson(gson.toJson(getTResp.getTriggerConfig()), LogTriggerConfig.class);
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(triggerName, getTResp.getTriggerName());
+        assertEquals(updateTResp, getTResp.getDescription());
         assertEquals(LOG_SOURCE_ARN, getTResp.getSourceARN());
         assertEquals(TRIGGER_TYPE_LOG, getTResp.getTriggerType());
         assertEquals(5, getTConfig.getJobConfig().getMaxRetryTime().intValue());
@@ -1926,10 +1957,11 @@ public class FunctionComputeClientTest {
         deleteTrigger(SERVICE_NAME, FUNCTION_NAME, triggerName);
     }
 
-    private CreateTriggerResponse createTimeTrigger(String triggerName,
+    private CreateTriggerResponse createTimeTrigger(String triggerName, String description,
         TimeTriggerConfig timeTriggerConfig) {
         CreateTriggerRequest createTReq = new CreateTriggerRequest(SERVICE_NAME, FUNCTION_NAME);
         createTReq.setTriggerName(triggerName);
+        createTReq.setDescription(description);
         createTReq.setTriggerType(TRIGGER_TYPE_TIMER);
         createTReq.setTriggerConfig(timeTriggerConfig);
 
@@ -2004,6 +2036,7 @@ public class FunctionComputeClientTest {
     private void testTimeTrigger() throws ParseException {
         String cronEvery = "@every 5m";
         String cronExpression = "0 2 * * * *";
+        String desc = "create time trigger";
         String payload = "awesome-fc";
         String triggerName = TRIGGER_TYPE_TIMER + "_" + TRIGGER_NAME;
         Gson gson = new Gson();
@@ -2011,10 +2044,11 @@ public class FunctionComputeClientTest {
         // Create Trigger
         TimeTriggerConfig timeTriggerConfig = new TimeTriggerConfig(cronEvery, payload, true);
 
-        CreateTriggerResponse createTriggerResponse = createTimeTrigger(triggerName,
+        CreateTriggerResponse createTriggerResponse = createTimeTrigger(triggerName, desc,
             timeTriggerConfig);
 
         assertEquals(triggerName, createTriggerResponse.getTriggerName());
+        assertEquals(desc, createTriggerResponse.getDescription());
         assertEquals(TRIGGER_TYPE_TIMER, createTriggerResponse.getTriggerType());
 
         String createTime = createTriggerResponse.getCreatedTime();
@@ -2034,6 +2068,7 @@ public class FunctionComputeClientTest {
             .fromJson(gson.toJson(getTResp.getTriggerConfig()), TimeTriggerConfig.class);
         assertFalse(Strings.isNullOrEmpty(getTResp.getRequestId()));
         assertEquals(triggerName, getTResp.getTriggerName());
+        assertEquals(desc, getTResp.getDescription());
         assertEquals(TRIGGER_TYPE_TIMER, getTResp.getTriggerType());
         assertEquals(timeTriggerConfig.getCronExpression(), getTConfig.getCronExpression());
         assertEquals(timeTriggerConfig.getPayload(), getTConfig.getPayload());
@@ -2046,6 +2081,7 @@ public class FunctionComputeClientTest {
         assertEquals(1, triggers.length);
         TriggerMetadata triggerOld = triggers[0];
         assertEquals(triggerName, triggerOld.getTriggerName());
+        assertEquals(desc, triggerOld.getDescription());
 
         try {
             Thread.sleep(1000);
@@ -2055,11 +2091,14 @@ public class FunctionComputeClientTest {
         // Update Triggers
         UpdateTriggerRequest req = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
             triggerName);
+        String update_trigger_desc = "update time trigger";
         req.setTriggerConfig(
             new TimeTriggerConfig().setCronExpression(cronExpression).setPayload(payload)
                 .setEnable(true));
+        req.setDescription(update_trigger_desc);
         UpdateTriggerResponse updateTResp = client.updateTrigger(req);
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
+        assertEquals(update_trigger_desc, updateTResp.getDescription());
         TimeTriggerConfig tcOld = gson
             .fromJson(gson.toJson(triggerOld.getTriggerConfig()), TimeTriggerConfig.class);
         TimeTriggerConfig tcNew = gson
@@ -2263,7 +2302,7 @@ public class FunctionComputeClientTest {
 
         for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
             // create http trigger
-            createHttpTriggerWithQualifier(TRIGGER_NAME, publishVersionResponse.getVersionId(),
+            createHttpTriggerWithQualifier(TRIGGER_NAME, "", publishVersionResponse.getVersionId(),
                 auth, new HttpMethod[]{GET, POST});
 
             // Invoke the function

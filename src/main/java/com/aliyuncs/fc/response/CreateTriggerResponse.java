@@ -39,6 +39,11 @@ public class CreateTriggerResponse extends HttpResponse {
         return triggerMetadata.getTriggerName();
     }
 
+    public String getDescription() {
+        Preconditions.checkArgument(triggerMetadata != null);
+        return triggerMetadata.getDescription();
+    }
+
     public String getSourceARN() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getSourceArn();
