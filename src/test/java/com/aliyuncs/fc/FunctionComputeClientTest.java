@@ -1683,7 +1683,7 @@ public class FunctionComputeClientTest {
 
             UpdateTriggerRequest updateTReq = new UpdateTriggerRequest(SERVICE_NAME, FUNCTION_NAME,
                 TRIGGER_NAME);
-            updateFReq.setDescription(update_oss_trigger);
+            updateTReq.setDescription(update_oss_trigger);
             updateTReq.setInvocationRole(newInvocationRole);
             updateTReq.setTriggerConfig(updateTriggerConfig);
             UpdateTriggerResponse updateTResp = updateTrigger(updateTReq);
@@ -1919,7 +1919,7 @@ public class FunctionComputeClientTest {
                     new LogTriggerConfig.JobConfig().setMaxRetryTime(5).setTriggerInterval(120)));
         UpdateTriggerResponse updateTResp = client.updateTrigger(req);
         assertEquals(triggerOld.getTriggerName(), updateTResp.getTriggerName());
-        assertEquals(updateTResp, updateTResp.getDescription());
+        assertEquals(update_trigger_desc, updateTResp.getDescription());
         assertEquals(triggerOld.getInvocationRole(), updateTResp.getInvocationRole());
         assertEquals(triggerOld.getSourceArn(), updateTResp.getSourceArn());
         Gson gson = new Gson();
