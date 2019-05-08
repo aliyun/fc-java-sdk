@@ -26,23 +26,8 @@ import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
-import com.aliyuncs.fc.model.AliasMetaData;
-import com.aliyuncs.fc.model.CdnEventsTriggerConfig;
-import com.aliyuncs.fc.model.Code;
-import com.aliyuncs.fc.model.FunctionMetadata;
-import com.aliyuncs.fc.model.HttpAuthType;
-import com.aliyuncs.fc.model.HttpMethod;
-import com.aliyuncs.fc.model.HttpTriggerConfig;
-import com.aliyuncs.fc.model.LogTriggerConfig;
-import com.aliyuncs.fc.model.NasConfig;
+import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.model.NasConfig.NasMountConfig;
-import com.aliyuncs.fc.model.OSSTriggerConfig;
-import com.aliyuncs.fc.model.PathConfig;
-import com.aliyuncs.fc.model.RouteConfig;
-import com.aliyuncs.fc.model.TimeTriggerConfig;
-import com.aliyuncs.fc.model.TriggerMetadata;
-import com.aliyuncs.fc.model.VersionMetaData;
-import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.request.CreateAliasRequest;
 import com.aliyuncs.fc.request.CreateCustomDomainRequest;
 import com.aliyuncs.fc.request.CreateFunctionRequest;
@@ -163,6 +148,10 @@ public class FunctionComputeClientTest {
     private static final String GROUP_ID = System.getenv("GROUP_ID");
     private static final String NAS_SERVER_ADDR = System.getenv("NAS_SERVER_ADDR");
     private static final String NAS_MOUNT_DIR = System.getenv("NAS_MOUNT_DIR");
+    private static final String PUBLIC_KEY_CERTIFICATE_01 = System.getenv("PUBLIC_KEY_CERTIFICATE_01");
+    private static final String PRIVATE_KEY_01 = System.getenv("PRIVATE_KEY_01");
+    private static final String PUBLIC_KEY_CERTIFICATE_02 = System.getenv("PUBLIC_KEY_CERTIFICATE_02");
+    private static final String PRIVATE_KEY_02 = System.getenv("PRIVATE_KEY_02");
 
     private static final String OSS_SOURCE_ARN =
         String.format("acs:oss:%s:%s:%s", REGION, ACCOUNT_ID, CODE_BUCKET);
@@ -183,6 +172,7 @@ public class FunctionComputeClientTest {
     private static final String TRIGGER_TYPE_CDN = "cdn_events";
     private static final String TRIGGER_TYPE_TIMER = "timer";
     private static final String CUSTOMDOMAIN_NAME = "javasdk.cn-hongkong.1221968287646227.cname-test.fc.aliyun-inc.com";
+    private static final String CERT_NAME = "CERT_NAME";
     private static final Gson gson = new Gson();
     private FunctionComputeClient client;
 
@@ -2150,6 +2140,74 @@ public class FunctionComputeClientTest {
         // Delete custom domain
         DeleteCustomDomainRequest deleteCustomDomainRequest = new DeleteCustomDomainRequest(
             CUSTOMDOMAIN_NAME);
+        client.deleteCustomDomain(deleteCustomDomainRequest);
+    }
+
+    @Test
+    public void testCustomDomainWithHTTPS()
+            throws ClientException, JSONException, InterruptedException, ParseException, IOException {
+        cleanupCustomDomain(CUSTOMDOMAIN_NAME);
+        String certificate1 = PUBLIC_KEY_CERTIFICATE_01.replace("\\n", "\n").replace("\"","");
+        String certificate2 = PUBLIC_KEY_CERTIFICATE_02.replace("\\n", "\n").replace("\"","");
+        String privateKey1 = PRIVATE_KEY_01.replace("\\n", "\n").replace("\"","");
+        String privateKey2 = PRIVATE_KEY_02.replace("\\n", "\n").replace("\"","");
+        // Create custom domain
+        CreateCustomDomainRequest createCustomDomainRequest = new CreateCustomDomainRequest();
+        PathConfig pathConfig = new PathConfig("/", "serviceName", "functionName", null);
+        PathConfig[] routes = new PathConfig[1];
+        routes[0] = pathConfig;
+        RouteConfig routeConfig = new RouteConfig(routes);
+        CertConfig certConfig = new CertConfig(CERT_NAME, certificate1, privateKey1);
+        createCustomDomainRequest.setDomainName(CUSTOMDOMAIN_NAME);
+        createCustomDomainRequest.setProtocol("HTTP,HTTPS");
+        createCustomDomainRequest.setRouteConfig(routeConfig);
+        createCustomDomainRequest.setCertConfig(certConfig);
+        CreateCustomDomainResponse createCustomDomainResponse = client
+                .createCustomDomain(createCustomDomainRequest);
+        assertEquals(CUSTOMDOMAIN_NAME, createCustomDomainResponse.getDomainName());
+        assertEquals("HTTP,HTTPS", createCustomDomainResponse.getProtocol());
+        assertNotNull(createCustomDomainResponse.getRouteConfig().getRoutes());
+        assertEqualsRouteConfig(routeConfig, createCustomDomainResponse.getRouteConfig());
+        assertNotNull(createCustomDomainResponse.getCertConfig());
+        assertEquals(certificate1, createCustomDomainResponse.getCertConfig().getCertificate());
+
+        // Update custom domain
+        UpdateCustomDomainRequest updateCustomDomainRequest = new UpdateCustomDomainRequest(
+                CUSTOMDOMAIN_NAME);
+        PathConfig pathConfig1 = new PathConfig("/login", "serviceName1", "functionName1", null);
+        PathConfig[] routes1 = new PathConfig[2];
+        routes1[0] = pathConfig;
+        routes1[1] = pathConfig1;
+        RouteConfig routeConfig1 = new RouteConfig(routes1);
+        certConfig = new CertConfig(CERT_NAME, certificate2, privateKey2);
+        updateCustomDomainRequest.setRouteConfig(routeConfig1);
+        updateCustomDomainRequest.setCertConfig(certConfig);
+        UpdateCustomDomainResponse updateCustomDomainResponse = client
+                .updateCustomDomain(updateCustomDomainRequest);
+        assertEqualsRouteConfig(routeConfig1, updateCustomDomainResponse.getRouteConfig());
+        assertNotNull(updateCustomDomainResponse.getCertConfig());
+        assertEquals(certificate2, updateCustomDomainResponse.getCertConfig().getCertificate());
+
+        // Get custom domain
+        GetCustomDomainRequest getCustomDomainRequest = new GetCustomDomainRequest(
+                CUSTOMDOMAIN_NAME);
+        GetCustomDomainResponse getCustomDomainResponse = client
+                .getCustomDomain(getCustomDomainRequest);
+        assertEquals(CUSTOMDOMAIN_NAME, getCustomDomainResponse.getDomainName());
+        assertEquals("HTTP,HTTPS", getCustomDomainResponse.getProtocol());
+        assertEqualsRouteConfig(routeConfig1, getCustomDomainResponse.getRouteConfig());
+        assertNotNull(getCustomDomainResponse.getCertConfig());
+        assertEquals(certificate2, getCustomDomainResponse.getCertConfig().getCertificate());
+
+        // List custom domain
+        ListCustomDomainsRequest listCustomDomainsRequest = new ListCustomDomainsRequest();
+        ListCustomDomainsResponse listCustomDomainsResponse = client
+                .listCustomDomains(listCustomDomainsRequest);
+        assertTrue(listCustomDomainsResponse.getStatus() == HttpURLConnection.HTTP_OK);
+
+        // Delete custom domain
+        DeleteCustomDomainRequest deleteCustomDomainRequest = new DeleteCustomDomainRequest(
+                CUSTOMDOMAIN_NAME);
         client.deleteCustomDomain(deleteCustomDomainRequest);
     }
 
