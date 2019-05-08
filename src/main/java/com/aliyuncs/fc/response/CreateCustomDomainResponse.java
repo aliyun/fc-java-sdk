@@ -1,10 +1,8 @@
 package com.aliyuncs.fc.response;
 
 import com.aliyuncs.fc.http.HttpResponse;
+import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.model.CustomDomainMetaData;
-import com.aliyuncs.fc.model.CustomDomainMetaData;
-import com.aliyuncs.fc.model.PathConfig;
-import com.aliyuncs.fc.model.RouteConfig;
 import com.google.common.base.Preconditions;
 
 public class CreateCustomDomainResponse extends HttpResponse {
@@ -48,5 +46,10 @@ public class CreateCustomDomainResponse extends HttpResponse {
     public String getLastModifiedTime() {
         Preconditions.checkArgument(customDomainMetaData != null);
         return customDomainMetaData.getLastModifiedTime();
+    }
+
+    public CertConfig getCertConfig() {
+        Preconditions.checkArgument(customDomainMetaData != null);
+        return customDomainMetaData.getCertConfig();
     }
 }
