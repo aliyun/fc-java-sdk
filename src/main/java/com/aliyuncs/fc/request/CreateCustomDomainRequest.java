@@ -23,6 +23,7 @@ import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.FormatType;
 import com.aliyuncs.fc.http.HttpRequest;
+import com.aliyuncs.fc.model.CertConfig;
 import com.aliyuncs.fc.model.RouteConfig;
 import com.aliyuncs.fc.response.CreateCustomDomainResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
@@ -40,10 +41,20 @@ public class CreateCustomDomainRequest extends HttpRequest {
     @SerializedName("routeConfig")
     private RouteConfig routes;
 
+    @SerializedName("certConfig")
+    private CertConfig certConfig;
+
     public CreateCustomDomainRequest(String domainName, String protocol, RouteConfig routes) {
         this.domainName = domainName;
         this.protocol = protocol;
         this.routes = routes;
+    }
+
+    public CreateCustomDomainRequest(String domainName, String protocol, RouteConfig routes, CertConfig certConfig) {
+        this.domainName = domainName;
+        this.protocol = protocol;
+        this.routes = routes;
+        this.certConfig = certConfig;
     }
 
     public CreateCustomDomainRequest() {
@@ -74,6 +85,14 @@ public class CreateCustomDomainRequest extends HttpRequest {
     public CreateCustomDomainRequest setRouteConfig(RouteConfig routes) {
         this.routes = routes;
         return this;
+    }
+
+    public CertConfig getCertConfig() {
+        return certConfig;
+    }
+
+    public void setCertConfig(CertConfig certConfig) {
+        this.certConfig = certConfig;
     }
 
     public String getPath() {
