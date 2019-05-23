@@ -1,3 +1,7 @@
+1.3.2 / 2019-05-23
+==================
+  * Add Custom Domain HTTPS Support
+
 1.3.1 / 2018-11-22
 ==================
   * add Get Account Setting
