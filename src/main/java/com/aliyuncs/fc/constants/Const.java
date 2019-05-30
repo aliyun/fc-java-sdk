@@ -53,4 +53,6 @@ public class Const {
     public final static String INVOCATION_TYPE_ASYNC = "Async";
     public final static String INVOCATION_TYPE_HTTP = "http";
     public final static String IF_MATCH_HEADER = "If-Match";
+    
+    public final static String DEFAULT_CHARSET="utf-8";
 }

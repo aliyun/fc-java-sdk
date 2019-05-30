@@ -35,6 +35,7 @@ import com.aliyuncs.fc.http.HttpResponse;
 import com.aliyuncs.fc.model.HttpMethod;
 import com.aliyuncs.fc.model.PrepareUrl;
 import com.aliyuncs.fc.request.HttpInvokeFunctionRequest;
+import com.aliyuncs.fc.utils.FcUtil;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
@@ -216,7 +217,7 @@ public class DefaultFcClient {
             if (response.getStatus() >= 500) {
                 String requestId = response.getHeader(HeaderKeys.REQUEST_ID);
                 String stringContent =
-                    response.getContent() == null ? "" : new String(response.getContent());
+                    response.getContent() == null ? "" : FcUtil.toDefaultCharset(response.getContent());
                 ServerException se;
                 try {
                     se = new Gson().fromJson(stringContent, ServerException.class);
@@ -235,7 +236,7 @@ public class DefaultFcClient {
                 } else {
                     try {
                         ce = new Gson()
-                            .fromJson(new String(response.getContent()), ClientException.class);
+                            .fromJson(FcUtil.toDefaultCharset(response.getContent()), ClientException.class);
                     } catch (JsonParseException e) {
                         ce = new ClientException("SDK.ResponseNotParsable",
                             "Failed to parse response content", e);
