@@ -25,6 +25,7 @@ import static com.aliyuncs.fc.model.HttpMethod.POST;
 import static com.aliyuncs.fc.model.HttpMethod.PUT;
 
 import com.aliyuncs.fc.config.Config;
+import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.constants.HeaderKeys;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ServerException;
@@ -101,7 +102,9 @@ import com.aliyuncs.fc.response.UpdateTriggerResponse;
 import com.aliyuncs.fc.response.GetAccountSettingsResponse;
 import com.aliyuncs.fc.request.GetAccountSettingsRequest;
 import com.aliyuncs.fc.utils.Base64Helper;
+import com.aliyuncs.fc.utils.FcUtil;
 import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -147,8 +150,7 @@ public class FunctionComputeClient {
 
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         GetAccountSettingsResponse getAccountSettingsOutput = new GetAccountSettingsResponse();
-        AccountSettings accountSettings = GSON.fromJson(
-            new String(response.getContent()), AccountSettings.class);
+        AccountSettings accountSettings = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), AccountSettings.class);
         getAccountSettingsOutput.setHeaders(response.getHeaders());
         getAccountSettingsOutput.setStatus(response.getStatus());
         getAccountSettingsOutput.setAccountSettings(accountSettings);
@@ -187,8 +189,7 @@ public class FunctionComputeClient {
     public GetServiceResponse getService(GetServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ServiceMetadata serviceMetadata = GSON.fromJson(
-            new String(response.getContent()), ServiceMetadata.class);
+        ServiceMetadata serviceMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ServiceMetadata.class);
         GetServiceResponse getServiceResponse = new GetServiceResponse();
         getServiceResponse.setServiceMetadata(serviceMetadata);
         getServiceResponse.setHeaders(response.getHeaders());
@@ -200,8 +201,7 @@ public class FunctionComputeClient {
     public GetFunctionResponse getFunction(GetFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        FunctionMetadata functionMetadata = GSON.fromJson(
-            new String(response.getContent()), FunctionMetadata.class);
+        FunctionMetadata functionMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), FunctionMetadata.class);
         GetFunctionResponse getFunctionResponse = new GetFunctionResponse();
         getFunctionResponse.setFunctionMetadata(functionMetadata);
         getFunctionResponse.setHeaders(response.getHeaders());
@@ -213,8 +213,7 @@ public class FunctionComputeClient {
     public GetFunctionCodeResponse getFunctionCode(GetFunctionCodeRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        FunctionCodeMetadata functionCodeMetadata = GSON.fromJson(
-            new String(response.getContent()), FunctionCodeMetadata.class);
+        FunctionCodeMetadata functionCodeMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), FunctionCodeMetadata.class);
         GetFunctionCodeResponse getFunctionCodeResponse = new GetFunctionCodeResponse();
         getFunctionCodeResponse.setFunctionCodeMetadata(functionCodeMetadata);
         getFunctionCodeResponse.setHeaders(response.getHeaders());
@@ -226,8 +225,7 @@ public class FunctionComputeClient {
     public GetCustomDomainResponse getCustomDomain(GetCustomDomainRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        CustomDomainMetaData customDomainMetadata = GSON.fromJson(
-            new String(response.getContent()), CustomDomainMetaData.class);
+        CustomDomainMetaData customDomainMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), CustomDomainMetaData.class);
         GetCustomDomainResponse getCustomDomainResponse = new GetCustomDomainResponse();
         getCustomDomainResponse.setCustomDomainMetadata(customDomainMetadata);
         getCustomDomainResponse.setHeaders(response.getHeaders());
@@ -239,8 +237,7 @@ public class FunctionComputeClient {
     public CreateServiceResponse createService(CreateServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
-        ServiceMetadata serviceMetadata = GSON.fromJson(
-            new String(response.getContent()), ServiceMetadata.class);
+        ServiceMetadata serviceMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ServiceMetadata.class);
         CreateServiceResponse createServiceResponse = new CreateServiceResponse();
         createServiceResponse.setServiceMetadata(serviceMetadata);
         createServiceResponse.setHeaders(response.getHeaders());
@@ -252,8 +249,7 @@ public class FunctionComputeClient {
     public CreateFunctionResponse createFunction(CreateFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
-        FunctionMetadata functionMetadata = GSON.fromJson(
-            new String(response.getContent()), FunctionMetadata.class);
+        FunctionMetadata functionMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), FunctionMetadata.class);
         CreateFunctionResponse createFunctionResponse = new CreateFunctionResponse();
         createFunctionResponse.setFunctionMetadata(functionMetadata);
         createFunctionResponse.setHeaders(response.getHeaders());
@@ -265,8 +261,7 @@ public class FunctionComputeClient {
     public UpdateFunctionResponse updateFunction(UpdateFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
-        FunctionMetadata functionMetadata = GSON.fromJson(
-            new String(response.getContent()), FunctionMetadata.class);
+        FunctionMetadata functionMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), FunctionMetadata.class);
         UpdateFunctionResponse updateFunctionResponse = new UpdateFunctionResponse();
         updateFunctionResponse.setFunctionMetadata(functionMetadata);
         updateFunctionResponse.setHeaders(response.getHeaders());
@@ -278,8 +273,7 @@ public class FunctionComputeClient {
     public UpdateServiceResponse updateService(UpdateServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
-        ServiceMetadata serviceMetadata = GSON.fromJson(
-            new String(response.getContent()), ServiceMetadata.class);
+        ServiceMetadata serviceMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ServiceMetadata.class);
         UpdateServiceResponse updateServiceResponse = new UpdateServiceResponse();
         updateServiceResponse.setServiceMetadata(serviceMetadata);
         updateServiceResponse.setHeaders(response.getHeaders());
@@ -291,8 +285,7 @@ public class FunctionComputeClient {
     public CreateCustomDomainResponse createCustomDomain(CreateCustomDomainRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
-        CustomDomainMetaData customDomainMetaData = GSON.fromJson(
-            new String(response.getContent()), CustomDomainMetaData.class);
+        CustomDomainMetaData customDomainMetaData = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), CustomDomainMetaData.class);
         CreateCustomDomainResponse createCustomDomainResponse = new CreateCustomDomainResponse();
         createCustomDomainResponse.setCustomDomainMetadata(customDomainMetaData);
         createCustomDomainResponse.setHeaders(response.getHeaders());
@@ -304,8 +297,7 @@ public class FunctionComputeClient {
     public UpdateCustomDomainResponse updateCustomDomain(UpdateCustomDomainRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
-        CustomDomainMetaData customDomainMetadata = GSON.fromJson(
-            new String(response.getContent()), CustomDomainMetaData.class);
+        CustomDomainMetaData customDomainMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), CustomDomainMetaData.class);
         UpdateCustomDomainResponse updateCustomDomainResponse = new UpdateCustomDomainResponse();
         updateCustomDomainResponse.setCustomDomainMetadata(customDomainMetadata);
         updateCustomDomainResponse.setHeaders(response.getHeaders());
@@ -317,8 +309,7 @@ public class FunctionComputeClient {
     public ListServicesResponse listServices(ListServicesRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListServicesResponse listServicesResponse = GSON.fromJson(
-            new String(response.getContent()), ListServicesResponse.class);
+        ListServicesResponse listServicesResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListServicesResponse.class);
         listServicesResponse.setHeaders(response.getHeaders());
         listServicesResponse.setContent(response.getContent());
         listServicesResponse.setStatus(response.getStatus());
@@ -328,8 +319,7 @@ public class FunctionComputeClient {
     public ListFunctionsResponse listFunctions(ListFunctionsRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListFunctionsResponse listFunctionsResponse = GSON.fromJson(
-            new String(response.getContent()), ListFunctionsResponse.class);
+        ListFunctionsResponse listFunctionsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListFunctionsResponse.class);
         listFunctionsResponse.setHeaders(response.getHeaders());
         listFunctionsResponse.setContent(response.getContent());
         listFunctionsResponse.setStatus(response.getStatus());
@@ -339,8 +329,7 @@ public class FunctionComputeClient {
     public ListCustomDomainsResponse listCustomDomains(ListCustomDomainsRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListCustomDomainsResponse listCustomDomainsResponse = GSON.fromJson(
-            new String(response.getContent()), ListCustomDomainsResponse.class);
+        ListCustomDomainsResponse listCustomDomainsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListCustomDomainsResponse.class);
         listCustomDomainsResponse.setHeaders(response.getHeaders());
         listCustomDomainsResponse.setContent(response.getContent());
         listCustomDomainsResponse.setStatus(response.getStatus());
@@ -350,8 +339,7 @@ public class FunctionComputeClient {
     public CreateTriggerResponse createTrigger(CreateTriggerRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
-        TriggerMetadata triggerMetadata = GSON.fromJson(
-            new String(response.getContent()), TriggerMetadata.class);
+        TriggerMetadata triggerMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), TriggerMetadata.class);
         CreateTriggerResponse createTriggerResponse = new CreateTriggerResponse();
         createTriggerResponse.setTriggerMetadata(triggerMetadata);
         createTriggerResponse.setHeaders(response.getHeaders());
@@ -372,8 +360,7 @@ public class FunctionComputeClient {
     public UpdateTriggerResponse updateTrigger(UpdateTriggerRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
-        TriggerMetadata triggerMetadata = GSON.fromJson(
-            new String(response.getContent()), TriggerMetadata.class);
+        TriggerMetadata triggerMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), TriggerMetadata.class);
         UpdateTriggerResponse updateTriggerResponse = new UpdateTriggerResponse();
         updateTriggerResponse.setTriggerMetadata(triggerMetadata);
         updateTriggerResponse.setHeaders(response.getHeaders());
@@ -385,8 +372,7 @@ public class FunctionComputeClient {
     public GetTriggerResponse getTrigger(GetTriggerRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        TriggerMetadata triggerMetadata = GSON.fromJson(
-            new String(response.getContent()), TriggerMetadata.class);
+        TriggerMetadata triggerMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), TriggerMetadata.class);
         GetTriggerResponse getTriggerResponse = new GetTriggerResponse();
         getTriggerResponse.setTriggerMetadata(triggerMetadata);
         getTriggerResponse.setHeaders(response.getHeaders());
@@ -398,8 +384,7 @@ public class FunctionComputeClient {
     public ListTriggersResponse listTriggers(ListTriggersRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListTriggersResponse listTriggersResponse = GSON.fromJson(
-            new String(response.getContent()), ListTriggersResponse.class);
+        ListTriggersResponse listTriggersResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListTriggersResponse.class);
         listTriggersResponse.setHeaders(response.getHeaders());
         listTriggersResponse.setContent(response.getContent());
         listTriggersResponse.setStatus(response.getStatus());
@@ -409,8 +394,7 @@ public class FunctionComputeClient {
     public CreateAliasResponse createAlias(CreateAliasRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
-        AliasMetaData aliasMetaData = GSON.fromJson(
-            new String(response.getContent()), AliasMetaData.class);
+        AliasMetaData aliasMetaData = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), AliasMetaData.class);
         CreateAliasResponse createAliasResponse = new CreateAliasResponse(aliasMetaData);
         createAliasResponse.setHeaders(response.getHeaders());
         createAliasResponse.setContent(response.getContent());
@@ -430,8 +414,7 @@ public class FunctionComputeClient {
     public UpdateAliasResponse updateAlias(UpdateAliasRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
-        AliasMetaData aliasMetadata = GSON.fromJson(
-            new String(response.getContent()), AliasMetaData.class);
+        AliasMetaData aliasMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), AliasMetaData.class);
         UpdateAliasResponse updateAliasResponse = new UpdateAliasResponse(aliasMetadata);
         updateAliasResponse.setHeaders(response.getHeaders());
         updateAliasResponse.setContent(response.getContent());
@@ -442,8 +425,7 @@ public class FunctionComputeClient {
     public GetAliasResponse getAlias(GetAliasRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        AliasMetaData aliasMetadata = GSON.fromJson(
-            new String(response.getContent()), AliasMetaData.class);
+        AliasMetaData aliasMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), AliasMetaData.class);
         GetAliasResponse getAliasResponse = new GetAliasResponse(aliasMetadata);
         getAliasResponse.setHeaders(response.getHeaders());
         getAliasResponse.setContent(response.getContent());
@@ -454,8 +436,7 @@ public class FunctionComputeClient {
     public ListAliasesResponse listAliases(ListAliasesRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListAliasesResponse listAliasesResponse = GSON.fromJson(
-            new String(response.getContent()), ListAliasesResponse.class);
+        ListAliasesResponse listAliasesResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListAliasesResponse.class);
         listAliasesResponse.setHeaders(response.getHeaders());
         listAliasesResponse.setContent(response.getContent());
         listAliasesResponse.setStatus(response.getStatus());
@@ -465,8 +446,7 @@ public class FunctionComputeClient {
     public PublishVersionResponse publishVersion(PublishVersionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
-        VersionMetaData versionMetaData = GSON.fromJson(
-            new String(response.getContent()), VersionMetaData.class);
+        VersionMetaData versionMetaData = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), VersionMetaData.class);
         PublishVersionResponse publishVersionResponse = new PublishVersionResponse(versionMetaData);
         publishVersionResponse.setHeaders(response.getHeaders());
         publishVersionResponse.setContent(response.getContent());
@@ -485,9 +465,8 @@ public class FunctionComputeClient {
 
     public ListVersionsResponse listVersions(ListVersionsRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListVersionsResponse listVersionsResponse = GSON.fromJson(
-            new String(response.getContent()), ListVersionsResponse.class);
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);        
+        ListVersionsResponse listVersionsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListVersionsResponse.class);
         listVersionsResponse.setHeaders(response.getHeaders());
         listVersionsResponse.setContent(response.getContent());
         listVersionsResponse.setStatus(response.getStatus());
@@ -526,8 +505,7 @@ public class FunctionComputeClient {
         if (headers != null && headers.containsKey(HeaderKeys.INVOCATION_LOG_RESULT)) {
             try {
                 String logResult = Base64Helper
-                    .decode(headers.get(HeaderKeys.INVOCATION_LOG_RESULT),
-                        Charset.defaultCharset().name());
+                    .decode(headers.get(HeaderKeys.INVOCATION_LOG_RESULT), Const.DEFAULT_CHARSET);
                 invokeFunctionResponse.setLogResult(logResult);
             } catch (IOException e) {
                 throw new ClientException(e);
