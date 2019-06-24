@@ -69,5 +69,18 @@ public class ListRequestUrlHelper {
         }
         return queryParams;
     }
+
+    public static Map<String, String> buildListReservedCapacitiesParams(String nextToken, Integer limit) {
+        Map<String, String> queryParams = new HashMap<String, String>();
+
+        if (nextToken != null) {
+            queryParams.put("nextToken", nextToken);
+        }
+
+        if (limit != null) {
+            queryParams.put("limit", limit.toString());
+        }
+        return queryParams;
+    }
 }
 
