@@ -63,6 +63,7 @@ import com.aliyuncs.fc.request.ListFunctionsRequest;
 import com.aliyuncs.fc.request.ListServicesRequest;
 import com.aliyuncs.fc.request.ListTriggersRequest;
 import com.aliyuncs.fc.request.ListVersionsRequest;
+import com.aliyuncs.fc.request.ListReservedCapacitiesRequest;
 import com.aliyuncs.fc.request.PublishVersionRequest;
 import com.aliyuncs.fc.request.UpdateAliasRequest;
 import com.aliyuncs.fc.request.UpdateCustomDomainRequest;
@@ -93,6 +94,7 @@ import com.aliyuncs.fc.response.ListFunctionsResponse;
 import com.aliyuncs.fc.response.ListServicesResponse;
 import com.aliyuncs.fc.response.ListTriggersResponse;
 import com.aliyuncs.fc.response.ListVersionsResponse;
+import com.aliyuncs.fc.response.ListReservedCapacitiesResponse;
 import com.aliyuncs.fc.response.PublishVersionResponse;
 import com.aliyuncs.fc.response.UpdateAliasResponse;
 import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
@@ -334,6 +336,16 @@ public class FunctionComputeClient {
         listCustomDomainsResponse.setContent(response.getContent());
         listCustomDomainsResponse.setStatus(response.getStatus());
         return listCustomDomainsResponse;
+    }
+
+    public ListReservedCapacitiesResponse listReservedCapacities(ListReservedCapacitiesRequest request)
+        throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        ListReservedCapacitiesResponse listReservedCapacitiesResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListReservedCapacitiesResponse.class);
+        listReservedCapacitiesResponse.setHeaders(response.getHeaders());
+        listReservedCapacitiesResponse.setContent(response.getContent());
+        listReservedCapacitiesResponse.setStatus(response.getStatus());
+        return listReservedCapacitiesResponse;
     }
 
     public CreateTriggerResponse createTrigger(CreateTriggerRequest request)

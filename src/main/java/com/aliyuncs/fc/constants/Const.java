@@ -16,7 +16,7 @@ public class Const {
     public final static String SINGLE_VERSION_PATH = SERVICE_VERSION_PATH + "/%s";
     public final static String ALIAS_PATH = SINGLE_SERVICE_PATH + "/aliases";
     public final static String SINGLE_ALIAS_PATH = ALIAS_PATH + "/%s";
-
+    public final static String RESERVED_CAPACITY_PATH = "/%s/reservedCapacities";
 
     public final static String FUNCTION_CODE_PATH = SINGLE_FUNCTION_PATH + "/code";
     public final static String TRIGGER_PATH = SINGLE_FUNCTION_PATH + "/triggers";
