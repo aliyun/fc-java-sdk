@@ -3,14 +3,14 @@ package com.aliyuncs.fc.model;
 public class ReservedCapacityMetaData {
     private String instanceId;
     private Integer cu;
-    private String deadLine;
+    private String deadline;
     private String createdTime;
     private String lastModifiedTime;
 
-    public ReservedCapacityMetaData(String instanceId, Integer cu, String deadLine, String createdTime, String lastModifiedTime) {
+    public ReservedCapacityMetaData(String instanceId, Integer cu, String deadline, String createdTime, String lastModifiedTime) {
         this.instanceId = instanceId;
         this.cu = cu;
-        this.deadLine = deadLine;
+        this.deadline = deadline;
         this.createdTime = createdTime;
         this.lastModifiedTime = lastModifiedTime;
     }
@@ -23,8 +23,8 @@ public class ReservedCapacityMetaData {
         return cu;
     }
 
-    public String getDeadLine() {
-        return deadLine;
+    public String getDeadline() {
+        return deadline;
     }
 
     public String getCreateTime() {
