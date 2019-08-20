@@ -7,6 +7,7 @@ public class Const {
 
     public final static String ACCOUNT_SETTING_PATH = "/%s/account-settings";
     public final static String SERVICE_PATH = "/%s/services";
+    public final static String PROVISION_CONFIG_PATH = "/%s/provision-configs";
     public final static String SINGLE_SERVICE_PATH = SERVICE_PATH + "/%s";
     public final static String FUNCTION_PATH = SINGLE_SERVICE_PATH + "/functions";
     public final static String SINGLE_FUNCTION_PATH = FUNCTION_PATH + "/%s";
@@ -34,6 +35,8 @@ public class Const {
         SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/code";
     public final static String INVOKE_FUNCTION_WITH_QUALIFIER_PATH =
         SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/invocations";
+    public final static String SINGLE_PROVISION_CONFIG_PATH =
+        SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/provision-config";
 
     /**
      * 3 seconds
