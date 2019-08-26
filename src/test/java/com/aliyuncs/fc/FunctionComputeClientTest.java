@@ -28,66 +28,8 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
 import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.model.NasConfig.NasMountConfig;
-import com.aliyuncs.fc.request.CreateAliasRequest;
-import com.aliyuncs.fc.request.CreateCustomDomainRequest;
-import com.aliyuncs.fc.request.CreateFunctionRequest;
-import com.aliyuncs.fc.request.CreateServiceRequest;
-import com.aliyuncs.fc.request.CreateTriggerRequest;
-import com.aliyuncs.fc.request.DeleteAliasRequest;
-import com.aliyuncs.fc.request.DeleteCustomDomainRequest;
-import com.aliyuncs.fc.request.DeleteFunctionRequest;
-import com.aliyuncs.fc.request.DeleteServiceRequest;
-import com.aliyuncs.fc.request.DeleteTriggerRequest;
-import com.aliyuncs.fc.request.DeleteVersionRequest;
-import com.aliyuncs.fc.request.GetAliasRequest;
-import com.aliyuncs.fc.request.GetCustomDomainRequest;
-import com.aliyuncs.fc.request.GetFunctionCodeRequest;
-import com.aliyuncs.fc.request.GetFunctionRequest;
-import com.aliyuncs.fc.request.GetServiceRequest;
-import com.aliyuncs.fc.request.GetTriggerRequest;
-import com.aliyuncs.fc.request.HttpInvokeFunctionRequest;
-import com.aliyuncs.fc.request.InvokeFunctionRequest;
-import com.aliyuncs.fc.request.ListAliasesRequest;
-import com.aliyuncs.fc.request.ListCustomDomainsRequest;
-import com.aliyuncs.fc.request.ListFunctionsRequest;
-import com.aliyuncs.fc.request.ListServicesRequest;
-import com.aliyuncs.fc.request.ListTriggersRequest;
-import com.aliyuncs.fc.request.ListVersionsRequest;
-import com.aliyuncs.fc.request.PublishVersionRequest;
-import com.aliyuncs.fc.request.UpdateAliasRequest;
-import com.aliyuncs.fc.request.UpdateCustomDomainRequest;
-import com.aliyuncs.fc.request.UpdateFunctionRequest;
-import com.aliyuncs.fc.request.UpdateServiceRequest;
-import com.aliyuncs.fc.request.UpdateTriggerRequest;
-import com.aliyuncs.fc.response.CreateAliasResponse;
-import com.aliyuncs.fc.response.CreateCustomDomainResponse;
-import com.aliyuncs.fc.response.CreateFunctionResponse;
-import com.aliyuncs.fc.response.CreateServiceResponse;
-import com.aliyuncs.fc.response.CreateTriggerResponse;
-import com.aliyuncs.fc.response.DeleteAliasResponse;
-import com.aliyuncs.fc.response.DeleteFunctionResponse;
-import com.aliyuncs.fc.response.DeleteServiceResponse;
-import com.aliyuncs.fc.response.DeleteTriggerResponse;
-import com.aliyuncs.fc.response.DeleteVersionResponse;
-import com.aliyuncs.fc.response.GetAliasResponse;
-import com.aliyuncs.fc.response.GetCustomDomainResponse;
-import com.aliyuncs.fc.response.GetFunctionCodeResponse;
-import com.aliyuncs.fc.response.GetFunctionResponse;
-import com.aliyuncs.fc.response.GetServiceResponse;
-import com.aliyuncs.fc.response.GetTriggerResponse;
-import com.aliyuncs.fc.response.InvokeFunctionResponse;
-import com.aliyuncs.fc.response.ListAliasesResponse;
-import com.aliyuncs.fc.response.ListCustomDomainsResponse;
-import com.aliyuncs.fc.response.ListFunctionsResponse;
-import com.aliyuncs.fc.response.ListServicesResponse;
-import com.aliyuncs.fc.response.ListTriggersResponse;
-import com.aliyuncs.fc.response.ListVersionsResponse;
-import com.aliyuncs.fc.response.PublishVersionResponse;
-import com.aliyuncs.fc.response.UpdateAliasResponse;
-import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
-import com.aliyuncs.fc.response.UpdateFunctionResponse;
-import com.aliyuncs.fc.response.UpdateServiceResponse;
-import com.aliyuncs.fc.response.UpdateTriggerResponse;
+import com.aliyuncs.fc.request.*;
+import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
@@ -117,6 +59,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.json.JSONException;
 import org.junit.Assert;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -697,6 +640,19 @@ public class FunctionComputeClientTest {
             request.setRole(ROLE);
             CreateServiceResponse response = client.createService(request);
             assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
+
+            TagResourceRequest req  = new TagResourceRequest();
+            req.setResourceArn(String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, SERVICE_NAME + i));
+            Map<String, String> tags = new HashMap<String, String>();
+            if(i % 2 == 0){
+                tags.put("k1", "v1");
+            } else{
+                tags.put("k2", "v2");
+            }
+            tags.put("k3", "v3");
+            req.setTags(tags);
+            TagResourceResponse resp = client.tagResource(req);
+            assertFalse(Strings.isNullOrEmpty(resp.getRequestId()));
         }
         ListServicesRequest listRequest = new ListServicesRequest();
         listRequest.setLimit(limit);
@@ -712,8 +668,34 @@ public class FunctionComputeClientTest {
         }
         assertEquals(numServices / limit + 1, numCalled);
 
+        listRequest = new ListServicesRequest();
+        listRequest.setPrefix(SERVICE_NAME);
+        Map<String, String> tags = new HashMap<String, String>();
+        tags.put("k3", "v3");
+        listRequest.setTags(tags);
+        listResponse = client.listServices(listRequest);
+        assertEquals(numServices, listResponse.getServices().length);
+
+        tags.put("k1", "v1");
+        listRequest.setTags(tags);
+        listResponse = client.listServices(listRequest);
+        assertEquals(numServices/2, listResponse.getServices().length);
+
+        tags.put("k2", "v2");
+        listRequest.setTags(tags);
+        listResponse = client.listServices(listRequest);
+        assertEquals(0, listResponse.getServices().length);
+
         // Delete services
         for (int i = 0; i < numServices; i++) {
+            String resourceArn = String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, SERVICE_NAME + i);
+            UntagResourceRequest req  = new UntagResourceRequest();
+            req.setResourceArn(resourceArn);
+            String[] tagKeys = new String[] {};
+            req.setTagKeys(tagKeys);
+            req.setAll(true);
+            UntagResourceResponse resp = client.untagResource(req);
+            assertFalse(Strings.isNullOrEmpty(resp.getRequestId()));
             cleanupService(SERVICE_NAME + i);
         }
     }
@@ -2209,6 +2191,94 @@ public class FunctionComputeClientTest {
         DeleteCustomDomainRequest deleteCustomDomainRequest = new DeleteCustomDomainRequest(
                 CUSTOMDOMAIN_NAME);
         client.deleteCustomDomain(deleteCustomDomainRequest);
+    }
+
+    @Test
+    public void testTag()
+            throws ClientException, JSONException, InterruptedException, ParseException, IOException {
+
+        final int numServices = 3;
+        for (int i = 0; i < numServices; i++) {
+            try {
+                client.getService(new GetServiceRequest(SERVICE_NAME + i));
+                cleanupService(SERVICE_NAME + i);
+            } catch (ClientException e) {
+                if (!ErrorCodes.SERVICE_NOT_FOUND.equals(e.getErrorCode())) {
+                    throw new RuntimeException("Cleanup failed");
+                }
+            }
+            CreateServiceRequest request = new CreateServiceRequest();
+            request.setServiceName(SERVICE_NAME + i);
+            request.setDescription(SERVICE_DESC_OLD);
+            request.setRole(ROLE);
+            CreateServiceResponse response = client.createService(request);
+            assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
+
+            TagResourceRequest req  = new TagResourceRequest();
+            req.setResourceArn(String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, SERVICE_NAME + i));
+            Map<String, String> tags = new HashMap<String, String>();
+            if(i % 2 == 0){
+                tags.put("k1", "v1");
+            } else{
+                tags.put("k2", "v2");
+            }
+            tags.put("k3", "v3");
+            req.setTags(tags);
+            TagResourceResponse resp = client.tagResource(req);
+            assertFalse(Strings.isNullOrEmpty(resp.getRequestId()));
+        }
+
+        for (int i = 0; i < numServices; i++) {
+            String resourceArn = String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, SERVICE_NAME + i);
+            GetResourceTagsRequest getReq = new GetResourceTagsRequest(resourceArn);
+            GetResourceTagsResponse getResp = client.getResourceTags(getReq);
+            Assert.assertEquals(resourceArn, getResp.getResourceArn());
+            Assert.assertEquals("v3", getResp.getTags().get("k3"));
+            if(i % 2 == 0){
+                Assert.assertFalse(getResp.getTags().containsKey("k2"));
+                Assert.assertEquals("v1", getResp.getTags().get("k1"));
+            } else{
+                Assert.assertFalse(getResp.getTags().containsKey("k1"));
+                Assert.assertEquals("v2", getResp.getTags().get("k2"));
+            }
+
+            // unTag k3
+            UntagResourceRequest req  = new UntagResourceRequest();
+            req.setResourceArn(resourceArn);
+            String[] tagKeys = new String[] {"k3"};
+            req.setTagKeys(tagKeys);
+            UntagResourceResponse resp = client.untagResource(req);
+            assertFalse(Strings.isNullOrEmpty(resp.getRequestId()));
+
+            getReq = new GetResourceTagsRequest(resourceArn);
+            getResp = client.getResourceTags(getReq);
+            Assert.assertEquals(resourceArn, getResp.getResourceArn());
+            Assert.assertFalse(getResp.getTags().containsKey("k3"));
+            if(i % 2 == 0){
+                Assert.assertEquals("v1", getResp.getTags().get("k1"));
+            } else{
+                Assert.assertEquals("v2", getResp.getTags().get("k2"));
+            }
+
+            // unTag all
+            req  = new UntagResourceRequest();
+            req.setResourceArn(resourceArn);
+            tagKeys = new String[] {};
+            req.setTagKeys(tagKeys);
+            req.setAll(true);
+            resp = client.untagResource(req);
+            assertFalse(Strings.isNullOrEmpty(resp.getRequestId()));
+            getReq = new GetResourceTagsRequest(resourceArn);
+            getResp = client.getResourceTags(getReq);
+            Assert.assertFalse(getResp.getTags().containsKey("k1"));
+            Assert.assertFalse(getResp.getTags().containsKey("k2"));
+            Assert.assertFalse(getResp.getTags().containsKey("k3"));
+        }
+
+        // Delete services
+        for (int i = 0; i < numServices; i++) {
+            cleanupService(SERVICE_NAME + i);
+        }
     }
 
     @Test

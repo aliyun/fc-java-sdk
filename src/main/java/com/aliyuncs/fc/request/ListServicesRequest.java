@@ -34,6 +34,7 @@ public class ListServicesRequest extends HttpRequest {
     private String startKey;
     private String nextToken;
     private Integer limit;
+    private Map<String, String> tags;
 
     public ListServicesRequest setPrefix(String prefix) {
         this.prefix = prefix;
@@ -71,12 +72,26 @@ public class ListServicesRequest extends HttpRequest {
         return limit;
     }
 
+    public Map<String, String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags = tags;
+    }
+
     public String getPath() {
         return String.format(Const.SERVICE_PATH, Const.API_VERSION);
     }
 
     public Map<String, String> getQueryParams() {
-        return ListRequestUrlHelper.buildParams(prefix, startKey, nextToken, limit);
+        Map<String, String> queryParams = ListRequestUrlHelper.buildParams(prefix, startKey, nextToken, limit);
+        if (tags != null) {
+            for (Map.Entry<String, String> entry : tags.entrySet()) {
+                queryParams.put(Const.TAG_QUERY_PREFIX + entry.getKey(), entry.getValue());
+            }
+        }
+        return queryParams;
     }
 
     public byte[] getPayload() {
