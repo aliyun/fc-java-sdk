@@ -30,87 +30,9 @@ import com.aliyuncs.fc.constants.HeaderKeys;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ServerException;
 import com.aliyuncs.fc.http.HttpResponse;
-import com.aliyuncs.fc.model.AliasMetaData;
-import com.aliyuncs.fc.model.CustomDomainMetaData;
-import com.aliyuncs.fc.model.FunctionCodeMetadata;
-import com.aliyuncs.fc.model.FunctionMetadata;
-import com.aliyuncs.fc.model.ServiceMetadata;
-import com.aliyuncs.fc.model.TriggerMetadata;
-import com.aliyuncs.fc.model.VersionMetaData;
-import com.aliyuncs.fc.model.AccountSettings;
-import com.aliyuncs.fc.model.ProvisionTarget;
-import com.aliyuncs.fc.model.ProvisionConfig;
-import com.aliyuncs.fc.request.CreateAliasRequest;
-import com.aliyuncs.fc.request.CreateCustomDomainRequest;
-import com.aliyuncs.fc.request.CreateFunctionRequest;
-import com.aliyuncs.fc.request.CreateServiceRequest;
-import com.aliyuncs.fc.request.CreateTriggerRequest;
-import com.aliyuncs.fc.request.DeleteAliasRequest;
-import com.aliyuncs.fc.request.DeleteCustomDomainRequest;
-import com.aliyuncs.fc.request.DeleteFunctionRequest;
-import com.aliyuncs.fc.request.DeleteServiceRequest;
-import com.aliyuncs.fc.request.DeleteTriggerRequest;
-import com.aliyuncs.fc.request.DeleteVersionRequest;
-import com.aliyuncs.fc.request.GetAliasRequest;
-import com.aliyuncs.fc.request.GetCustomDomainRequest;
-import com.aliyuncs.fc.request.GetFunctionCodeRequest;
-import com.aliyuncs.fc.request.GetFunctionRequest;
-import com.aliyuncs.fc.request.GetProvisionConfigRequest;
-import com.aliyuncs.fc.request.GetServiceRequest;
-import com.aliyuncs.fc.request.GetTriggerRequest;
-import com.aliyuncs.fc.request.HttpInvokeFunctionRequest;
-import com.aliyuncs.fc.request.InvokeFunctionRequest;
-import com.aliyuncs.fc.request.ListAliasesRequest;
-import com.aliyuncs.fc.request.ListCustomDomainsRequest;
-import com.aliyuncs.fc.request.ListFunctionsRequest;
-import com.aliyuncs.fc.request.ListProvisionConfigsRequest;
-import com.aliyuncs.fc.request.ListServicesRequest;
-import com.aliyuncs.fc.request.ListTriggersRequest;
-import com.aliyuncs.fc.request.ListVersionsRequest;
-import com.aliyuncs.fc.request.ListReservedCapacitiesRequest;
-import com.aliyuncs.fc.request.PublishVersionRequest;
-import com.aliyuncs.fc.request.PutProvisionConfigRequest;
-import com.aliyuncs.fc.request.UpdateAliasRequest;
-import com.aliyuncs.fc.request.UpdateCustomDomainRequest;
-import com.aliyuncs.fc.request.UpdateFunctionRequest;
-import com.aliyuncs.fc.request.UpdateServiceRequest;
-import com.aliyuncs.fc.request.UpdateTriggerRequest;
-import com.aliyuncs.fc.response.CreateAliasResponse;
-import com.aliyuncs.fc.response.CreateCustomDomainResponse;
-import com.aliyuncs.fc.response.CreateFunctionResponse;
-import com.aliyuncs.fc.response.CreateServiceResponse;
-import com.aliyuncs.fc.response.CreateTriggerResponse;
-import com.aliyuncs.fc.response.DeleteAliasResponse;
-import com.aliyuncs.fc.response.DeleteCustomDomainResponse;
-import com.aliyuncs.fc.response.DeleteFunctionResponse;
-import com.aliyuncs.fc.response.DeleteServiceResponse;
-import com.aliyuncs.fc.response.DeleteTriggerResponse;
-import com.aliyuncs.fc.response.DeleteVersionResponse;
-import com.aliyuncs.fc.response.GetAliasResponse;
-import com.aliyuncs.fc.response.GetCustomDomainResponse;
-import com.aliyuncs.fc.response.GetFunctionCodeResponse;
-import com.aliyuncs.fc.response.GetFunctionResponse;
-import com.aliyuncs.fc.response.GetProvisionConfigResponse;
-import com.aliyuncs.fc.response.GetServiceResponse;
-import com.aliyuncs.fc.response.GetTriggerResponse;
-import com.aliyuncs.fc.response.InvokeFunctionResponse;
-import com.aliyuncs.fc.response.ListAliasesResponse;
-import com.aliyuncs.fc.response.ListCustomDomainsResponse;
-import com.aliyuncs.fc.response.ListFunctionsResponse;
-import com.aliyuncs.fc.response.ListProvisionConfigsResponse;
-import com.aliyuncs.fc.response.ListServicesResponse;
-import com.aliyuncs.fc.response.ListTriggersResponse;
-import com.aliyuncs.fc.response.ListVersionsResponse;
-import com.aliyuncs.fc.response.ListReservedCapacitiesResponse;
-import com.aliyuncs.fc.response.PublishVersionResponse;
-import com.aliyuncs.fc.response.PutProvisionConfigResponse;
-import com.aliyuncs.fc.response.UpdateAliasResponse;
-import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
-import com.aliyuncs.fc.response.UpdateFunctionResponse;
-import com.aliyuncs.fc.response.UpdateServiceResponse;
-import com.aliyuncs.fc.response.UpdateTriggerResponse;
-import com.aliyuncs.fc.response.GetAccountSettingsResponse;
-import com.aliyuncs.fc.request.GetAccountSettingsRequest;
+import com.aliyuncs.fc.model.*;
+import com.aliyuncs.fc.request.*;
+import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.Base64Helper;
 import com.aliyuncs.fc.utils.FcUtil;
 import com.google.gson.Gson;
@@ -523,6 +445,42 @@ public class FunctionComputeClient {
         listProvisionConfigsResponse.setContent(response.getContent());
         listProvisionConfigsResponse.setStatus(response.getStatus());
         return listProvisionConfigsResponse;
+    }
+
+    public TagResourceResponse tagResource(TagResourceRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
+        TagBaseResponse baseResp = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), TagBaseResponse.class);
+        TagResourceResponse tagResourceResponse = new TagResourceResponse();
+        tagResourceResponse.setBaseResponse(baseResp);
+        tagResourceResponse.setHeaders(response.getHeaders());
+        tagResourceResponse.setContent(response.getContent());
+        tagResourceResponse.setStatus(response.getStatus());
+        return tagResourceResponse;
+    }
+
+    public UntagResourceResponse untagResource(UntagResourceRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
+        TagBaseResponse baseResp = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), TagBaseResponse.class);
+        UntagResourceResponse untagResourceResponse = new UntagResourceResponse();
+        untagResourceResponse.setBaseResponse(baseResp);
+        untagResourceResponse.setHeaders(response.getHeaders());
+        untagResourceResponse.setContent(response.getContent());
+        untagResourceResponse.setStatus(response.getStatus());
+        return  untagResourceResponse;
+    }
+
+    public GetResourceTagsResponse getResourceTags (GetResourceTagsRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        TagMetaData tagMetaData = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), TagMetaData.class);
+        GetResourceTagsResponse getResourceTagsResponse = new GetResourceTagsResponse();
+        getResourceTagsResponse.setTagMetadata(tagMetaData);
+        getResourceTagsResponse.setHeaders(response.getHeaders());
+        getResourceTagsResponse.setContent(response.getContent());
+        getResourceTagsResponse.setStatus(response.getStatus());
+        return  getResourceTagsResponse;
     }
 
     public InvokeFunctionResponse invokeFunction(InvokeFunctionRequest request)
