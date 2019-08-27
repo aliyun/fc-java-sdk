@@ -18,6 +18,7 @@ public class Const {
     public final static String ALIAS_PATH = SINGLE_SERVICE_PATH + "/aliases";
     public final static String SINGLE_ALIAS_PATH = ALIAS_PATH + "/%s";
     public final static String RESERVED_CAPACITY_PATH = "/%s/reservedCapacities";
+    public final static String TAG_PATH = "/%s/tag";
 
     public final static String FUNCTION_CODE_PATH = SINGLE_FUNCTION_PATH + "/code";
     public final static String TRIGGER_PATH = SINGLE_FUNCTION_PATH + "/triggers";
@@ -58,4 +59,6 @@ public class Const {
     public final static String IF_MATCH_HEADER = "If-Match";
     
     public final static String DEFAULT_CHARSET="utf-8";
+
+    public final static String TAG_QUERY_PREFIX="tag_";
 }
