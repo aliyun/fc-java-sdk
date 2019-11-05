@@ -1477,6 +1477,51 @@ public class FunctionComputeClientTest {
     }
 
     @Test
+    public void testFunctionInstanceConcurrency() throws IOException {
+        createService(SERVICE_NAME);
+
+        String functionName = "testInstanceConcurrency";
+        String source = "exports.handler = function(event, context, callback) {\n" +
+                "  callback(null, 'hello world');\n" +
+                "};";
+
+        byte[] code = createZipByteData("hello_world.js", source);
+
+        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
+        createFuncReq.setFunctionName(functionName);
+        createFuncReq.setDescription(FUNCTION_DESC_OLD);
+        createFuncReq.setMemorySize(128);
+        createFuncReq.setHandler("hello_world.handler");
+        createFuncReq.setRuntime("nodejs4.4");
+        Map<String, String> environmentVariables = new HashMap<String, String>();
+        environmentVariables.put("testKey", "testValue");
+        createFuncReq.setEnvironmentVariables(environmentVariables);
+        createFuncReq.setCode(new Code().setZipFile(code));
+        createFuncReq.setTimeout(10);
+        createFuncReq.setInstanceConcurrency(10);
+
+        CreateFunctionResponse response = client.createFunction(createFuncReq);
+
+        assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
+        assertFalse(Strings.isNullOrEmpty(response.getFunctionId()));
+        assertEquals(functionName, response.getFunctionName());
+        assertEquals(FUNCTION_DESC_OLD, response.getDescription());
+        assertEquals(10, response.getInstanceConcurrency().intValue());
+
+        GetFunctionRequest getReq = new GetFunctionRequest(SERVICE_NAME, functionName);
+        GetFunctionResponse getResp = client.getFunction(getReq);
+        assertEquals(10, getResp.getInstanceConcurrency().intValue());
+
+        UpdateFunctionRequest updateReq = new UpdateFunctionRequest(SERVICE_NAME, functionName);
+        updateReq.setInstanceConcurrency(20);
+        UpdateFunctionResponse updateResp = client.updateFunction(updateReq);
+        assertEquals(20, updateResp.getInstanceConcurrency().intValue());
+
+        getResp = client.getFunction(getReq);
+        assertEquals(20, getResp.getInstanceConcurrency().intValue());
+    }
+
+    @Test
     public void testInvokeFunctionSetHeader() throws IOException, InterruptedException {
         createService(SERVICE_NAME);
         createFunction(FUNCTION_NAME);

@@ -50,6 +50,9 @@ public class FunctionMetadata {
     @SerializedName("environmentVariables")
     private Map<String, String> environmentVariables;
 
+    @SerializedName("instanceConcurrency")
+    private Integer instanceConcurrency;
+
     public FunctionMetadata(String functionId, String functionName, String description,
         String runtime, String handler, String initializer, Integer timeout, Integer initializationTimeout, Integer memorySize,
         int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, Map<String, String> environmentVariables) {
@@ -125,4 +128,7 @@ public class FunctionMetadata {
         return environmentVariables;
     }
 
+    public Integer getInstanceConcurrency() {
+        return instanceConcurrency;
+    }
 }

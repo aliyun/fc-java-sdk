@@ -66,6 +66,9 @@ public class UpdateFunctionRequest extends HttpRequest {
     @SerializedName("environmentVariables")
     private Map<String, String> environmentVariables;
 
+    @SerializedName("instanceConcurrency")
+    private Integer instanceConcurrency;
+
     private transient String ifMatch;
 
 
@@ -202,5 +205,13 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     public Class<UpdateFunctionResponse> getResponseClass() {
         return UpdateFunctionResponse.class;
+    }
+
+    public Integer getInstanceConcurrency() {
+        return instanceConcurrency;
+    }
+
+    public void setInstanceConcurrency(Integer instanceConcurrency) {
+        this.instanceConcurrency = instanceConcurrency;
     }
 }
