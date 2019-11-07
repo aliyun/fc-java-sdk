@@ -1,6 +1,7 @@
 package com.aliyuncs.fc.client;
 
 import com.aliyuncs.fc.config.Config;
+import com.aliyuncs.fc.utils.FcUtil;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -20,14 +21,14 @@ public class DefaultFcClientTest {
 
         headers.put("x-fc-date", "x-fc-date-value");
 
-        headers = fcClient.getHeader(headers, "123".getBytes(), null);
+        headers = FcUtil.getHeader(config, headers, "123".getBytes(), null);
 
         assertEquals(headers.get("x-fc-date"), "x-fc-date-value");
         assertEquals(headers.get("Content-MD5"), null);
 
         headers.remove("x-fc-date");
 
-        headers = fcClient.getHeader(headers, "123".getBytes(), null);
+        headers = FcUtil.getHeader(config, headers, "123".getBytes(), null);
 
         assertEquals(headers.get("Content-MD5"), "ICy5YqxZB1uWSwcVLSNLcA==");
     }

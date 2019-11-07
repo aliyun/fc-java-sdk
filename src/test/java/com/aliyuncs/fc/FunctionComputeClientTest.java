@@ -31,6 +31,7 @@ import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.model.NasConfig.NasMountConfig;
 import com.aliyuncs.fc.request.*;
 import com.aliyuncs.fc.response.*;
+import com.aliyuncs.fc.utils.Util;
 import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
@@ -257,7 +258,7 @@ public class FunctionComputeClientTest {
             "  callback(null, 'hello world');\n" +
             "};";
 
-        byte[] code = createZipByteData("hello_world.js", source);
+        byte[] code = Util.createZipByteData("hello_world.js", source);
 
         CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
         createFuncReq.setFunctionName(functionName);
@@ -501,7 +502,7 @@ public class FunctionComputeClientTest {
         // Create a function that uses NAS
         String source = generateNASPythonCode();
 
-        byte[] data = createZipByteData("main.py", source);
+        byte[] data = Util.createZipByteData("main.py", source);
         String funcName = FUNCTION_NAME + "-nas";
         // create function
         createFunction(service_name, funcName, "main.handler", "python2.7", data);
@@ -1366,31 +1367,6 @@ public class FunctionComputeClientTest {
         fail("ClientException is expected");
     }
 
-    private byte[] createZipByteData(String filename, String code) throws IOException {
-
-        // Setup code directory
-        String tmpDir = "/tmp/fc_test_" + UUID.randomUUID();
-        String funcFilePath = tmpDir + "/" + filename;
-        new File(tmpDir).mkdir();
-        PrintWriter out = new PrintWriter(funcFilePath);
-        out.println(code);
-        out.close();
-        String zipFilePath = tmpDir + "/" + "main.zip";
-        ZipUtils.zipDir(new File(tmpDir), zipFilePath);
-
-        File zipFile = new File(zipFilePath);
-        byte[] buffer = new byte[(int) zipFile.length()];
-        FileInputStream fis = new FileInputStream(zipFilePath);
-        fis.read(buffer);
-        fis.close();
-
-        new File(funcFilePath).delete();
-        new File(zipFilePath).delete();
-        new File(tmpDir).delete();
-
-        return buffer;
-    }
-
     private void createFunction(String serviceName, String functionName, String handler,
         String runtime, byte[] data) {
         CreateFunctionRequest createFuncReq = new CreateFunctionRequest(serviceName);
@@ -1414,7 +1390,7 @@ public class FunctionComputeClientTest {
         // Create a function
         String source = generatePythonHttpCode();
 
-        byte[] data = createZipByteData("main.py", source);
+        byte[] data = Util.createZipByteData("main.py", source);
 
         // create function
         createFunction(SERVICE_NAME, FUNCTION_NAME, "main.echo_handler", "python2.7", data);
@@ -1497,7 +1473,7 @@ public class FunctionComputeClientTest {
         // Create a function
         String source = generatePythonHttpCode();
 
-        byte[] data = createZipByteData("main.py", source);
+        byte[] data = Util.createZipByteData("main.py", source);
 
         // create function
         createFunction(SERVICE_NAME, FUNCTION_NAME, "main.echo_handler", "python2.7", data);
@@ -1540,7 +1516,7 @@ public class FunctionComputeClientTest {
 
         String source = "'use strict'; module.exports.handler = function(event, context, callback) {console.log('hello world'); callback(null, 'hello world');};";
 
-        byte[] data = createZipByteData("hello_world.js", source);
+        byte[] data = Util.createZipByteData("hello_world.js", source);
 
         // Create a function
         CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
@@ -1575,7 +1551,7 @@ public class FunctionComputeClientTest {
                 "  callback(null, 'hello world');\n" +
                 "};";
 
-        byte[] code = createZipByteData("hello_world.js", source);
+        byte[] code = Util.createZipByteData("hello_world.js", source);
 
         CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
         createFuncReq.setFunctionName(functionName);
@@ -2057,7 +2033,7 @@ public class FunctionComputeClientTest {
             "console.log('hello world, counter is %d', counter);\n" +
             "callback(null, String(counter));};\n";
 
-        byte[] data = createZipByteData("counter.js", source);
+        byte[] data = Util.createZipByteData("counter.js", source);
 
         // Create a function
         CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
@@ -2512,7 +2488,7 @@ public class FunctionComputeClientTest {
         // Create a function
         String source = generatePythonHttpCode();
 
-        byte[] data = createZipByteData("main.py", source);
+        byte[] data = Util.createZipByteData("main.py", source);
 
         // create function
         createFunction(SERVICE_NAME, FUNCTION_NAME, "main.echo_handler", "python2.7", data);

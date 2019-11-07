@@ -29,6 +29,9 @@ public class Config {
 
     private int connectTimeoutMillis = Const.READ_TIMEOUT;
     private int readTimeoutMillis = Const.READ_TIMEOUT;
+    private int threadCount = 1;
+    private int maxConnectCount = 20;
+    private int maxPerRoute = 2;
 
     private String host;
     private String userAgent;
@@ -241,4 +244,35 @@ public class Config {
         this.credsProvider = credsProvider;
     }
 
+    public int getThreadCount() {
+        return threadCount;
+    }
+
+    public void setThreadCount(int threadCount) {
+        this.threadCount = threadCount;
+    }
+
+    /**
+     * Async client max connection count
+     * @return Max connection count
+     */
+    public int getMaxConnectCount() {
+        return maxConnectCount;
+    }
+
+    public void setMaxConnectCount(int maxConnectCount) {
+        this.maxConnectCount = maxConnectCount;
+    }
+
+    /**
+     * Async client max connection count per route
+     * @return Max count per route
+     */
+    public int getMaxPerRoute() {
+        return maxPerRoute;
+    }
+
+    public void setMaxPerRoute(int maxPerRoute) {
+        this.maxPerRoute = maxPerRoute;
+    }
 }

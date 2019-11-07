@@ -91,21 +91,14 @@ public class FunctionComputeClient {
 
     public DeleteServiceResponse deleteService(DeleteServiceRequest request)
         throws ClientException, ServerException {
-
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
-        DeleteServiceResponse deleteServiceResponse = new DeleteServiceResponse();
-        deleteServiceResponse.setHeaders(response.getHeaders());
-        deleteServiceResponse.setStatus(response.getStatus());
-        return deleteServiceResponse;
+        return ResponseFactory.genDeleteServiceResponse(response);
     }
 
     public DeleteFunctionResponse deleteFunction(DeleteFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
-        DeleteFunctionResponse deleteFunctionResponse = new DeleteFunctionResponse();
-        deleteFunctionResponse.setHeaders(response.getHeaders());
-        deleteFunctionResponse.setStatus(response.getStatus());
-        return deleteFunctionResponse;
+        return ResponseFactory.genDeleteFunctionResponse(response);
     }
 
     public DeleteCustomDomainResponse deleteCustomDomain(DeleteCustomDomainRequest request)
@@ -121,25 +114,13 @@ public class FunctionComputeClient {
     public GetServiceResponse getService(GetServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ServiceMetadata serviceMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ServiceMetadata.class);
-        GetServiceResponse getServiceResponse = new GetServiceResponse();
-        getServiceResponse.setServiceMetadata(serviceMetadata);
-        getServiceResponse.setHeaders(response.getHeaders());
-        getServiceResponse.setContent(response.getContent());
-        getServiceResponse.setStatus(response.getStatus());
-        return getServiceResponse;
+        return ResponseFactory.genGetServiceResponse(response);
     }
 
     public GetFunctionResponse getFunction(GetFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        FunctionMetadata functionMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), FunctionMetadata.class);
-        GetFunctionResponse getFunctionResponse = new GetFunctionResponse();
-        getFunctionResponse.setFunctionMetadata(functionMetadata);
-        getFunctionResponse.setHeaders(response.getHeaders());
-        getFunctionResponse.setContent(response.getContent());
-        getFunctionResponse.setStatus(response.getStatus());
-        return getFunctionResponse;
+        return ResponseFactory.genGetFunctionResponse(response);
     }
 
     public GetFunctionCodeResponse getFunctionCode(GetFunctionCodeRequest request)
@@ -169,49 +150,25 @@ public class FunctionComputeClient {
     public CreateServiceResponse createService(CreateServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
-        ServiceMetadata serviceMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ServiceMetadata.class);
-        CreateServiceResponse createServiceResponse = new CreateServiceResponse();
-        createServiceResponse.setServiceMetadata(serviceMetadata);
-        createServiceResponse.setHeaders(response.getHeaders());
-        createServiceResponse.setContent(response.getContent());
-        createServiceResponse.setStatus(response.getStatus());
-        return createServiceResponse;
+        return ResponseFactory.genCreateServiceResponse(response);
     }
 
     public CreateFunctionResponse createFunction(CreateFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
-        FunctionMetadata functionMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), FunctionMetadata.class);
-        CreateFunctionResponse createFunctionResponse = new CreateFunctionResponse();
-        createFunctionResponse.setFunctionMetadata(functionMetadata);
-        createFunctionResponse.setHeaders(response.getHeaders());
-        createFunctionResponse.setContent(response.getContent());
-        createFunctionResponse.setStatus(response.getStatus());
-        return createFunctionResponse;
+        return ResponseFactory.genCreateFunctionResponse(response);
     }
 
     public UpdateFunctionResponse updateFunction(UpdateFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
-        FunctionMetadata functionMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), FunctionMetadata.class);
-        UpdateFunctionResponse updateFunctionResponse = new UpdateFunctionResponse();
-        updateFunctionResponse.setFunctionMetadata(functionMetadata);
-        updateFunctionResponse.setHeaders(response.getHeaders());
-        updateFunctionResponse.setContent(response.getContent());
-        updateFunctionResponse.setStatus(response.getStatus());
-        return updateFunctionResponse;
+        return ResponseFactory.genUpdateFunctionResponse(response);
     }
 
     public UpdateServiceResponse updateService(UpdateServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
-        ServiceMetadata serviceMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ServiceMetadata.class);
-        UpdateServiceResponse updateServiceResponse = new UpdateServiceResponse();
-        updateServiceResponse.setServiceMetadata(serviceMetadata);
-        updateServiceResponse.setHeaders(response.getHeaders());
-        updateServiceResponse.setContent(response.getContent());
-        updateServiceResponse.setStatus(response.getStatus());
-        return updateServiceResponse;
+        return ResponseFactory.genUpdateServiceResponse(response);
     }
 
     public CreateCustomDomainResponse createCustomDomain(CreateCustomDomainRequest request)
@@ -241,21 +198,13 @@ public class FunctionComputeClient {
     public ListServicesResponse listServices(ListServicesRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListServicesResponse listServicesResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListServicesResponse.class);
-        listServicesResponse.setHeaders(response.getHeaders());
-        listServicesResponse.setContent(response.getContent());
-        listServicesResponse.setStatus(response.getStatus());
-        return listServicesResponse;
+        return ResponseFactory.genListServiceResponse(response);
     }
 
     public ListFunctionsResponse listFunctions(ListFunctionsRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
-        ListFunctionsResponse listFunctionsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListFunctionsResponse.class);
-        listFunctionsResponse.setHeaders(response.getHeaders());
-        listFunctionsResponse.setContent(response.getContent());
-        listFunctionsResponse.setStatus(response.getStatus());
-        return listFunctionsResponse;
+        return ResponseFactory.genListFunctionResponse(response);
     }
 
     public ListCustomDomainsResponse listCustomDomains(ListCustomDomainsRequest request)
@@ -503,23 +452,7 @@ public class FunctionComputeClient {
             response = client.doAction(request, CONTENT_TYPE_APPLICATION_STREAM, POST);
         }
 
-        InvokeFunctionResponse invokeFunctionResponse = new InvokeFunctionResponse();
-        invokeFunctionResponse.setContent(response.getContent());
-        invokeFunctionResponse.setPayload(response.getContent());
-
-        invokeFunctionResponse.setHeaders(response.getHeaders());
-        invokeFunctionResponse.setStatus(response.getStatus());
-        Map<String, String> headers = response.getHeaders();
-        if (headers != null && headers.containsKey(HeaderKeys.INVOCATION_LOG_RESULT)) {
-            try {
-                String logResult = Base64Helper
-                    .decode(headers.get(HeaderKeys.INVOCATION_LOG_RESULT), Const.DEFAULT_CHARSET);
-                invokeFunctionResponse.setLogResult(logResult);
-            } catch (IOException e) {
-                throw new ClientException(e);
-            }
-        }
-        return invokeFunctionResponse;
+        return ResponseFactory.genInvokeFunctionResponse(response);
     }
 
     public ListOnDemandConfigsResponse listOnDemandConfigs(ListOnDemandConfigsRequest request)

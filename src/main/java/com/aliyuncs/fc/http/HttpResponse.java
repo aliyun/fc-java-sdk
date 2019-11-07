@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,5 +171,14 @@ public class HttpResponse {
 
     public String getEtag() {
         return this.headers.get("Etag");
+    }
+
+    @Override
+    public String toString() {
+        return "HttpResponse{" +
+                "status=" + status +
+                ", content=" + Arrays.toString(content) +
+                ", headers=" + headers +
+                '}';
     }
 }
