@@ -23,9 +23,6 @@ import com.aliyuncs.fc.http.HttpResponse;
 import com.aliyuncs.fc.model.TagBaseResponse;
 
 public class TagResourceResponse extends HttpResponse {
-    public String getRequestId() {
-        return baseResponse.getRequestId();
-    }
 
     public void setBaseResponse(TagBaseResponse baseResponse) {
         this.baseResponse = baseResponse;
