@@ -26,6 +26,7 @@ import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
+import com.aliyuncs.fc.exceptions.ServerException;
 import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.model.NasConfig.NasMountConfig;
 import com.aliyuncs.fc.request.*;
@@ -148,7 +149,7 @@ public class FunctionComputeClientTest {
                 throw e;
             }
         }
-    } 
+    }
 
     public FunctionComputeClient overrideFCClient(boolean useSts, boolean useHttps)
         throws com.aliyuncs.exceptions.ClientException {
@@ -290,7 +291,7 @@ public class FunctionComputeClientTest {
     private CreateServiceResponse createService(String serviceName) {
         return createSerivce(serviceName, true);
     }
-    
+
     private CreateServiceResponse createSerivce(String serviceName, boolean check) {
         CreateServiceRequest createSReq = new CreateServiceRequest();
         createSReq.setServiceName(serviceName);
@@ -298,7 +299,7 @@ public class FunctionComputeClientTest {
         createSReq.setRole(ROLE);
 
         CreateServiceResponse response = client.createService(createSReq);
-        
+
         if (check) {
             assertEquals(serviceName, response.getServiceName());
             assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
@@ -306,10 +307,10 @@ public class FunctionComputeClientTest {
             assertEquals(SERVICE_DESC_OLD, response.getDescription());
             assertEquals(ROLE, response.getRole());
         }
-        
+
         return response;
     }
-    
+
     private CreateServiceResponse createVPCService(String serviceName) {
         CreateServiceRequest createSReq = new CreateServiceRequest();
         createSReq.setServiceName(serviceName);
@@ -764,6 +765,95 @@ public class FunctionComputeClientTest {
                 SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME + i);
             assertFalse(Strings.isNullOrEmpty(deleteTResp.getRequestId()));
         }
+    }
+
+    @Test
+    public void testOnDemandConfig() throws Exception {
+        final int numOnDemandConfigs = 5;
+        for (int i = 0; i < numOnDemandConfigs; i++) {
+            // put first
+            String qualifier = String.format("test-qualifier-%d", i);
+            PutOnDemandConfigRequest putOnDemandConfigRequest = new PutOnDemandConfigRequest(SERVICE_NAME, qualifier, FUNCTION_NAME, i);
+            PutOnDemandConfigResponse putOnDemandConfigResponse = client.putOnDemandConfig(putOnDemandConfigRequest);
+
+            // validate put response
+            assertNotEquals("", putOnDemandConfigResponse.getRequestId());
+            String resource = putOnDemandConfigResponse.getResource();
+            assertEquals(String.format("services/%s.%s/functions/%s", SERVICE_NAME, qualifier, FUNCTION_NAME), resource);
+            assertEquals(i, putOnDemandConfigResponse.getMaximumInstanceCount());
+
+            // validate get response
+            GetOnDemandConfigRequest getOnDemandConfigRequest = new GetOnDemandConfigRequest(SERVICE_NAME, qualifier, FUNCTION_NAME);
+            GetOnDemandConfigResponse getOnDemandConfigResponse = client.getOnDemandConfig(getOnDemandConfigRequest);
+            assertNotEquals("", getOnDemandConfigResponse.getRequestId());
+            resource = getOnDemandConfigResponse.getResource();
+            assertEquals(String.format("services/%s.%s/functions/%s", SERVICE_NAME, qualifier, FUNCTION_NAME), resource);
+            assertEquals(i, putOnDemandConfigResponse.getMaximumInstanceCount());
+        }
+
+
+        // validate list response
+        ListOnDemandConfigsRequest listOnDemandConfigsRequest = new ListOnDemandConfigsRequest();
+        ListOnDemandConfigsResponse listOnDemandConfigsResponse = client.listOnDemandConfigs(listOnDemandConfigsRequest);
+        assertNotEquals("", listOnDemandConfigsResponse.getRequestId());
+        assertEquals(numOnDemandConfigs, listOnDemandConfigsResponse.getOnDemandConfigs().length);
+
+        // with prefix
+        listOnDemandConfigsRequest = new ListOnDemandConfigsRequest();
+        listOnDemandConfigsRequest.setPrefix(String.format("services/%s.%s", SERVICE_NAME, "test-qualifier-1"));
+        listOnDemandConfigsResponse = client.listOnDemandConfigs(listOnDemandConfigsRequest);
+        assertNotEquals("", listOnDemandConfigsResponse.getRequestId());
+        assertEquals(1, listOnDemandConfigsResponse.getOnDemandConfigs().length);
+
+        listOnDemandConfigsRequest = new ListOnDemandConfigsRequest();
+        listOnDemandConfigsRequest.setStartKey(String.format("services/%s.%s", SERVICE_NAME, "test-qualifier-3"));
+        listOnDemandConfigsResponse = client.listOnDemandConfigs(listOnDemandConfigsRequest);
+        assertNotEquals("", listOnDemandConfigsResponse.getRequestId());
+        assertEquals(2, listOnDemandConfigsResponse.getOnDemandConfigs().length);
+
+        // with limit
+        listOnDemandConfigsRequest = new ListOnDemandConfigsRequest();
+        listOnDemandConfigsRequest.setLimit(3);
+        listOnDemandConfigsResponse = client.listOnDemandConfigs(listOnDemandConfigsRequest);
+        assertEquals(3, listOnDemandConfigsResponse.getOnDemandConfigs().length);
+
+        HashMap<String, OnDemandConfigMetadata> map = new HashMap<String, OnDemandConfigMetadata>();
+        for(OnDemandConfigMetadata data : listOnDemandConfigsResponse.getOnDemandConfigs()) {
+            map.put(data.getResource(), data);
+        }
+
+        // list again
+        listOnDemandConfigsRequest.setNextToken(listOnDemandConfigsResponse.getNextToken());
+        listOnDemandConfigsResponse = client.listOnDemandConfigs(listOnDemandConfigsRequest);
+        assertEquals(2, listOnDemandConfigsResponse.getOnDemandConfigs().length);
+        for(OnDemandConfigMetadata data : listOnDemandConfigsResponse.getOnDemandConfigs()) {
+            map.put(data.getResource(), data);
+        }
+
+        // validate there's no dup resource
+        assertEquals(numOnDemandConfigs, map.keySet().size());
+
+        for (int i = 0; i < numOnDemandConfigs; i++) {
+            // delete configs
+            String qualifier = String.format("test-qualifier-%d", i);
+            DeleteOnDemandConfigRequest deleteOnDemandConfigRequest = new DeleteOnDemandConfigRequest(SERVICE_NAME, qualifier, FUNCTION_NAME);
+            DeleteOnDemandConfigResponse deleteOnDemandConfigResponse = client.deleteOnDemandConfig(deleteOnDemandConfigRequest);
+            assertNotEquals("", deleteOnDemandConfigResponse.getRequestId());
+
+            try {
+                // validate config not found
+                GetOnDemandConfigRequest getOnDemandConfigRequest = new GetOnDemandConfigRequest(SERVICE_NAME, qualifier, FUNCTION_NAME);
+                GetOnDemandConfigResponse getOnDemandConfigResponse = client.getOnDemandConfig(getOnDemandConfigRequest);
+            } catch (ClientException e) {
+                assertEquals("OnDemandConfigNotFound", e.getErrorCode());
+            }
+        }
+
+        // validate no configs can be listed
+        listOnDemandConfigsRequest = new ListOnDemandConfigsRequest();
+        listOnDemandConfigsResponse = client.listOnDemandConfigs(listOnDemandConfigsRequest);
+        assertNotEquals("", listOnDemandConfigsResponse.getRequestId());
+        assertEquals(null, listOnDemandConfigsResponse.getOnDemandConfigs());
     }
 
     @Test
@@ -1336,7 +1426,7 @@ public class FunctionComputeClientTest {
             // sleep sometime so that the function cache in the API server will
             // be updated (default is 10 seconds)
             Thread.sleep(15000);
-        
+
             // Invoke the function
             HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
                 FUNCTION_NAME, auth, POST, "/test/path/中文");
@@ -2448,7 +2538,7 @@ public class FunctionComputeClientTest {
                 routeConfigResp.getRoutes()[i].getQualifier());
         }
     }
-    
+
     @Test
     public void testClientCredentialProviderMock() {
     	// init CredentialProvider
@@ -2456,32 +2546,32 @@ public class FunctionComputeClientTest {
         String sk = "sk";
         String stsToken = "sts_token";
         BasicSessionCredentials creds = new BasicSessionCredentials(ak, sk, stsToken);
-        
+
         // mock
         InstanceProfileCredentialsProvider credsProvider = mock(InstanceProfileCredentialsProvider.class);
-        
+
         try {
             when(credsProvider.getCredentials()).thenReturn(creds);
         } catch (com.aliyuncs.exceptions.ClientException e) {
             e.printStackTrace();
         }
-        
+
         // init fc client
         Config config = new Config(REGION, ACCOUNT_ID, credsProvider, false);
         FunctionComputeClient fcClient = new FunctionComputeClient(config);
         client = fcClient;
-        
+
         // Create a service
         try{
             createService(SERVICE_NAME);
         }catch (Exception e) {
         }
-        
+
         assertEquals(creds.getAccessKeyId(), config.getAccessKeyID());
         assertEquals(creds.getAccessKeySecret(), config.getAccessKeySecret());
         assertEquals(creds.getSessionToken(), config.getSecurityToken());
     }
-    
+
     /**
      *  run only on aliyun ecs, and that ecs need bind a RAM Role
      */
@@ -2489,36 +2579,36 @@ public class FunctionComputeClientTest {
         // init CredentialProvider
         String roleName = "ECSAccessingFCTestRole";
         InstanceProfileCredentialsProvider credsProvider = new InstanceProfileCredentialsProvider(roleName);
-        
+
         // init fc client
         Config config = new Config(REGION, ACCOUNT_ID, credsProvider, false);
         FunctionComputeClient fcClient = new FunctionComputeClient(config);
         client = fcClient;
-        
+
         // Create a service
         try{
             createSerivce(SERVICE_NAME, false);
         }catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         // create a function
         try {
             createFunction(FUNCTION_NAME);
         }catch (Exception e) {
         	e.printStackTrace();
         }
-        
+
         // Invoke the function with a string as function event parameter, Sync mode
         InvokeFunctionRequest invkReq = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
         String payload = "Hello FunctionCompute!";
         invkReq.setPayload(payload.getBytes());
         InvokeFunctionResponse invkResp = client.invokeFunction(invkReq);
         System.out.println(new String(invkResp.getContent()));
-        
+
         cleanUpFunctions(SERVICE_NAME);
         cleanupService(SERVICE_NAME);
     }
-    
+
 }
 
