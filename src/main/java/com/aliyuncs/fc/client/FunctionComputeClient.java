@@ -452,7 +452,6 @@ public class FunctionComputeClient {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
         TagBaseResponse baseResp = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), TagBaseResponse.class);
         TagResourceResponse tagResourceResponse = new TagResourceResponse();
-        tagResourceResponse.setBaseResponse(baseResp);
         tagResourceResponse.setHeaders(response.getHeaders());
         tagResourceResponse.setContent(response.getContent());
         tagResourceResponse.setStatus(response.getStatus());
@@ -464,7 +463,6 @@ public class FunctionComputeClient {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
         TagBaseResponse baseResp = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), TagBaseResponse.class);
         UntagResourceResponse untagResourceResponse = new UntagResourceResponse();
-        untagResourceResponse.setBaseResponse(baseResp);
         untagResourceResponse.setHeaders(response.getHeaders());
         untagResourceResponse.setContent(response.getContent());
         untagResourceResponse.setStatus(response.getStatus());
