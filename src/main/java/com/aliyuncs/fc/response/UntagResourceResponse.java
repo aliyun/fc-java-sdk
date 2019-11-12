@@ -24,9 +24,6 @@ import com.aliyuncs.fc.model.TagBaseResponse;
 import com.google.gson.annotations.SerializedName;
 
 public class UntagResourceResponse extends HttpResponse {
-    public String getRequestId() {
-        return baseResponse.getRequestId();
-    }
 
     public void setBaseResponse(TagBaseResponse baseResponse) {
         this.baseResponse = baseResponse;
