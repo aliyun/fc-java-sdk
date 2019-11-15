@@ -67,6 +67,9 @@ public class CreateFunctionRequest extends HttpRequest {
     @SerializedName("environmentVariables")
     private Map<String, String> environmentVariables;
 
+    @SerializedName("instanceConcurrency")
+    private Integer instanceConcurrency;
+
     public CreateFunctionRequest(String serviceName) {
         this.serviceName = serviceName;
     }
@@ -188,5 +191,13 @@ public class CreateFunctionRequest extends HttpRequest {
 
     public Class<CreateFunctionResponse> getResponseClass() {
         return CreateFunctionResponse.class;
+    }
+
+    public Integer getInstanceConcurrency() {
+        return instanceConcurrency;
+    }
+
+    public void setInstanceConcurrency(Integer instanceConcurrency) {
+        this.instanceConcurrency = instanceConcurrency;
     }
 }
