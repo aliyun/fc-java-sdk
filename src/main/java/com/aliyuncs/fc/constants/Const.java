@@ -7,6 +7,7 @@ public class Const {
 
     public final static String ACCOUNT_SETTING_PATH = "/%s/account-settings";
     public final static String SERVICE_PATH = "/%s/services";
+    public final static String ON_DEMAND_CONFIGS = "/%s/on-demand-configs";
     public final static String PROVISION_CONFIG_PATH = "/%s/provision-configs";
     public final static String SINGLE_SERVICE_PATH = SERVICE_PATH + "/%s";
     public final static String FUNCTION_PATH = SINGLE_SERVICE_PATH + "/functions";
@@ -38,6 +39,8 @@ public class Const {
         SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/invocations";
     public final static String SINGLE_PROVISION_CONFIG_PATH =
         SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/provision-config";
+    public final static String SINGLE_ON_DEMAND_CONFIG_WITH_QUALIFIER_PATH =
+            SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/on-demand-config";
 
     /**
      * 3 seconds
@@ -57,7 +60,7 @@ public class Const {
     public final static String INVOCATION_TYPE_ASYNC = "Async";
     public final static String INVOCATION_TYPE_HTTP = "http";
     public final static String IF_MATCH_HEADER = "If-Match";
-    
+
     public final static String DEFAULT_CHARSET="utf-8";
 
     public final static String TAG_QUERY_PREFIX="tag_";
