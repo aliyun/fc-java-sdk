@@ -1,3 +1,10 @@
+1.6.0 / 2019-11-15
+==================
+
+  * add on-demand-config API (#87)
+  * add instanceConcurrency for Create/Update function (#83)
+  * fix tag/untag response without body, requestId already in header
+
 1.5.0 / 2019-09-04
 ==================
   * Add tag support
