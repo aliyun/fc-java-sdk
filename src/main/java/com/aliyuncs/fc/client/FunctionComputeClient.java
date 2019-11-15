@@ -521,4 +521,54 @@ public class FunctionComputeClient {
         }
         return invokeFunctionResponse;
     }
+
+    public ListOnDemandConfigsResponse listOnDemandConfigs(ListOnDemandConfigsRequest request)
+        throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        ListOnDemandConfigsResponse listOnDemandConfigsResponse = GSON.fromJson(
+            new String(response.getContent()), ListOnDemandConfigsResponse.class);
+        listOnDemandConfigsResponse.setHeader(response.getHeaders());
+        listOnDemandConfigsResponse.setContent(response.getContent());
+        listOnDemandConfigsResponse.setStatus(response.getStatus());
+        return listOnDemandConfigsResponse;
+    }
+
+    public PutOnDemandConfigResponse putOnDemandConfig(PutOnDemandConfigRequest request)
+        throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
+        OnDemandConfigMetadata onDemandConfigMetadata = GSON.fromJson(
+            new String(response.getContent()), OnDemandConfigMetadata.class);
+
+        PutOnDemandConfigResponse putOnDemandConfigsResponse = new PutOnDemandConfigResponse();
+        putOnDemandConfigsResponse.setOnDemandConfigMetadata(onDemandConfigMetadata);
+        putOnDemandConfigsResponse.setHeader(response.getHeaders());
+        putOnDemandConfigsResponse.setContent(response.getContent());
+        putOnDemandConfigsResponse.setStatus(response.getStatus());
+        return putOnDemandConfigsResponse;
+    }
+
+    public GetOnDemandConfigResponse getOnDemandConfig(GetOnDemandConfigRequest request)
+        throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+
+        OnDemandConfigMetadata onDemandConfigMetadata = GSON.fromJson(
+                new String(response.getContent()), OnDemandConfigMetadata.class);
+
+        GetOnDemandConfigResponse getOnDemandConfigsResponse = new GetOnDemandConfigResponse();
+        getOnDemandConfigsResponse.setOnDemandConfigMetadata(onDemandConfigMetadata);
+        getOnDemandConfigsResponse.setHeader(response.getHeaders());
+        getOnDemandConfigsResponse.setContent(response.getContent());
+        getOnDemandConfigsResponse.setStatus(response.getStatus());
+        return getOnDemandConfigsResponse;
+    }
+
+    public DeleteOnDemandConfigResponse deleteOnDemandConfig(DeleteOnDemandConfigRequest request)
+        throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
+        DeleteOnDemandConfigResponse deleteOnDemandConfigsResponse = new DeleteOnDemandConfigResponse();
+        deleteOnDemandConfigsResponse.setHeader(response.getHeaders());
+        deleteOnDemandConfigsResponse.setContent(response.getContent());
+        deleteOnDemandConfigsResponse.setStatus(response.getStatus());
+        return deleteOnDemandConfigsResponse;
+    }
 }
