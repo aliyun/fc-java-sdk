@@ -99,4 +99,9 @@ public class GetFunctionResponse extends HttpResponse {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getEnvironmentVariables();
     }
+
+    public Integer getInstanceConcurrency() {
+        Preconditions.checkArgument(functionMetadata != null);
+        return functionMetadata.getInstanceConcurrency();
+    }
 }
