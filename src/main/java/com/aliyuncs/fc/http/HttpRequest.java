@@ -22,11 +22,13 @@ import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
 
 public abstract class HttpRequest {
 
