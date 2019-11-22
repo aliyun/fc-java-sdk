@@ -1,3 +1,8 @@
+1.7.0 / 2019-11-22
+==================
+
+  * add async client, for now only support functions and services api
+  
 1.6.0 / 2019-11-15
 ==================
 
