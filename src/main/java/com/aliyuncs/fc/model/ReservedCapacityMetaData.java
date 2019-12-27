@@ -6,13 +6,15 @@ public class ReservedCapacityMetaData {
     private String deadline;
     private String createdTime;
     private String lastModifiedTime;
+    private String isRefunded;
 
-    public ReservedCapacityMetaData(String instanceId, Integer cu, String deadline, String createdTime, String lastModifiedTime) {
+    public ReservedCapacityMetaData(String instanceId, Integer cu, String deadline, String createdTime, String lastModifiedTime, String isRefunded) {
         this.instanceId = instanceId;
         this.cu = cu;
         this.deadline = deadline;
         this.createdTime = createdTime;
         this.lastModifiedTime = lastModifiedTime;
+        this.isRefunded = isRefunded;
     }
 
     public String getInstanceId() {
@@ -33,5 +35,9 @@ public class ReservedCapacityMetaData {
 
     public String getLastModifiedTime() {
         return lastModifiedTime;
+    }
+
+    public String getIsRefunded() {
+        return isRefunded;
     }
 }
