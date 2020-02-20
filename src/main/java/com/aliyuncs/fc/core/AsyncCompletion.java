@@ -53,7 +53,7 @@ public class AsyncCompletion<Req extends HttpRequest, Res extends  HttpResponse>
             throw new ClientException("SDK.InvalidURL", "url is not valid: " + ex.getMessage());
         } else {
             ex.printStackTrace();
-            e = new ClientException("SDK.UnknownError", "Unknown client error", ex.getCause());
+            e = new ClientException("SDK.UnknownError", ex.getMessage(), ex.getCause());
         }
         this.onFailed(request, (Exception) e);
     }
