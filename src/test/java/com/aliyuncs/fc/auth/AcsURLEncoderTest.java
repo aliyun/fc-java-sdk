@@ -1,13 +1,9 @@
 package com.aliyuncs.fc.auth;
 
-import com.google.common.net.UrlEscapers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 public class AcsURLEncoderTest {
 

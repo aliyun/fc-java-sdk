@@ -24,6 +24,7 @@ import static com.aliyuncs.fc.model.HttpMethod.GET;
 import static com.aliyuncs.fc.model.HttpMethod.POST;
 import static com.aliyuncs.fc.model.HttpMethod.PUT;
 
+import com.aliyuncs.fc.auth.SignURLConfig;
 import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.constants.HeaderKeys;
@@ -356,7 +357,7 @@ public class FunctionComputeClient {
 
     public ListVersionsResponse listVersions(ListVersionsRequest request)
         throws ClientException, ServerException {
-        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);        
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
         ListVersionsResponse listVersionsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListVersionsResponse.class);
         listVersionsResponse.setHeaders(response.getHeaders());
         listVersionsResponse.setContent(response.getContent());
@@ -503,5 +504,13 @@ public class FunctionComputeClient {
         deleteOnDemandConfigsResponse.setContent(response.getContent());
         deleteOnDemandConfigsResponse.setStatus(response.getStatus());
         return deleteOnDemandConfigsResponse;
+    }
+
+    public String SignURL(SignURLConfig input) throws Exception {
+        return input.signURL(this.config.getApiVersion(),
+                this.config.getEndpoint(),
+                this.config.getAccessKeyID(),
+                this.config.getAccessKeySecret(),
+                this.config.getSecurityToken());
     }
 }

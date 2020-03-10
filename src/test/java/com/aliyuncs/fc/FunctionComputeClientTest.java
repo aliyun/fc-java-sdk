@@ -21,6 +21,8 @@ import static org.mockito.Mockito.*;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.auth.BasicSessionCredentials;
 import com.aliyuncs.auth.InstanceProfileCredentialsProvider;
+import com.aliyuncs.fc.auth.AcsURLEncoder;
+import com.aliyuncs.fc.auth.SignURLConfig;
 import com.aliyuncs.fc.client.FunctionComputeClient;
 import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
@@ -49,6 +51,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -1384,7 +1387,7 @@ public class FunctionComputeClientTest {
     }
 
     @Test
-    public void testHttpInvokeFunction() throws IOException, InterruptedException {
+    public void testHttpInvokeFunction() throws IOException, InterruptedException, Exception {
         createService(SERVICE_NAME);
 
         // Create a function
@@ -1403,30 +1406,83 @@ public class FunctionComputeClientTest {
             // be updated (default is 10 seconds)
             Thread.sleep(15000);
 
-            // Invoke the function
-            HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
-                FUNCTION_NAME, auth, POST, "/test/path/中文");
+            {
+                // Invoke the function
+                HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
+                        FUNCTION_NAME, auth, POST, "/test/path/中文");
 
-            request.addQuery("a", "1");
-            request.addQuery("aaa", null);
+                request.addQuery("a", "1");
+                request.addQuery("aaa", null);
 
-            request.setHeader("Test-Header-Key", "testHeaderValue");
-            request.setHeader("Content-Type", "application/json");
+                request.setHeader("Test-Header-Key", "testHeaderValue");
+                request.setHeader("Content-Type", "application/json");
 
-            request.setPayload(new String("data").getBytes());
+                request.setPayload(new String("data").getBytes());
 
-            InvokeFunctionResponse response = client.invokeFunction(request);
+                InvokeFunctionResponse response = client.invokeFunction(request);
 
-            assertEquals(200, response.getStatus());
-            assertTrue(response.getHeader("Content-Type").startsWith("application/json"));
-            assertEquals("testHeaderValue", response.getHeader("Test-Header-Key"));
+                assertEquals(200, response.getStatus());
+                assertTrue(response.getHeader("Content-Type").startsWith("application/json"));
+                assertEquals("testHeaderValue", response.getHeader("Test-Header-Key"));
 
-            JsonObject jsonObject = gson
-                .fromJson(new String(response.getPayload()), JsonObject.class);
+                JsonObject jsonObject = gson
+                        .fromJson(new String(response.getPayload()), JsonObject.class);
 
-            assertEquals("/test/path/中文", jsonObject.get("path").getAsString());
-            assertEquals("aaa=&a=1", jsonObject.get("queries").getAsString());
-            assertEquals("data", jsonObject.get("body").getAsString());
+                assertEquals("/test/path/中文", jsonObject.get("path").getAsString());
+                assertEquals("aaa=&a=1", jsonObject.get("queries").getAsString());
+                assertEquals("data", jsonObject.get("body").getAsString());
+            }
+            if (auth == FUNCTION) {
+                Date expires = new Date();
+                expires.setTime(expires.getTime() +5000);
+                SignURLConfig input = new SignURLConfig(POST, SERVICE_NAME, FUNCTION_NAME, expires);
+                input.setQualifier("LATEST");
+                input.setEscapedPath("/test/path/" + AcsURLEncoder.percentEncode("中文"));
+
+                // with header
+                HashMap<String, String> header = new HashMap<String, String>();
+                header.put("Test-Header-Key", "testHeaderValue");
+                header.put("Content-Type", "application/json");
+                input.setHeader(header);
+
+                HashMap<String, String[]> queries = new HashMap<String, String[]>();
+                queries.put("a", new String[]{"2", "3", "1"});
+                queries.put("aaa", null);
+                input.setQueries(queries);
+
+                String urlLink = client.SignURL(input);
+                URL url = new URL(urlLink);
+                HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+                httpConn.setRequestMethod("POST");
+                for(String k: header.keySet()) {
+                    httpConn.setRequestProperty(k, header.get(k));
+                }
+                httpConn.setConnectTimeout(60 * 1000);
+                httpConn.setReadTimeout(120 * 1000);
+                httpConn.connect();
+
+                assertEquals(200, httpConn.getResponseCode());
+                Map<String, List<String>> respHeaders = httpConn.getHeaderFields();
+
+                assertTrue(respHeaders.get("Content-Type").contains("application/json"));
+                assertTrue(respHeaders.get("Test-Header-Key").contains("testHeaderValue"));
+
+                // expires
+                {
+                    Thread.sleep(7000);
+                    URL urlExpires = new URL(urlLink);
+                    HttpURLConnection httpConnExpires = (HttpURLConnection) urlExpires.openConnection();
+                    httpConnExpires.setRequestMethod("POST");
+                    for (String k : header.keySet()) {
+                        httpConnExpires.setRequestProperty(k, header.get(k));
+                    }
+                    httpConnExpires.setConnectTimeout(60 * 1000);
+                    httpConnExpires.setReadTimeout(120 * 1000);
+                    httpConnExpires.connect();
+
+                    assertEquals(403, httpConnExpires.getResponseCode());
+                }
+            }
 
             // delete trigger
             deleteTrigger(SERVICE_NAME, FUNCTION_NAME, TRIGGER_NAME.concat(auth.toString()));
