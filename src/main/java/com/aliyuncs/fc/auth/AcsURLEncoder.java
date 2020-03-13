@@ -18,11 +18,9 @@
  */
 package com.aliyuncs.fc.auth;
 
-import com.google.common.base.Strings;
 import com.google.common.net.UrlEscapers;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -47,7 +45,6 @@ public class AcsURLEncoder {
 
     /**
      * used for encoding queries or form data
-     *
      */
     public static String encode(String value) throws UnsupportedEncodingException {
         if (isNullOrEmpty(value)) return value;
@@ -61,6 +58,6 @@ public class AcsURLEncoder {
 
     public static String percentEncode(String value) throws UnsupportedEncodingException {
         return value != null ? URLEncoder.encode(value, URL_ENCODING).replace("+", "%20")
-            .replace("*", "%2A").replace("%7E", "~") : null;
+                .replace("*", "%2A").replace("%7E", "~") : null;
     }
 }

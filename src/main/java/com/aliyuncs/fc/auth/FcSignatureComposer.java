@@ -38,17 +38,20 @@ import static java.lang.String.format;
  */
 public class FcSignatureComposer {
 
-    private static FcSignatureComposer composer = null;
-
+    public final static String authQueryKeyExpires = "x-fc-expires";
+    public final static String authQueryKeyAccessKeyID = "x-fc-access-key-id";
+    public final static String authQueryKeySignature = "x-fc-signature";
+    public final static String authQueryKeySecurityToken = "x-fc-security-token";
     protected final static String HEADER_SEPARATOR = "\n";
     private final static String AGLORITHM_NAME = "HmacSHA256";
+    private static FcSignatureComposer composer = null;
 
     public static Map<String, String> refreshSignParameters(Map<String, String> parameters) {
         if (parameters == null) {
             parameters = new HashMap<String, String>();
         }
 
-        if ( ! isNullOrEmpty(parameters.get("x-fc-date")) ) { // used for fc-console
+        if (!isNullOrEmpty(parameters.get("x-fc-date"))) { // used for fc-console
             parameters.put("Date", parameters.get("x-fc-date"));
         } else {
             parameters.put("Date", ParameterHelper.getRFC2616Date(null));
@@ -63,17 +66,35 @@ public class FcSignatureComposer {
         sb.append(method.name());
         sb.append(HEADER_SEPARATOR);
 
-        sb.append(composeCanonicalizedFCHeaders(headers));
+        HashMap<String, String> headersClone = new HashMap<String, String>();
+        if (headers != null) {
+            for (String key : headers.keySet()) {
+                String keyClone = key;
+                if (keyClone.equalsIgnoreCase("Date")) {
+                    keyClone = "Date";
+                }
+                if (keyClone.equalsIgnoreCase("Content-Type")) {
+                    keyClone = "Content-Type";
+                }
+                if (keyClone.equalsIgnoreCase("Content-MD5")) {
+                    keyClone = "Content-MD5";
+                }
+                headersClone.put(keyClone, headers.get(key));
+            }
+        }
+
+        sb.append(composeCanonicalizedFCHeaders(headersClone, queries));
         sb.append(HEADER_SEPARATOR);
 
-        sb.append(buildCanonicalHeaders(headers, "x-fc"));
+        sb.append(buildCanonicalHeaders(headersClone, "x-fc"));
 
         sb.append(composeCanonicalizedResource(path, queries));
 
         return sb.toString();
     }
 
-    private static String composeCanonicalizedFCHeaders(Map<String, String> headers) {
+    private static String composeCanonicalizedFCHeaders(Map<String, String> headers,
+                                                        Map<String, String[]> queries) {
         StringBuilder sb = new StringBuilder();
 
         if (headers != null && headers.get("Content-MD5") != null) {
@@ -86,11 +107,25 @@ public class FcSignatureComposer {
         }
 
         sb.append(HEADER_SEPARATOR);
-        if (headers != null && headers.get("Date") != null) {
+        String expires = getExpiresFromURLQueries(queries);
+        if (expires != null) {
+            sb.append(expires);
+        } else if (headers != null && headers.get("Date") != null) {
             sb.append(headers.get("Date"));
         }
 
         return sb.toString();
+    }
+
+    private static String getExpiresFromURLQueries(Map<String, String[]> queries) {
+        if (queries == null) {
+            return null;
+        }
+        String[] vals = queries.get(authQueryKeyExpires);
+        if (vals == null || vals.length < 1) {
+            return null;
+        }
+        return vals[0];
     }
 
     private static String composeCanonicalizedResource(String path, Map<String, String[]> queries) {
@@ -131,7 +166,7 @@ public class FcSignatureComposer {
     }
 
     public static String composeStringToSign(HttpMethod method, String path,
-        Map<String, String> headers, Map<String, String> queries) {
+                                             Map<String, String> headers, Map<String, String> queries) {
 
         Map<String, String[]> multiValueQueries = null;
 
@@ -139,7 +174,7 @@ public class FcSignatureComposer {
             multiValueQueries = new HashMap<String, String[]>();
 
             for (Map.Entry<String, String> entry : queries.entrySet()) {
-                multiValueQueries.put(entry.getKey(), new String[] {entry.getValue()});
+                multiValueQueries.put(entry.getKey(), new String[]{entry.getValue()});
             }
         }
 
@@ -168,11 +203,11 @@ public class FcSignatureComposer {
     }
 
     public static String signString(String source, String accessSecret)
-        throws InvalidKeyException, IllegalStateException {
+            throws InvalidKeyException, IllegalStateException {
         try {
             Mac mac = Mac.getInstance(AGLORITHM_NAME);
             mac.init(new SecretKeySpec(
-                accessSecret.getBytes(AcsURLEncoder.URL_ENCODING), AGLORITHM_NAME));
+                    accessSecret.getBytes(AcsURLEncoder.URL_ENCODING), AGLORITHM_NAME));
             byte[] signData = mac.doFinal(source.getBytes(AcsURLEncoder.URL_ENCODING));
             return Base64Helper.encode(signData);
         } catch (NoSuchAlgorithmException e) {
@@ -183,19 +218,19 @@ public class FcSignatureComposer {
 
     }
 
+    public static FcSignatureComposer getComposer() {
+        if (null == composer) {
+            composer = new FcSignatureComposer();
+        }
+        return composer;
+    }
+
     public String getSignerName() {
         return "HMAC-SHA256";
     }
 
     public String getSignerVersion() {
         return "1.0";
-    }
-
-    public static FcSignatureComposer getComposer() {
-        if (null == composer) {
-            composer = new FcSignatureComposer();
-        }
-        return composer;
     }
 
 }

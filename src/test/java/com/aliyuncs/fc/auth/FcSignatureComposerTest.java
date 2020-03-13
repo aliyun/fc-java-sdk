@@ -2,12 +2,11 @@ package com.aliyuncs.fc.auth;
 
 import org.junit.Test;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.aliyuncs.fc.model.HttpMethod.GET;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class FcSignatureComposerTest {
 
@@ -67,12 +66,12 @@ public class FcSignatureComposerTest {
         headers.put("x-fc-h5", "k5");
 
         Map<String, String[]> queries = new HashMap<String, String[]>();
-        queries.put("h6", new String[] {"k6"});
-        queries.put("h2", new String[] {"k2"});
-        queries.put("h1", new String[] {"k4", "k1"});
-        queries.put("h4", new String[] {"k44", "k4", "k4"});
-        queries.put("h3", new String[] {"k3"});
-        queries.put("h5", new String[] {"k5"});
+        queries.put("h6", new String[]{"k6"});
+        queries.put("h2", new String[]{"k2"});
+        queries.put("h1", new String[]{"k4", "k1"});
+        queries.put("h4", new String[]{"k44", "k4", "k4"});
+        queries.put("h3", new String[]{"k3"});
+        queries.put("h5", new String[]{"k5"});
 
         String composed = FcSignatureComposer.composeStringToSignWithMultiValue(GET, "aa", headers, queries);
 
@@ -101,11 +100,11 @@ public class FcSignatureComposerTest {
     public void testComposeWithMultiValue2() {
 
         Map<String, String[]> queries = new HashMap<String, String[]>();
-        queries.put("xyz", new String[] {});
-        queries.put("foo", new String[] {"bar"});
-        queries.put("key2", new String[] {"123"});
-        queries.put("key1", new String[] {"xyz", "abc"});
-        queries.put("key3/~x-y_z.a#b", new String[] {"value/~x-y_z.a#b"});
+        queries.put("xyz", new String[]{});
+        queries.put("foo", new String[]{"bar"});
+        queries.put("key2", new String[]{"123"});
+        queries.put("key1", new String[]{"xyz", "abc"});
+        queries.put("key3/~x-y_z.a#b", new String[]{"value/~x-y_z.a#b"});
 
         String composed = FcSignatureComposer.composeStringToSignWithMultiValue(GET, "/path/action with space", null, queries);
 
