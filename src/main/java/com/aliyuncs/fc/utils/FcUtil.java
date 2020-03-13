@@ -9,11 +9,14 @@ import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.HttpMethod;
 import com.aliyuncs.fc.model.PrepareUrl;
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +29,7 @@ public class FcUtil {
     public static String toDefaultCharset(byte[] content) throws ClientException {
         return toCharset(content, Const.DEFAULT_CHARSET);
     }
-    
+
     public static String toCharset(byte[] content, String charsetName) throws ClientException {
         try {
             return new String(content, charsetName);
@@ -94,6 +97,39 @@ public class FcUtil {
         return urlBuilder.toString();
     }
 
+    /**
+     * concate query string parameters (e.g. name=foo)
+     *
+     * @param parameters query parameters
+     * @return concatenated query string
+     * @throws UnsupportedEncodingException exceptions
+     */
+    public static String concatMultiQueryString(Map<String, String[]> parameters)
+            throws UnsupportedEncodingException {
+        if (null == parameters) {
+            return null;
+        }
+
+        ArrayList<String> paramsList = new ArrayList<String>();
+        if (parameters != null) {
+            for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                String[] values = entry.getValue();
+                if (values != null) {
+                    for (String val : values) {
+                        if (val != null) {
+                            paramsList.add(encode(key) + "=" + encode(val));
+                        }
+                    }
+                } else {
+                    paramsList.add(encode(key));
+                }
+            }
+        }
+        Collections.sort(paramsList);
+        return StringUtils.join(paramsList, "&");
+    }
+
     public static Map<String, String> getHeader(Config config, Map<String, String> header, byte[] payload, String form) {
         if (header == null) {
             header = new HashMap<String, String>();
@@ -115,7 +151,7 @@ public class FcUtil {
     }
 
     public static void signRequest(Config config, HttpRequest request, String form, HttpMethod method,
-                            boolean includeParameters)
+                                   boolean includeParameters)
             throws InvalidKeyException, IllegalStateException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
         Map<String, String> imutableMap = null;
