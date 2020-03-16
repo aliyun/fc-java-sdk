@@ -2,11 +2,7 @@ package com.aliyuncs.fc;
 
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
 import static com.aliyuncs.fc.model.HttpAuthType.FUNCTION;
-import static com.aliyuncs.fc.model.HttpMethod.DELETE;
-import static com.aliyuncs.fc.model.HttpMethod.GET;
-import static com.aliyuncs.fc.model.HttpMethod.HEAD;
-import static com.aliyuncs.fc.model.HttpMethod.POST;
-import static com.aliyuncs.fc.model.HttpMethod.PUT;
+import static com.aliyuncs.fc.model.HttpMethod.*;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.deepEquals;
 import static junit.framework.TestCase.assertEquals;
@@ -1536,7 +1532,7 @@ public class FunctionComputeClientTest {
 
         for (HttpAuthType auth : new HttpAuthType[]{ANONYMOUS, FUNCTION}) {
             // create http trigger
-            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[]{GET, POST, PUT, HEAD, DELETE});
+            createHttpTrigger(TRIGGER_NAME, auth, new HttpMethod[]{GET, POST, PUT, HEAD, DELETE, PATCH});
 
             // Invoke the function
             HttpInvokeFunctionRequest request = new HttpInvokeFunctionRequest(SERVICE_NAME,
