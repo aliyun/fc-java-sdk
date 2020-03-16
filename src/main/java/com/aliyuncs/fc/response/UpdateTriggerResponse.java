@@ -41,6 +41,11 @@ public class UpdateTriggerResponse extends HttpResponse {
         return triggerMetadata.getTriggerName();
     }
 
+    public String getDescription() {
+        Preconditions.checkArgument( triggerMetadata != null);
+        return triggerMetadata.getDescription();
+    }
+
     public String getSourceArn() {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getSourceArn();

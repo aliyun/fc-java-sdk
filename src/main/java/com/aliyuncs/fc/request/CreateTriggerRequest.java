@@ -39,6 +39,9 @@ public class CreateTriggerRequest extends HttpRequest {
     @SerializedName("triggerName")
     private String triggerName;
 
+    @SerializedName("description")
+    private String description;
+
     @SerializedName("sourceArn")
     private String sourceArn;
 
@@ -76,6 +79,14 @@ public class CreateTriggerRequest extends HttpRequest {
         return triggerName;
     }
 
+    public CreateTriggerRequest setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public String getDescription() {
+        return description;
+    }
     public CreateTriggerRequest setSourceArn(String sourceArn) {
         this.sourceArn = sourceArn;
         return this;

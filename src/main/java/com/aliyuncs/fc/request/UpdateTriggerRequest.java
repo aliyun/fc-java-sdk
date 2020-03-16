@@ -39,6 +39,9 @@ public class UpdateTriggerRequest extends HttpRequest {
     private transient final String functionName;
     private transient final String triggerName;
 
+    @SerializedName("description")
+    private String description;
+
     @SerializedName("invocationRole")
     private String invocationRole;
 
@@ -75,6 +78,15 @@ public class UpdateTriggerRequest extends HttpRequest {
 
     public String getTriggerName() {
         return triggerName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public UpdateTriggerRequest setDescription(String description) {
+        this.description = description;
+        return this;
     }
 
     public Object getTriggerConfig() {
