@@ -69,6 +69,9 @@ public class UpdateFunctionRequest extends HttpRequest {
     @SerializedName("instanceConcurrency")
     private Integer instanceConcurrency;
 
+    @SerializedName("instanceType")
+    private String instanceType;
+
     private transient String ifMatch;
 
 
@@ -146,6 +149,15 @@ public class UpdateFunctionRequest extends HttpRequest {
     public UpdateFunctionRequest setMemorySize(Integer memorySize) {
         this.memorySize = memorySize;
         return this;
+    }
+
+    public UpdateFunctionRequest setInstanceType(String instanceType) {
+        this.instanceType = instanceType;
+        return this;
+    }
+
+    public String getInstanceType() {
+        return instanceType;
     }
 
     public Code getCode() {
