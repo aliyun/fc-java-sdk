@@ -70,6 +70,9 @@ public class CreateFunctionRequest extends HttpRequest {
     @SerializedName("instanceConcurrency")
     private Integer instanceConcurrency;
 
+    @SerializedName("instanceType")
+    private String instanceType;
+
     public CreateFunctionRequest(String serviceName) {
         this.serviceName = serviceName;
     }
@@ -157,6 +160,15 @@ public class CreateFunctionRequest extends HttpRequest {
 
     public Integer getMemorySize() {
         return memorySize;
+    }
+
+    public CreateFunctionRequest setInstanceType(String instanceType) {
+        this.instanceType = instanceType;
+        return this;
+    }
+
+    public String getInstanceType() {
+        return instanceType;
     }
 
     public Map<String, String> getEnvironmentVariables() {
