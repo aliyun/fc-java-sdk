@@ -53,9 +53,12 @@ public class FunctionMetadata {
     @SerializedName("instanceConcurrency")
     private Integer instanceConcurrency;
 
+    @SerializedName("instanceType")
+    private String instanceType;
+
     public FunctionMetadata(String functionId, String functionName, String description,
         String runtime, String handler, String initializer, Integer timeout, Integer initializationTimeout, Integer memorySize,
-        int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, Map<String, String> environmentVariables) {
+        int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, String instanceType, Map<String, String> environmentVariables) {
         this.functionId = functionId;
         this.functionName = functionName;
         this.description = description;
@@ -70,7 +73,7 @@ public class FunctionMetadata {
         this.createdTime = createdTime;
         this.lastModifiedTime = lastModifiedTime;
         this.environmentVariables = environmentVariables;
-
+        this.instanceType = instanceType;
     }
     public String getFunctionName() {
         return functionName;
@@ -130,5 +133,9 @@ public class FunctionMetadata {
 
     public Integer getInstanceConcurrency() {
         return instanceConcurrency;
+    }
+
+    public String getInstanceType() {
+        return instanceType;
     }
 }
