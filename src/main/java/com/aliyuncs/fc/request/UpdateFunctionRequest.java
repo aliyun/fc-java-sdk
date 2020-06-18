@@ -25,6 +25,7 @@ import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.Code;
+import com.aliyuncs.fc.model.CustomContainerConfig;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Strings;
@@ -71,6 +72,12 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     @SerializedName("instanceType")
     private String instanceType;
+
+    @SerializedName("customContainerConfig")
+    private CustomContainerConfig customContainerConfig;
+
+    @SerializedName("caPort")
+    private Integer caPort;
 
     private transient String ifMatch;
 
@@ -158,6 +165,20 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     public String getInstanceType() {
         return instanceType;
+    }
+
+    public UpdateFunctionRequest setCustomContainerConfig(CustomContainerConfig customContainerConfig) {
+        this.customContainerConfig = customContainerConfig;
+        return this;
+    }
+
+    public UpdateFunctionRequest setCaPort(Integer caPort){
+        this.caPort = caPort;
+        return this;
+    }
+
+    public Integer getCaPort() {
+        return caPort;
     }
 
     public Code getCode() {

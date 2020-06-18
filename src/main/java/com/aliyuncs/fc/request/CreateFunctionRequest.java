@@ -23,6 +23,7 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.FormatType;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.Code;
+import com.aliyuncs.fc.model.CustomContainerConfig;
 import com.aliyuncs.fc.response.CreateFunctionResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 
@@ -72,6 +73,12 @@ public class CreateFunctionRequest extends HttpRequest {
 
     @SerializedName("instanceType")
     private String instanceType;
+
+    @SerializedName("customContainerConfig")
+    private CustomContainerConfig customContainerConfig;
+
+    @SerializedName("caPort")
+    private Integer caPort;
 
     public CreateFunctionRequest(String serviceName) {
         this.serviceName = serviceName;
@@ -169,6 +176,24 @@ public class CreateFunctionRequest extends HttpRequest {
 
     public String getInstanceType() {
         return instanceType;
+    }
+
+    public CreateFunctionRequest setCustomContainerConfig(CustomContainerConfig customContainerConfig) {
+        this.customContainerConfig = customContainerConfig;
+        return this;
+    }
+
+    public CustomContainerConfig getCustomContainerConfig(){
+        return customContainerConfig;
+    }
+
+    public CreateFunctionRequest setCaPort(Integer caPort){
+        this.caPort = caPort;
+        return this;
+    }
+
+    public Integer getCaPort() {
+        return caPort;
     }
 
     public Map<String, String> getEnvironmentVariables() {
