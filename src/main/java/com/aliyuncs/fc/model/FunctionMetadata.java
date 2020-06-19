@@ -56,6 +56,12 @@ public class FunctionMetadata {
     @SerializedName("instanceType")
     private String instanceType;
 
+    @SerializedName("customContainerConfig")
+    private CustomContainerConfig customContainerConfig;
+
+    @SerializedName("caPort")
+    private Integer caPort;
+
     public FunctionMetadata(String functionId, String functionName, String description,
         String runtime, String handler, String initializer, Integer timeout, Integer initializationTimeout, Integer memorySize,
         int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, String instanceType, Map<String, String> environmentVariables) {
@@ -137,5 +143,13 @@ public class FunctionMetadata {
 
     public String getInstanceType() {
         return instanceType;
+    }
+
+    public Integer getCAPort() {
+        return caPort;
+    }
+
+    public CustomContainerConfig getCustomContainerConfig(){
+        return customContainerConfig;
     }
 }
