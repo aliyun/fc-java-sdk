@@ -1,3 +1,8 @@
+1.8.2 / 2020-06-19
+==================
+
+  * add customContainerConfig/caPort and instanceType
+
 1.8.1 / 2020-03-16
 ==================
 
