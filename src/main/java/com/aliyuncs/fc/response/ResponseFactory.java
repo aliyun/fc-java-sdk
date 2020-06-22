@@ -100,6 +100,14 @@ public class ResponseFactory {
         return createServiceResponse;
     }
 
+    public static CreateVpcBindingResponse genCreateVpcBindingResponse(HttpResponse response) throws ClientException, ServerException {
+        CreateVpcBindingResponse createVpcBindingResponse = new CreateVpcBindingResponse();
+        createVpcBindingResponse.setHeaders(response.getHeaders());
+        createVpcBindingResponse.setStatus(response.getStatus());
+        createVpcBindingResponse.setContent(response.getContent());
+        return createVpcBindingResponse;
+    }
+
     public static UpdateServiceResponse genUpdateServiceResponse(HttpResponse response) throws ClientException, ServerException {
         ServiceMetadata serviceMetadata = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ServiceMetadata.class);
         UpdateServiceResponse updateServiceResponse = new UpdateServiceResponse();
@@ -108,6 +116,14 @@ public class ResponseFactory {
         updateServiceResponse.setContent(response.getContent());
         updateServiceResponse.setStatus(response.getStatus());
         return updateServiceResponse;
+    }
+
+    public static ListVpcBindingsResponse genListVpcBindingsResponse(HttpResponse response) throws ClientException, ServerException {
+        ListVpcBindingsResponse listVpcBindingsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListVpcBindingsResponse.class);
+        listVpcBindingsResponse.setHeaders(response.getHeaders());
+        listVpcBindingsResponse.setContent(response.getContent());
+        listVpcBindingsResponse.setStatus(response.getStatus());
+        return listVpcBindingsResponse;
     }
 
     public static ListServicesResponse genListServiceResponse(HttpResponse response) throws ClientException, ServerException {
@@ -126,6 +142,14 @@ public class ResponseFactory {
         getServiceResponse.setContent(response.getContent());
         getServiceResponse.setStatus(response.getStatus());
         return getServiceResponse;
+    }
+
+    public static DeleteVpcBindingResponse genDeleteVpcBindingResponse(HttpResponse response) throws ClientException, ServerException {
+        DeleteVpcBindingResponse deleteVpcBindingResponse = new DeleteVpcBindingResponse();
+        deleteVpcBindingResponse.setHeaders(response.getHeaders());
+        deleteVpcBindingResponse.setContent(response.getContent());
+        deleteVpcBindingResponse.setStatus(response.getStatus());
+        return deleteVpcBindingResponse;
     }
 
     public static DeleteServiceResponse genDeleteServiceResponse(HttpResponse response) throws ClientException, ServerException {

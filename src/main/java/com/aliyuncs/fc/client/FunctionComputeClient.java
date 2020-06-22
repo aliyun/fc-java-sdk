@@ -96,6 +96,12 @@ public class FunctionComputeClient {
         return ResponseFactory.genDeleteServiceResponse(response);
     }
 
+    public DeleteVpcBindingResponse deleteVpcBinding(DeleteVpcBindingRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
+        return ResponseFactory.genDeleteVpcBindingResponse(response);
+    }
+
     public DeleteFunctionResponse deleteFunction(DeleteFunctionRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
@@ -152,6 +158,12 @@ public class FunctionComputeClient {
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
         return ResponseFactory.genCreateServiceResponse(response);
+    }
+
+    public CreateVpcBindingResponse createVpcBinding(CreateVpcBindingRequest request)
+        throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
+        return ResponseFactory.genCreateVpcBindingResponse(response);
     }
 
     public CreateFunctionResponse createFunction(CreateFunctionRequest request)
@@ -281,6 +293,17 @@ public class FunctionComputeClient {
         listTriggersResponse.setContent(response.getContent());
         listTriggersResponse.setStatus(response.getStatus());
         return listTriggersResponse;
+    }
+
+    public ListVpcBindingsResponse listVpcBindings(ListVpcBindingsRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        System.out.println(FcUtil.toDefaultCharset(response.getContent()));
+        ListVpcBindingsResponse listVpcBindingsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListVpcBindingsResponse.class);
+        listVpcBindingsResponse.setHeaders(response.getHeaders());
+        listVpcBindingsResponse.setStatus(response.getStatus());
+        listVpcBindingsResponse.setContent(response.getContent());
+        return ResponseFactory.genListVpcBindingsResponse(response);
     }
 
     public CreateAliasResponse createAlias(CreateAliasRequest request)

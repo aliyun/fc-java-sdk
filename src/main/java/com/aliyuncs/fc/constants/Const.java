@@ -20,6 +20,8 @@ public class Const {
     public final static String SINGLE_ALIAS_PATH = ALIAS_PATH + "/%s";
     public final static String RESERVED_CAPACITY_PATH = "/%s/reservedCapacities";
     public final static String TAG_PATH = "/%s/tag";
+    public final static String VPC_BINDING_PATH = SERVICE_PATH + "/%s/binding";
+    public final static String VPC_BINDINGS_PATH = SERVICE_PATH + "/%s/bindings";
 
     public final static String FUNCTION_CODE_PATH = SINGLE_FUNCTION_PATH + "/code";
     public final static String TRIGGER_PATH = SINGLE_FUNCTION_PATH + "/triggers";
