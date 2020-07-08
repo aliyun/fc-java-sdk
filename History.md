@@ -1,3 +1,9 @@
+1.8.7 / 2020-08-05
+==================
+
+  * add getCaPort and getCustomContainerConfig in GetFunctionResponse
+
+
 1.8.6 / 2020-07-27
 ==================
 
