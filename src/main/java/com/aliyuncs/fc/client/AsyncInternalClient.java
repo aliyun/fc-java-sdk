@@ -57,7 +57,7 @@ public class AsyncInternalClient {
         httpClientBuilder.setConnectionManager(cm);
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(config.getConnectTimeoutMillis())
-                .setConnectionRequestTimeout(config.getConnectTimeoutMillis())
+                .setConnectionRequestTimeout(config.getConnectionRequestTimeoutMillis())
                 .setSocketTimeout(config.getReadTimeoutMillis())
                 .build();
         httpClientBuilder.setDefaultRequestConfig(requestConfig);

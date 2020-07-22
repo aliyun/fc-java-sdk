@@ -27,7 +27,8 @@ public class Config {
     private String uid;
     private AlibabaCloudCredentialsProvider credsProvider = null;
 
-    private int connectTimeoutMillis = Const.READ_TIMEOUT;
+    private int connectTimeoutMillis = Const.CONNECT_TIMEOUT;
+    private int connectionRequestTimeoutMillis = Const.CONNECT_TIMEOUT;
     private int readTimeoutMillis = Const.READ_TIMEOUT;
     private int threadCount = 1;
     private int maxConnectCount = 20;
@@ -162,6 +163,15 @@ public class Config {
      */
     public Config setConnectTimeoutMillis(int connectTimeoutMillis) {
         this.connectTimeoutMillis = connectTimeoutMillis;
+        return this;
+    }
+
+    public int getConnectionRequestTimeoutMillis() {
+        return connectionRequestTimeoutMillis;
+    }
+
+    public Config setConnectionRequestTimeoutMillis(int connectionRequestTimeoutMillis) {
+        this.connectionRequestTimeoutMillis = connectionRequestTimeoutMillis;
         return this;
     }
 

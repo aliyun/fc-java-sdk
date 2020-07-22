@@ -32,6 +32,7 @@ public class AsyncCompletion<Req extends HttpRequest, Res extends  HttpResponse>
 
     @Override
     public void failed(Exception ex) {
+        ex.printStackTrace();
         final Object e;
         if (ex instanceof ClientException) {
             e = ex;
@@ -39,7 +40,7 @@ public class AsyncCompletion<Req extends HttpRequest, Res extends  HttpResponse>
             e = ex;
         } else if(ex instanceof SocketTimeoutException) {
             e = new ClientException("SDK.ServerUnreachable",
-                    "SocketTimeoutException has occurred on a socket read or accept.");
+                    "SocketTimeoutException has occurred on a socket read or accept." + ex.toString());
         } else if (ex instanceof InvalidKeyException) {
             e = new ClientException("SDK.InvalidAccessSecret",
                     "Speicified access secret is not valid.");
@@ -52,7 +53,6 @@ public class AsyncCompletion<Req extends HttpRequest, Res extends  HttpResponse>
         } else if (ex instanceof URISyntaxException) {
             throw new ClientException("SDK.InvalidURL", "url is not valid: " + ex.getMessage());
         } else {
-            ex.printStackTrace();
             e = new ClientException("SDK.UnknownError", ex.getMessage(), ex.getCause());
         }
         this.onFailed(request, (Exception) e);
