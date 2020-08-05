@@ -62,6 +62,12 @@ public class FunctionMetadata {
     @SerializedName("caPort")
     private Integer caPort;
 
+    public FunctionMetadata(){
+        this.codeSize = 0;
+        this.caPort = 9000;
+        this.customContainerConfig = new CustomContainerConfig();
+    }
+
     public FunctionMetadata(String functionId, String functionName, String description,
         String runtime, String handler, String initializer, Integer timeout, Integer initializationTimeout, Integer memorySize,
         int codeSize, String codeChecksum, String createdTime, String lastModifiedTime, String instanceType, Map<String, String> environmentVariables) {
@@ -126,6 +132,9 @@ public class FunctionMetadata {
     }
 
     public Integer getCodeSize() {
+        if(codeSize == null){ // custom-container
+            codeSize = 0;
+        }
         return codeSize;
     }
 
@@ -146,10 +155,16 @@ public class FunctionMetadata {
     }
 
     public Integer getCAPort() {
+        if(caPort == null){
+            caPort = 9000;
+        }
         return caPort;
     }
 
     public CustomContainerConfig getCustomContainerConfig(){
+        if(customContainerConfig == null){
+            customContainerConfig = new CustomContainerConfig();
+        }
         return customContainerConfig;
     }
 }
