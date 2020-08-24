@@ -15,15 +15,15 @@ public class ConfigTest {
         String illegalUid1 = "xaiy0x0z098.sxl;SOXZ";
         String illegalUid2 = "si@l8s6X)LOks.Ilihs";
 
-        crateConfig(region, uid, null);
-        crateConfig(region, "", "Account ID cannot be blank");
-        crateConfig(region, illegalUid1, "Illegal Account ID");
-        crateConfig(region, illegalUid2, "Illegal Account ID");
-        crateConfig(illegalRegion1, uid, "Illegal region");
-        crateConfig(illegalRegion2, uid, "Illegal region");
+        createConfig(region, uid, null);
+        createConfig(region, "", "Account ID cannot be blank");
+        createConfig(region, illegalUid1, "Illegal Account ID");
+        createConfig(region, illegalUid2, "Illegal Account ID");
+        createConfig(illegalRegion1, uid, "Illegal region");
+        createConfig(illegalRegion2, uid, "Illegal region");
     }
 
-    private Config crateConfig(String region, String uid, String errMsg) {
+    private Config createConfig(String region, String uid, String errMsg) {
         String accessKeyID = "TMPkeyxxxxxx";
         String accessKeySecret = "TMPSecretxxxxxx";
         String securityToken = "TMPtokenxxxx";
