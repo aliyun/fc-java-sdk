@@ -16,6 +16,7 @@ public class ConfigTest {
         String illegalUid2 = "si@l8s6X)LOks.Ilihs";
 
         crateConfig(region, uid, null);
+        crateConfig(region, "", "Account ID cannot be blank");
         crateConfig(region, illegalUid1, "Illegal Account ID");
         crateConfig(region, illegalUid2, "Illegal Account ID");
         crateConfig(illegalRegion1, uid, "Illegal region");

@@ -41,7 +41,7 @@ public class Config {
     private String userAgent;
 
     private Config(String region, String uid, boolean isHttps) {
-        paramCheck(region, uid);
+        checkParam(region, uid);
         this.endpoint = buildEndpoint(region, uid, isHttps);
         this.uid = uid;
         this.userAgent = "";
@@ -57,7 +57,7 @@ public class Config {
         }
     }
 
-    private void paramCheck(String region, String uid) {
+    private void checkParam(String region, String uid) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(region), "Region cannot be blank");
         Preconditions.checkArgument(region.matches(REGION_PATTERN), "Illegal region");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(uid), "Account ID cannot be blank");
