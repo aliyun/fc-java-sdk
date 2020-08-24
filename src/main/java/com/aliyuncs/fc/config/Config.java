@@ -17,6 +17,9 @@ public class Config {
 
     private static final String ENDPOINT_FMT = "%s.%s.fc.aliyuncs.com";
     private static final String PROPERTIES_FILE = "fc.properties";
+    private static final String REGION_PATTERN = "^[A-Za-z0-9\\-\\_]+$";
+    private static final String UID_PATTERN = "^[A-Za-z0-9\\-\\_]+$";
+
     private String endpoint;
     private String apiVersion = "2016-08-15";
     private String accessKeyID;
@@ -38,9 +41,7 @@ public class Config {
     private String userAgent;
 
     private Config(String region, String uid, boolean isHttps) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(region), "Region cannot be blank");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(uid), "Account ID cannot be blank");
-
+        checkParam(region, uid);
         this.endpoint = buildEndpoint(region, uid, isHttps);
         this.uid = uid;
         this.userAgent = "";
@@ -54,6 +55,13 @@ public class Config {
         } catch (IOException e) {
             throw new RuntimeException("Properties file " + PROPERTIES_FILE + " is not found");
         }
+    }
+
+    private void checkParam(String region, String uid) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(region), "Region cannot be blank");
+        Preconditions.checkArgument(region.matches(REGION_PATTERN), "Illegal region");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(uid), "Account ID cannot be blank");
+        Preconditions.checkArgument(uid.matches(UID_PATTERN), "Illegal Account ID");
     }
     
     public Config(String region, String uid, String accessKeyID, String accessKeySecret, String securityToken,
