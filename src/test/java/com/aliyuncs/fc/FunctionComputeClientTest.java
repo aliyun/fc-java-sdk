@@ -863,6 +863,98 @@ public class FunctionComputeClientTest {
     }
 
     @Test
+    public void testFunctionAsyncConfig() throws Exception {
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+        String lastVersion = cleanUpVersions(SERVICE_NAME);
+        // publish a version
+        PublishVersionRequest publishVersionRequest = new PublishVersionRequest(SERVICE_NAME);
+        PublishVersionResponse publishVersionResponse = client
+                .publishVersion(publishVersionRequest);
+        assertEquals(String.format("%d", Integer.parseInt(lastVersion) + 1),
+                publishVersionResponse.getVersionId());
+        lastVersion = publishVersionResponse.getVersionId();
+
+        String destFmt =  "acs:mns:%s:%s:/queues/qx/messages";
+
+        Destination dest = new Destination();
+        dest.setDestination(String
+                .format(destFmt, REGION, ACCOUNT_ID));
+        AsyncConfig config = new AsyncConfig();
+        config.setDestinationConfig(new DestinationConfig());
+        config.destinationConfig.setonFailure(dest);
+        config.setMaxAsyncEventAgeInSeconds(1000);
+        config.setMaxAsyncRetryAttempts(1);
+
+        final int numConfigs = 3;
+        for (int i = 0; i < numConfigs; i++) {
+            String qualifier = String.format("test-qualifier-%d", i);
+            //Create a Alias against it
+            String aliasName = qualifier;
+            CreateAliasRequest createAliasRequest = new CreateAliasRequest(SERVICE_NAME, aliasName,
+                    lastVersion);
+            CreateAliasResponse createAliasResponse = client.createAlias(createAliasRequest);
+            // put first
+
+            PutFunctionAsyncConfigRequest putFunctionAsyncConfigRequest = new PutFunctionAsyncConfigRequest(SERVICE_NAME, qualifier, FUNCTION_NAME);
+            putFunctionAsyncConfigRequest.setAsyncConfig(config);
+            PutFunctionAsyncConfigResponse pResp = client.putFunctionAsyncConfig(putFunctionAsyncConfigRequest);
+
+            // validate put response
+            assertNotEquals("", pResp.getRequestId());
+            assertEquals(String.format(destFmt, REGION, ACCOUNT_ID),
+                    pResp.getAsyncConfig().getDestinationConfig().getOnFailure().getDestination());
+
+
+            // validate get response
+            GetFunctionAsyncConfigRequest getFunctionAsyncConfigRequest = new GetFunctionAsyncConfigRequest(SERVICE_NAME, qualifier, FUNCTION_NAME);
+            GetFunctionAsyncConfigResponse gResp = client.getFunctionAsyncConfig(getFunctionAsyncConfigRequest);
+            assertNotEquals("", gResp.getRequestId());
+            assertEquals(String.format(destFmt, REGION, ACCOUNT_ID),
+                    gResp.getAsyncConfig().getDestinationConfig().getOnFailure().getDestination());
+        }
+
+
+        // validate list response
+        ListFunctionAsyncConfigsRequest listFunctionAsyncConfigsRequest = new ListFunctionAsyncConfigsRequest(SERVICE_NAME, FUNCTION_NAME);
+        ListFunctionAsyncConfigsResponse lResp = client.listFunctionAsyncConfigs(listFunctionAsyncConfigsRequest);
+        assertNotEquals("", lResp.getRequestId());
+        assertEquals(numConfigs, lResp.getAsyncConfigs().length);
+        assertEquals("", lResp.getNextToken());
+
+
+        // with limit
+        listFunctionAsyncConfigsRequest = new ListFunctionAsyncConfigsRequest(SERVICE_NAME, FUNCTION_NAME);
+        listFunctionAsyncConfigsRequest.setLimit(1);
+        lResp = client.listFunctionAsyncConfigs(listFunctionAsyncConfigsRequest);
+        assertEquals(1, lResp.getAsyncConfigs().length);
+        assertEquals("test-qualifier-1", lResp.getNextToken());
+
+
+        // list again
+        ListFunctionAsyncConfigsRequest listFunctionAsyncConfigsRequest2 = new ListFunctionAsyncConfigsRequest(SERVICE_NAME, FUNCTION_NAME);
+        listFunctionAsyncConfigsRequest2.setNextToken(lResp.getNextToken());
+        lResp = client.listFunctionAsyncConfigs(listFunctionAsyncConfigsRequest2);
+        assertEquals(2, lResp.getAsyncConfigs().length);
+
+
+        for (int i = 0; i < numConfigs; i++) {
+            // delete configs
+            String qualifier = String.format("test-qualifier-%d", i);
+            DeleteFunctionAsyncConfigRequest deleteFunctionAsyncConfigRequest = new DeleteFunctionAsyncConfigRequest(SERVICE_NAME, qualifier, FUNCTION_NAME);
+            DeleteFunctionAsyncConfigResponse deleteFunctionAsyncConfigResponse = client.deleteFunctionAsyncConfig(deleteFunctionAsyncConfigRequest);
+            assertNotEquals("", deleteFunctionAsyncConfigResponse.getRequestId());
+
+        }
+
+        // validate no configs can be listed
+        ListFunctionAsyncConfigsRequest listFunctionAsyncConfigsRequest3 = new ListFunctionAsyncConfigsRequest(SERVICE_NAME, FUNCTION_NAME);
+        lResp = client.listFunctionAsyncConfigs(listFunctionAsyncConfigsRequest3);
+        assertNotEquals("", lResp.getRequestId());
+        assertEquals(null, lResp.getAsyncConfigs());
+    }
+
+    @Test
     public void testCreateServiceValidate() {
         try {
             CreateServiceRequest request = new CreateServiceRequest();

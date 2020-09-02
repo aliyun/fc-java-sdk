@@ -43,6 +43,12 @@ public class Const {
         SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/provision-config";
     public final static String SINGLE_ON_DEMAND_CONFIG_WITH_QUALIFIER_PATH =
             SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/on-demand-config";
+    public final static String SINGLE_FUNCTION_With_QUALIFIER_ASYNC_CONFIG_PATH =
+            SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/async-invoke-config";
+    public final static String SINGLE_FUNCTION_ASYNC_CONFIG_PATH =
+            SINGLE_FUNCTION_PATH + "/async-invoke-config";
+    public final static String LIST_FUNCTION_ASYNC_CONFIGS_PATH =
+            SINGLE_FUNCTION_PATH + "/async-invoke-configs";
 
     /**
      * 3 seconds

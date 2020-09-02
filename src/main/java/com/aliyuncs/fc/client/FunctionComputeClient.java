@@ -529,6 +529,50 @@ public class FunctionComputeClient {
         return deleteOnDemandConfigsResponse;
     }
 
+    public PutFunctionAsyncConfigResponse putFunctionAsyncConfig(PutFunctionAsyncConfigRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
+        AsyncConfig config = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), AsyncConfig.class);
+        PutFunctionAsyncConfigResponse putFunctionAsyncConfigResponse = new PutFunctionAsyncConfigResponse(config);
+        putFunctionAsyncConfigResponse.setAsyncConfig(config);
+        putFunctionAsyncConfigResponse.setContent(response.getContent());
+        putFunctionAsyncConfigResponse.setHeader(response.getHeaders());
+        putFunctionAsyncConfigResponse.setStatus(response.getStatus());
+        return putFunctionAsyncConfigResponse;
+    }
+
+    public GetFunctionAsyncConfigResponse getFunctionAsyncConfig(GetFunctionAsyncConfigRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        AsyncConfig asyncConfig = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), AsyncConfig.class);
+        GetFunctionAsyncConfigResponse getFunctionAsyncConfigResponse = new GetFunctionAsyncConfigResponse(asyncConfig);
+        getFunctionAsyncConfigResponse.setAsyncConfig(asyncConfig);
+        getFunctionAsyncConfigResponse.setHeader(response.getHeaders());
+        getFunctionAsyncConfigResponse.setContent(response.getContent());
+        getFunctionAsyncConfigResponse.setStatus(response.getStatus());
+        return getFunctionAsyncConfigResponse;
+    }
+
+    public ListFunctionAsyncConfigsResponse listFunctionAsyncConfigs(ListFunctionAsyncConfigsRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        ListFunctionAsyncConfigsResponse listFunctionAsyncConfigsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListFunctionAsyncConfigsResponse.class);
+        listFunctionAsyncConfigsResponse.setHeader(response.getHeaders());
+        listFunctionAsyncConfigsResponse.setContent(response.getContent());
+        listFunctionAsyncConfigsResponse.setStatus(response.getStatus());
+        return listFunctionAsyncConfigsResponse;
+    }
+
+    public DeleteFunctionAsyncConfigResponse deleteFunctionAsyncConfig(DeleteFunctionAsyncConfigRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
+        DeleteFunctionAsyncConfigResponse deleteFunctionAsyncConfigResponse = new DeleteFunctionAsyncConfigResponse();
+        deleteFunctionAsyncConfigResponse.setHeaders(response.getHeaders());
+        deleteFunctionAsyncConfigResponse.setContent(response.getContent());
+        deleteFunctionAsyncConfigResponse.setStatus(response.getStatus());
+        return deleteFunctionAsyncConfigResponse;
+    }
+
     public String SignURL(SignURLConfig input) throws Exception {
         return input.signURL(this.config.getApiVersion(),
                 this.config.getEndpoint(),
