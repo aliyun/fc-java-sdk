@@ -25,7 +25,7 @@ Add Maven dependencies into pom.xml
 <dependency>
     <groupId>com.aliyun</groupId>
     <artifactId>aliyun-java-sdk-fc</artifactId>
-    <version>1.8.8</version>
+    <version>1.8.9</version>
 </dependency>
 ```
 
