@@ -36,10 +36,10 @@ public class AsyncConfig {
     public DestinationConfig destinationConfig;
 
     @SerializedName("maxAsyncEventAgeInSeconds")
-    public int maxAsyncEventAgeInSeconds;
+    public Integer maxAsyncEventAgeInSeconds;
 
     @SerializedName("maxAsyncRetryAttempts")
-    public int maxAsyncRetryAttempts;
+    public Integer maxAsyncRetryAttempts;
 
     public String getService() {
         return service;
@@ -65,11 +65,11 @@ public class AsyncConfig {
         return destinationConfig;
     }
 
-    public int getMaxAsyncEventAgeInSeconds() {
+    public Integer getMaxAsyncEventAgeInSeconds() {
         return maxAsyncEventAgeInSeconds;
     }
 
-    public int getMaxAsyncRetryAttempts() {
+    public Integer getMaxAsyncRetryAttempts() {
         return maxAsyncRetryAttempts;
     }
 
@@ -103,12 +103,12 @@ public class AsyncConfig {
         return this;
     }
 
-    public AsyncConfig setMaxAsyncEventAgeInSeconds(int maxAsyncEventAgeInSeconds) {
+    public AsyncConfig setMaxAsyncEventAgeInSeconds(Integer maxAsyncEventAgeInSeconds) {
         this.maxAsyncEventAgeInSeconds = maxAsyncEventAgeInSeconds;
         return this;
     }
 
-    public AsyncConfig setMaxAsyncRetryAttempts(int maxAsyncRetryAttempts) {
+    public AsyncConfig setMaxAsyncRetryAttempts(Integer maxAsyncRetryAttempts) {
         this.maxAsyncRetryAttempts = maxAsyncRetryAttempts;
         return this;
     }
