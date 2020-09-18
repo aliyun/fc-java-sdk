@@ -883,7 +883,7 @@ public class FunctionComputeClientTest {
         AsyncConfig config = new AsyncConfig();
         config.setDestinationConfig(new DestinationConfig());
         config.destinationConfig.setonFailure(dest);
-        config.setMaxAsyncEventAgeInSeconds(1000);
+        config.setMaxAsyncEventAgeInSeconds(null);
         config.setMaxAsyncRetryAttempts(1);
 
         final int numConfigs = 3;
@@ -902,6 +902,8 @@ public class FunctionComputeClientTest {
 
             // validate put response
             assertNotEquals("", pResp.getRequestId());
+            assertNull(pResp.getAsyncConfig().getMaxAsyncEventAgeInSeconds());
+            assertEquals(config.getMaxAsyncRetryAttempts(), pResp.getAsyncConfig().getMaxAsyncRetryAttempts());
             assertEquals(String.format(destFmt, REGION, ACCOUNT_ID),
                     pResp.getAsyncConfig().getDestinationConfig().getOnFailure().getDestination());
 
