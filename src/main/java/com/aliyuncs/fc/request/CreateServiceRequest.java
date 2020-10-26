@@ -24,14 +24,24 @@ import com.aliyuncs.fc.http.FormatType;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.LogConfig;
 import com.aliyuncs.fc.model.NasConfig;
+import com.aliyuncs.fc.model.TracingConfig;
 import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.response.CreateServiceResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.gson.annotations.SerializedName;
+
 import java.util.Map;
 
 /**
- * TODO: add javadoc
+ * CreateServiceRequest is used to create service.
+ *
+ * Here is an example of how to createServiceRequest
+ * CreateServiceRequest req = new CreateServiceRequest();
+ * req.setServiceName("serviceName");
+ * req.setDescription("this is a description");
+ * req.setRole("roleArn");
+ * CreateServiceResponse response = client.createService(req);
+ *
  */
 public class CreateServiceRequest extends HttpRequest {
 
@@ -55,6 +65,9 @@ public class CreateServiceRequest extends HttpRequest {
 
     @SerializedName("nasConfig")
     private NasConfig nasConfig;
+
+    @SerializedName("tracingConfig")
+    private TracingConfig tracingConfig;
 
     public String getServiceName() {
         return serviceName;
@@ -141,5 +154,13 @@ public class CreateServiceRequest extends HttpRequest {
 
     public void setNasConfig(NasConfig nasConfig) {
         this.nasConfig = nasConfig;
+    }
+
+    public TracingConfig getTracingConfig() {
+        return tracingConfig;
+    }
+
+    public void setTracingConfig(TracingConfig tracingConfig) {
+        this.tracingConfig = tracingConfig;
     }
 }
