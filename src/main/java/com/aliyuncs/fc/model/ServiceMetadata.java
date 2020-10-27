@@ -12,13 +12,14 @@ public class ServiceMetadata {
     private VpcConfig vpcConfig;
     private Boolean internetAccess;
     private NasConfig nasConfig;
+    private TracingConfig tracingConfig;
     private String serviceId;
     private String createdTime;
     private String lastModifiedTime;
 
     public ServiceMetadata(String serviceName, String description, String role,
-        LogConfig logConfig, VpcConfig vpcConfig, Boolean internetAccess, NasConfig nasConfig,
-        String serviceId, String createdTime, String lastModifiedTime) {
+                           LogConfig logConfig, VpcConfig vpcConfig, Boolean internetAccess, NasConfig nasConfig,
+                           String serviceId, String createdTime, String lastModifiedTime, TracingConfig tracingConfig) {
         this.serviceName = serviceName;
         this.description = description;
         this.role = role;
@@ -29,6 +30,7 @@ public class ServiceMetadata {
         this.vpcConfig = vpcConfig;
         this.internetAccess = internetAccess;
         this.nasConfig = nasConfig;
+        this.tracingConfig = tracingConfig;
     }
 
     public String getServiceName() {
@@ -69,5 +71,9 @@ public class ServiceMetadata {
 
     public NasConfig getNasConfig() {
         return nasConfig;
+    }
+
+    public TracingConfig getTracingConfig() {
+        return tracingConfig;
     }
 }

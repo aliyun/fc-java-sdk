@@ -1,5 +1,7 @@
 package com.aliyuncs.fc;
 
+import static com.aliyuncs.fc.constants.HeaderKeys.OPENTRACING_SPANCONTEXT;
+import static com.aliyuncs.fc.constants.HeaderKeys.OPENTRACING_SPANCONTEXT_BAGGAGE_PREFIX;
 import static com.aliyuncs.fc.model.HttpAuthType.ANONYMOUS;
 import static com.aliyuncs.fc.model.HttpAuthType.FUNCTION;
 import static com.aliyuncs.fc.model.HttpMethod.*;
@@ -96,6 +98,7 @@ public class FunctionComputeClientTest {
     private static final String PRIVATE_KEY_01 = System.getenv("PRIVATE_KEY_01");
     private static final String PUBLIC_KEY_CERTIFICATE_02 = System.getenv("PUBLIC_KEY_CERTIFICATE_02");
     private static final String PRIVATE_KEY_02 = System.getenv("PRIVATE_KEY_02");
+    private static final String JAEGER_ENDPOINT = System.getenv("JAEGER_ENDPOINT");
 
     private static final String OSS_SOURCE_ARN =
         String.format("acs:oss:%s:%s:%s", REGION, ACCOUNT_ID, CODE_BUCKET);
@@ -115,7 +118,7 @@ public class FunctionComputeClientTest {
     private static final String TRIGGER_TYPE_LOG = "log";
     private static final String TRIGGER_TYPE_CDN = "cdn_events";
     private static final String TRIGGER_TYPE_TIMER = "timer";
-    private static final String CUSTOMDOMAIN_NAME = "javasdk.cn-hongkong.1221968287646227.cname-test.fc.aliyun-inc.com";
+    private static final String CUSTOMDOMAIN_NAME = String.format("java-sdk.cn-hongkong.%s.cname-test.functioncompute.com", ACCOUNT_ID);
     private static final String CERT_NAME = "CERT_NAME";
     private static final Gson gson = new Gson();
     private FunctionComputeClient client;
@@ -522,6 +525,78 @@ public class FunctionComputeClientTest {
         // Cleanups
         client.deleteFunction(new DeleteFunctionRequest(service_name, funcName));
         client.deleteService(new DeleteServiceRequest(service_name));
+    }
+
+    @Test
+    public void testServiceWithTracingConfig() {
+        String serviceName = SERVICE_NAME + "-tracing";
+        String functionName = "hello_world";
+        JaegerConfig jaegerConfig = new JaegerConfig();
+        jaegerConfig.setEndpoint(JAEGER_ENDPOINT);
+        TracingConfig tracingConfig = new TracingConfig();
+        tracingConfig.setJaegerConfig(jaegerConfig);
+
+        try {
+            // create service with tracingConfig
+            CreateServiceRequest req = new CreateServiceRequest();
+            req.setServiceName(serviceName);
+            req.setTracingConfig(tracingConfig);
+            CreateServiceResponse resp = client.createService(req);
+
+            assertNotNull(resp.getTracingConfig());
+            assertNotNull(resp.getTracingConfig().getJaegerConfig());
+            assertEquals(JAEGER_ENDPOINT, resp.getTracingConfig().getJaegerConfig().getEndpoint());
+
+            // get service with tracingConfig
+            GetServiceRequest getServiceRequest = new GetServiceRequest(serviceName);
+            GetServiceResponse getServiceResponse = client.getService(getServiceRequest);
+            assertNotNull(getServiceResponse.getTracingConfig());
+            assertNotNull(getServiceResponse.getTracingConfig().getJaegerConfig());
+            assertEquals(JAEGER_ENDPOINT, getServiceResponse.getTracingConfig().getJaegerConfig().getEndpoint());
+
+            // create function
+            String source = "exports.handler = function(event, context, callback) {\n" +
+                    "  callback(null, context.tracing.openTracingSpanContext + '|' + context.tracing.openTracingSpanBaggages['key']);\n" +
+                    "};";
+
+            byte[] code = Util.createZipByteData("hello_world.js", source);
+
+            CreateFunctionRequest createFuncReq = new CreateFunctionRequest(serviceName);
+            createFuncReq.setFunctionName(functionName);
+            createFuncReq.setDescription(FUNCTION_DESC_OLD);
+            createFuncReq.setMemorySize(128);
+            createFuncReq.setHandler("hello_world.handler");
+            createFuncReq.setRuntime("nodejs4.4");
+            createFuncReq.setCode(new Code().setZipFile(code));
+            createFuncReq.setTimeout(10);
+            CreateFunctionResponse response = client.createFunction(createFuncReq);
+            assertEquals(functionName, response.getFunctionName());
+
+            // invokeFunction with injected span context
+            InvokeFunctionRequest invokeFunctionRequest = new InvokeFunctionRequest(serviceName,functionName);
+            invokeFunctionRequest.setHeader(OPENTRACING_SPANCONTEXT,"124ed43254b54966:124ed43254b54966:0:1");
+            invokeFunctionRequest.setHeader(OPENTRACING_SPANCONTEXT_BAGGAGE_PREFIX + "key","val");
+            InvokeFunctionResponse invokeFunctionResponse = client.invokeFunction(invokeFunctionRequest);
+
+            String payload = new String(invokeFunctionResponse.getPayload());
+            assertTrue(payload.contains("124ed43254b54966"));
+            assertTrue(payload.contains("val"));
+
+            // update service and disable tracingConfig
+            UpdateServiceRequest updateServiceRequest = new UpdateServiceRequest(serviceName);
+            updateServiceRequest.setTracingConfig(new TracingConfig());
+            UpdateServiceResponse updateServiceResponse = client.updateService(updateServiceRequest);
+            assertNotNull(updateServiceResponse.getTracingConfig());
+            assertNull(updateServiceResponse.getTracingConfig().getType());
+            assertNull(updateServiceResponse.getTracingConfig().getParams());
+        } catch (Exception e){
+            e.printStackTrace();
+            // assert case fail
+            assertNull(e);
+        } finally {
+            cleanUpFunctions(serviceName);
+            cleanupService(serviceName);
+        }
     }
 
     @Test

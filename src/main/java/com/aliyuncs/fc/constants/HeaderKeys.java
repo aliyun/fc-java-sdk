@@ -10,4 +10,7 @@ public class HeaderKeys {
     public static final String INVOCATION_TYPE = "X-Fc-Invocation-Type";
     public static final String INVOCATION_LOG_TYPE = "X-Fc-Log-Type";
     public static final String INVOCATION_LOG_RESULT = "X-Fc-Log-Result";
+    public static final String OPENTRACING_SPANCONTEXT = "X-Fc-Tracing-Opentracing-Span-Context";
+    public static final String OPENTRACING_SPANCONTEXT_BAGGAGE_PREFIX = "X-Fc-Tracing-Opentracing-Span-Context-Baggage-";
+
 }

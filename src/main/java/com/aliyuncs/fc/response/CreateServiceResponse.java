@@ -18,12 +18,12 @@
  */
 package com.aliyuncs.fc.response;
 
+import com.aliyuncs.fc.http.HttpResponse;
 import com.aliyuncs.fc.model.LogConfig;
 import com.aliyuncs.fc.model.NasConfig;
 import com.aliyuncs.fc.model.ServiceMetadata;
-import com.aliyuncs.fc.http.HttpResponse;
-
 import com.aliyuncs.fc.model.VpcConfig;
+import com.aliyuncs.fc.model.TracingConfig;
 import com.google.common.base.Preconditions;
 
 /**
@@ -70,6 +70,11 @@ public class CreateServiceResponse extends HttpResponse {
     public NasConfig getNasConfig() {
         Preconditions.checkArgument(serviceMetadata != null);
         return serviceMetadata.getNasConfig();
+    }
+
+    public TracingConfig getTracingConfig() {
+        Preconditions.checkArgument(serviceMetadata != null);
+        return serviceMetadata.getTracingConfig();
     }
 
     public String getServiceId() {

@@ -26,6 +26,7 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.LogConfig;
 import com.aliyuncs.fc.model.NasConfig;
+import com.aliyuncs.fc.model.TracingConfig;
 import com.aliyuncs.fc.model.VpcConfig;
 import com.aliyuncs.fc.response.UpdateServiceResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
@@ -57,6 +58,9 @@ public class UpdateServiceRequest extends HttpRequest {
 
     @SerializedName("nasConfig")
     private NasConfig nasConfig;
+
+    @SerializedName("tracingConfig")
+    private TracingConfig tracingConfig;
 
     private transient String ifMatch;
 
@@ -155,5 +159,13 @@ public class UpdateServiceRequest extends HttpRequest {
 
     public void setNasConfig(NasConfig nasConfig) {
         this.nasConfig = nasConfig;
+    }
+
+    public TracingConfig getTracingConfig() {
+        return tracingConfig;
+    }
+
+    public void setTracingConfig(TracingConfig tracingConfig) {
+        this.tracingConfig = tracingConfig;
     }
 }
