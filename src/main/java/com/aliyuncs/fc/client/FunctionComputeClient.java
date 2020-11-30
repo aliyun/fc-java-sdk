@@ -26,21 +26,15 @@ import static com.aliyuncs.fc.model.HttpMethod.PUT;
 
 import com.aliyuncs.fc.auth.SignURLConfig;
 import com.aliyuncs.fc.config.Config;
-import com.aliyuncs.fc.constants.Const;
-import com.aliyuncs.fc.constants.HeaderKeys;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ServerException;
 import com.aliyuncs.fc.http.HttpResponse;
 import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.request.*;
 import com.aliyuncs.fc.response.*;
-import com.aliyuncs.fc.utils.Base64Helper;
 import com.aliyuncs.fc.utils.FcUtil;
 import com.google.gson.Gson;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -571,6 +565,12 @@ public class FunctionComputeClient {
         deleteFunctionAsyncConfigResponse.setContent(response.getContent());
         deleteFunctionAsyncConfigResponse.setStatus(response.getStatus());
         return deleteFunctionAsyncConfigResponse;
+    }
+
+    public OpenFunctionComputeResponse openFunctionComputeService(OpenFunctionComputeRequest request) throws ClientException, ServerException {
+        PopClient popClient = new PopClient();
+        OpenFunctionComputeResponse response = popClient.openFCService(client.getConfig(), request);
+        return response;
     }
 
     public String SignURL(SignURLConfig input) throws Exception {

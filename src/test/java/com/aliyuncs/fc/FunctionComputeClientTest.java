@@ -22,6 +22,7 @@ import com.aliyuncs.auth.InstanceProfileCredentialsProvider;
 import com.aliyuncs.fc.auth.AcsURLEncoder;
 import com.aliyuncs.fc.auth.SignURLConfig;
 import com.aliyuncs.fc.client.FunctionComputeClient;
+import com.aliyuncs.fc.client.PopClient;
 import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
@@ -60,6 +61,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.junit.Assert;
 import java.util.Map;
@@ -1029,6 +1032,38 @@ public class FunctionComputeClientTest {
         lResp = client.listFunctionAsyncConfigs(listFunctionAsyncConfigsRequest3);
         assertNotEquals("", lResp.getRequestId());
         assertEquals(null, lResp.getAsyncConfigs());
+    }
+
+    @Test
+    public void testOpenFunctionCompute() {
+        OpenFunctionComputeRequest request = new OpenFunctionComputeRequest();
+        request.setAction("OpenFCService");
+        OpenFunctionComputeResponse response = client.openFunctionComputeService(request);
+        if (response.isSuccess()) {
+            assertEquals(true, StringUtils.isNotEmpty(response.getOrderId()));
+            assertEquals(true, StringUtils.isNotEmpty(response.getRequestId()));
+        } else {
+            assertEquals(PopClient.ERROR_CODE_ORDER_OPENED, response.getCode());
+        }
+    }
+
+    @Test
+    public void testOpenFunctionComputeValidate() {
+        OpenFunctionComputeRequest request = new OpenFunctionComputeRequest();
+        request.setAction("OpenFCService222");
+        try {
+            client.openFunctionComputeService(request);
+        } catch (ClientException e) {
+            assertEquals("action value must be OpenFCService", e.getMessage());
+        }
+
+        request = new OpenFunctionComputeRequest();
+        request.setAction(null);
+        try {
+            client.openFunctionComputeService(request);
+        } catch (ClientException e) {
+            assertEquals("action cannot be blank", e.getMessage());
+        }
     }
 
     @Test

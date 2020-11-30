@@ -142,4 +142,8 @@ public class DefaultFcClient {
             throw new ClientException("SDK.InvalidURL", "url is not valid: " + e.getMessage());
         }
     }
+
+    public Config getConfig() {
+        return config;
+    }
 }

@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>aliyun-java-sdk-core</artifactId>
-            <version>3.4.0</version>
+            <version>4.5.14</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -98,6 +98,11 @@
             <artifactId>lombok</artifactId>
             <version>1.18.4</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>aliyun-java-sdk-fc-open</artifactId>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
     <licenses>
