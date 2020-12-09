@@ -23,6 +23,8 @@ import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
+import com.aliyuncs.fc.model.ScheduledAction;
+import com.aliyuncs.fc.model.TargetTrackingPolicy;
 import com.aliyuncs.fc.response.PutProvisionConfigResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Strings;
@@ -37,6 +39,12 @@ public class PutProvisionConfigRequest extends HttpRequest {
 
     @SerializedName("target")
     private Integer target;
+
+    @SerializedName("scheduledActions")
+    private ScheduledAction[] scheduledActions;
+
+    @SerializedName("targetTrackingPolicies")
+    private TargetTrackingPolicy[] targetTrackingPolicies;
 
     public PutProvisionConfigRequest(String serviceName, String qualifier, String functionName) {
         this.serviceName = serviceName;
@@ -63,6 +71,22 @@ public class PutProvisionConfigRequest extends HttpRequest {
 
     public Integer getTarget() {
         return target;
+    }
+
+    public ScheduledAction[] getScheduledActions() {
+        return scheduledActions;
+    }
+
+    public void setScheduledActions(ScheduledAction[] scheduledActions) {
+        this.scheduledActions = scheduledActions;
+    }
+
+    public TargetTrackingPolicy[] getTargetTrackingPolicies() {
+        return targetTrackingPolicies;
+    }
+
+    public void setTargetTrackingPolicies(TargetTrackingPolicy[] targetTrackingPolicies) {
+        this.targetTrackingPolicies = targetTrackingPolicies;
     }
 
     public String getIfMatch() {

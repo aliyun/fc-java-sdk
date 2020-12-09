@@ -21,12 +21,20 @@ package com.aliyuncs.fc.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Arrays;
+
 public class ProvisionTarget {
     @SerializedName("resource")
     private String resource;
 
     @SerializedName("target")
     private Integer target;
+
+    @SerializedName("scheduledActions")
+    private ScheduledAction[] scheduledActions;
+
+    @SerializedName("targetTrackingPolicies")
+    private TargetTrackingPolicy[] targetTrackingPolicies;
 
     public ProvisionTarget(String resource, Integer target) {
         this.resource = resource;
@@ -49,5 +57,31 @@ public class ProvisionTarget {
     public ProvisionTarget setTarget(Integer target) {
         this.target = target;
         return this;
+    }
+
+    public ScheduledAction[] getScheduledActions() {
+        return scheduledActions;
+    }
+
+    public void setScheduledActions(ScheduledAction[] scheduledActions) {
+        this.scheduledActions = scheduledActions;
+    }
+
+    public TargetTrackingPolicy[] getTargetTrackingPolicies() {
+        return targetTrackingPolicies;
+    }
+
+    public void setTargetTrackingPolicies(TargetTrackingPolicy[] targetTrackingPolicies) {
+        this.targetTrackingPolicies = targetTrackingPolicies;
+    }
+
+    @Override
+    public String toString() {
+        return "ProvisionTarget{" +
+                "resource='" + resource + '\'' +
+                ", target=" + target +
+                ", scheduledActions=" + Arrays.toString(scheduledActions) +
+                ", targetTrackingPolicies=" + Arrays.toString(targetTrackingPolicies) +
+                '}';
     }
 }
