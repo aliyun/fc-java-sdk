@@ -21,6 +21,7 @@ package com.aliyuncs.fc.response;
 
 import com.aliyuncs.fc.http.HttpResponse;
 import com.aliyuncs.fc.model.ProvisionConfig;
+import com.aliyuncs.fc.model.ScheduledAction;
 import com.google.common.base.Preconditions;
 
 public class GetProvisionConfigResponse extends HttpResponse {
@@ -53,6 +54,11 @@ public class GetProvisionConfigResponse extends HttpResponse {
     public Integer getCurrent() {
         Preconditions.checkArgument(provisionConfig != null);
         return provisionConfig.getCurrent();
+    }
+
+    public ScheduledAction[] getScheduledActions() {
+        Preconditions.checkArgument(provisionConfig != null);
+        return provisionConfig.getScheduledActions();
     }
 
 }

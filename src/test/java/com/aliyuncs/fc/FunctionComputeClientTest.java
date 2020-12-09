@@ -52,11 +52,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
@@ -183,6 +179,35 @@ public class FunctionComputeClientTest {
         System.out.println("Service " + serviceName + " is deleted");
     }
 
+    private void cleanupProvision(String serviceName, String aliasName, String functionName) {
+        Integer target = 0;
+        PutProvisionConfigRequest provisionConfigRequest = new PutProvisionConfigRequest(serviceName, aliasName, functionName);
+        provisionConfigRequest.setTarget(target);
+        provisionConfigRequest.setScheduledActions(new ScheduledAction[0]);
+        PutProvisionConfigResponse provisionConfigResponse =client.putProvisionConfig(provisionConfigRequest);
+        assertEquals(HttpURLConnection.HTTP_OK, provisionConfigResponse.getStatus());
+        assertEquals(target, provisionConfigResponse.getTarget());
+
+        try {
+            // retry 30s for release provision container,
+            int retryTimes = 0;
+            while (retryTimes < 30) {
+                // get provisionConfig
+                GetProvisionConfigRequest getProvisionConfigRequest = new GetProvisionConfigRequest(serviceName, aliasName, functionName);
+                GetProvisionConfigResponse getProvisionConfigResponse = client.getProvisionConfig(getProvisionConfigRequest);
+                if (getProvisionConfigResponse.getCurrent() != 0) {
+                    Thread.sleep(1000); // sleep 1s
+                    retryTimes++;
+                    continue;
+                }
+                break;
+            }
+            assertEquals(true, retryTimes < 30);
+        } catch (Exception e) {
+            assertNull(e);
+        }
+    }
+
     private void cleanupCustomDomain(String customDomainName) {
         DeleteCustomDomainRequest request = new DeleteCustomDomainRequest(customDomainName);
         try {
@@ -260,13 +285,17 @@ public class FunctionComputeClientTest {
     }
 
     private CreateFunctionResponse createFunction(String functionName) throws IOException {
+        return createFunction(SERVICE_NAME, functionName);
+    }
+
+    private CreateFunctionResponse createFunction(String serviceName, String functionName) throws IOException {
         String source = "exports.handler = function(event, context, callback) {\n" +
             "  callback(null, 'hello world');\n" +
             "};";
 
         byte[] code = Util.createZipByteData("hello_world.js", source);
 
-        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
+        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(serviceName);
         createFuncReq.setFunctionName(functionName);
         createFuncReq.setDescription(FUNCTION_DESC_OLD);
         createFuncReq.setMemorySize(128);
@@ -275,8 +304,7 @@ public class FunctionComputeClientTest {
         Map<String, String> environmentVariables = new HashMap<String, String>();
         environmentVariables.put("testKey", "testValue");
         createFuncReq.setEnvironmentVariables(environmentVariables);
-        createFuncReq
-            .setCode(new Code().setZipFile(code));
+        createFuncReq.setCode(new Code().setZipFile(code));
         createFuncReq.setTimeout(10);
 
         CreateFunctionResponse response = client.createFunction(createFuncReq);
@@ -523,6 +551,266 @@ public class FunctionComputeClientTest {
         // Cleanups
         client.deleteFunction(new DeleteFunctionRequest(service_name, funcName));
         client.deleteService(new DeleteServiceRequest(service_name));
+    }
+
+    private void preTestProvisionConfig(String serviceName, String functionName, String aliasName) throws Exception {
+        // create service
+        createService(serviceName, false);
+
+        // create function
+        createFunction(serviceName, functionName);
+
+        // publish a version
+        String lastVersion = cleanUpVersions(serviceName);;
+        PublishVersionRequest publishVersionRequest = new PublishVersionRequest(serviceName);
+        PublishVersionResponse publishVersionResponse = client.publishVersion(publishVersionRequest);
+        assertEquals(String.format("%d", Integer.parseInt(lastVersion) + 1), publishVersionResponse.getVersionId());
+
+        //Create a Alias against it
+        String versionId = publishVersionResponse.getVersionId();
+        CreateAliasRequest createAliasRequest = new CreateAliasRequest(serviceName, aliasName, versionId);
+        CreateAliasResponse createAliasResponse = client.createAlias(createAliasRequest);
+        assertEquals(HttpURLConnection.HTTP_OK, createAliasResponse.getStatus());
+        assertEquals(versionId, createAliasResponse.getVersionId());
+        assertEquals(aliasName, createAliasResponse.getAliasName());
+    }
+
+    private void afterTestProvisionConfig(String serviceName) {
+            cleanUpAliases(serviceName);
+            cleanUpVersions(serviceName);
+            cleanUpFunctions(serviceName);
+            cleanupService(serviceName);
+    }
+
+    @Test
+    public void testProvisionConfig() {
+        String serviceName = SERVICE_NAME + UUID.randomUUID().toString().substring(0, 5);
+        String functionName = "hello_world" + UUID.randomUUID().toString().substring(0, 5);
+        String aliasName = "myAlias";
+
+        try {
+            preTestProvisionConfig(serviceName, functionName, aliasName);
+
+            try {
+                // create provision config
+                Integer target = 3;
+                PutProvisionConfigRequest provisionConfigRequest = new PutProvisionConfigRequest(serviceName, aliasName, functionName);
+                provisionConfigRequest.setTarget(target);
+                PutProvisionConfigResponse provisionConfigResponse =client.putProvisionConfig(provisionConfigRequest);
+                assertEquals(HttpURLConnection.HTTP_OK, provisionConfigResponse.getStatus());
+                assertEquals(target, provisionConfigResponse.getTarget());
+
+                // listProvisionConfig
+                ListProvisionConfigsRequest listProvisionConfigsRequest = new ListProvisionConfigsRequest();
+                listProvisionConfigsRequest.setServiceName(serviceName);
+                listProvisionConfigsRequest.setQualifier(aliasName);
+                listProvisionConfigsRequest.setLimit(100);
+                ListProvisionConfigsResponse listProvisionConfigsResponse = client.listProvisionConfigs(listProvisionConfigsRequest);
+                assertEquals(HttpURLConnection.HTTP_OK, listProvisionConfigsResponse.getStatus());
+                assertEquals(target, listProvisionConfigsResponse.getProvisionConfigs()[0].getTarget());
+            } catch (Exception e0) {
+                assertNull(e0);
+            } finally {
+                cleanupProvision(serviceName, aliasName, functionName);
+            }
+        } catch (Exception e) {
+            assertNull(e);
+        } finally {
+            afterTestProvisionConfig(serviceName);
+        }
+    }
+
+    @Test
+    public void testProvisionConfigWithScheduledAction() {
+        String serviceName = SERVICE_NAME + UUID.randomUUID().toString().substring(0, 5);
+        String functionName = "hello_world" + UUID.randomUUID().toString().substring(0, 5);
+        String aliasName = "myAlias";
+
+        try {
+            preTestProvisionConfig(serviceName, functionName, aliasName);
+
+            try {
+                // create provision config
+                Integer target = 3;
+                Integer scheduledActionTarget1 = 5;
+                Integer scheduledActionTarget2 = 5;
+                PutProvisionConfigRequest provisionConfigRequest = new PutProvisionConfigRequest(serviceName, aliasName, functionName);
+                ScheduledAction[] scheduledActions = new ScheduledAction[2];
+                scheduledActions[0] = new ScheduledAction("a1", "2020-10-10T10:10:10Z",
+                        "2030-10-10T10:10:10Z", scheduledActionTarget1, "at(2020-10-20T10:10:10Z)");
+                scheduledActions[1] = new ScheduledAction("a2", "2020-10-10T10:10:10Z",
+                        "2030-10-10T10:10:10Z", scheduledActionTarget2, "cron(0 */30 * * * *)");
+                provisionConfigRequest.setTarget(target);
+                provisionConfigRequest.setScheduledActions(scheduledActions);
+
+                PutProvisionConfigResponse provisionConfigResponse =client.putProvisionConfig(provisionConfigRequest);
+                assertEquals(HttpURLConnection.HTTP_OK, provisionConfigResponse.getStatus());
+                assertEquals(target, provisionConfigResponse.getTarget());
+                assertEquals(scheduledActions.length, provisionConfigResponse.getScheduledActions().length);
+                assertEquals(scheduledActionTarget1, provisionConfigResponse.getScheduledActions()[0].getTarget());
+                assertEquals(scheduledActionTarget2, provisionConfigResponse.getScheduledActions()[1].getTarget());
+
+                // retry 120s for autoScalingLoop
+                int retryTimes = 0;
+                while (retryTimes < 120) {
+                    // get provisionConfig
+                    GetProvisionConfigRequest getProvisionConfigRequest = new GetProvisionConfigRequest(serviceName, aliasName, functionName);
+                    GetProvisionConfigResponse getProvisionConfigResponse = client.getProvisionConfig(getProvisionConfigRequest);
+                    if (getProvisionConfigResponse.getCurrent() != scheduledActionTarget2) {
+                        Thread.sleep(1000); // sleep 1s
+                        retryTimes++;
+                        continue;
+                    }
+                    assertEquals(scheduledActionTarget2, getProvisionConfigResponse.getTarget());
+                    assertEquals(scheduledActionTarget2, getProvisionConfigResponse.getCurrent());
+                    assertEquals(scheduledActions.length, provisionConfigResponse.getScheduledActions().length);
+                    assertEquals(scheduledActionTarget1, provisionConfigResponse.getScheduledActions()[0].getTarget());
+                    assertEquals(scheduledActionTarget2, provisionConfigResponse.getScheduledActions()[1].getTarget());
+                    break;
+                }
+                assertEquals(true, retryTimes < 120);
+
+                // set scheduledActions to null, assert scheduledActions will not be modified
+                provisionConfigRequest.setScheduledActions(null);
+                PutProvisionConfigResponse provisionConfigResponse2 =client.putProvisionConfig(provisionConfigRequest);
+                assertEquals(HttpURLConnection.HTTP_OK, provisionConfigResponse2.getStatus());
+                assertEquals(scheduledActions.length, provisionConfigResponse2.getScheduledActions().length);
+
+                // set scheduledActions to [], assert scheduledActions will be modified to empty
+                provisionConfigRequest.setScheduledActions(new ScheduledAction[0]);
+                PutProvisionConfigResponse provisionConfigResponse3 =client.putProvisionConfig(provisionConfigRequest);
+                assertEquals(HttpURLConnection.HTTP_OK, provisionConfigResponse3.getStatus());
+                assertEquals(0, provisionConfigResponse3.getScheduledActions().length);
+            } catch (Exception e0) {
+                e0.printStackTrace();
+                assertNull(e0);
+            } finally {
+                cleanupProvision(serviceName, aliasName, functionName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertNull(e);
+        } finally {
+            afterTestProvisionConfig(serviceName);
+        }
+    }
+
+    @Test
+    public void testProvisionConfigWithScheduledActionValidate() {
+        String serviceName = SERVICE_NAME + UUID.randomUUID().toString().substring(0, 5);
+        String functionName = "hello_world" + UUID.randomUUID().toString().substring(0, 5);
+        String aliasName = "myAlias";
+
+        try {
+            preTestProvisionConfig(serviceName, functionName, aliasName);
+
+            try {
+                // actionName repeated
+                scheduledActionValidate1(serviceName, functionName, aliasName);
+
+                // utc time format error
+                scheduledActionValidate2(serviceName, functionName, aliasName);
+
+                // scheduleExpression error
+                scheduledActionValidate3(serviceName, functionName, aliasName);
+
+                // actions out of size
+                scheduledActionValidate4(serviceName, functionName, aliasName);
+            } catch (Exception e0) {
+                assertNull(e0);
+            }
+        } catch (Exception e) {
+            assertNull(e);
+        } finally {
+            afterTestProvisionConfig(serviceName);
+        }
+    }
+
+    // actionName repeated
+    private void scheduledActionValidate1(String serviceName, String functionName, String aliasName) {
+        String actionName = "action1";
+        try {
+            // create provision config
+            Integer target = 3;
+            Integer scheduledActionTarget1 = 5;
+            Integer scheduledActionTarget2 = 5;
+            PutProvisionConfigRequest provisionConfigRequest = new PutProvisionConfigRequest(serviceName, aliasName, functionName);
+            ScheduledAction[] scheduledActions = new ScheduledAction[2];
+            scheduledActions[0] = new ScheduledAction(actionName, "2020-10-10T10:10:10Z",
+                    "2030-10-10T10:10:10Z", scheduledActionTarget1, "at(2020-10-20T10:10:10Z)");
+            scheduledActions[1] = new ScheduledAction(actionName, "2020-10-10T10:10:10Z",
+                    "2030-10-10T10:10:10Z", scheduledActionTarget2, "cron(0 */30 * * * *)");
+            provisionConfigRequest.setTarget(target);
+            provisionConfigRequest.setScheduledActions(scheduledActions);
+
+            client.putProvisionConfig(provisionConfigRequest);
+        } catch (ClientException clientException) {
+            assertEquals("Duplicate action name '" + actionName + "' in ScheduledActions is not allowed",
+                    clientException.getErrorMessage());
+        }
+    }
+
+    // utc time format error
+    private void scheduledActionValidate2(String serviceName, String functionName, String aliasName) {
+        try {
+            // create provision config
+            Integer target = 3;
+            Integer scheduledActionTarget1 = 5;
+            PutProvisionConfigRequest provisionConfigRequest = new PutProvisionConfigRequest(serviceName, aliasName, functionName);
+            ScheduledAction[] scheduledActions = new ScheduledAction[1];
+            scheduledActions[0] = new ScheduledAction("a1", "2020-10-10T10:10:10",
+                    "2030-10-10T10:10:10Z", scheduledActionTarget1, "at(2020-10-20T10:10:10Z)");
+            provisionConfigRequest.setTarget(target);
+            provisionConfigRequest.setScheduledActions(scheduledActions);
+
+            client.putProvisionConfig(provisionConfigRequest);
+        } catch (ClientException clientException) {
+            assertEquals("The StartTime is not in UTC time format (example: '2020-10-10T10:10:10Z', " +
+                    "actual: '2020-10-10T10:10:10')", clientException.getErrorMessage());
+        }
+    }
+
+    // scheduleExpression error
+    private void scheduledActionValidate3(String serviceName, String functionName, String aliasName) {
+        try {
+            // create provision config
+            Integer target = 3;
+            Integer scheduledActionTarget1 = 5;
+            PutProvisionConfigRequest provisionConfigRequest = new PutProvisionConfigRequest(serviceName, aliasName, functionName);
+            ScheduledAction[] scheduledActions = new ScheduledAction[1];
+            scheduledActions[0] = new ScheduledAction("a1", "2020-10-10T10:10:10Z",
+                    "2030-10-10T10:10:10Z", scheduledActionTarget1, "cron(0s */30 * * * *)");
+            provisionConfigRequest.setTarget(target);
+            provisionConfigRequest.setScheduledActions(scheduledActions);
+
+            client.putProvisionConfig(provisionConfigRequest);
+        } catch (ClientException clientException) {
+            assertEquals("The ScheduleExpression should be atTime or cron expression " +
+                    "(example: ['at(2020-10-10T10:10:10Z)', 'cron(0 */30 * * * *)'], actual: 'cron(0s */30 * * * *)')",
+                    clientException.getErrorMessage());
+        }
+    }
+
+    // actions out of size
+    private void scheduledActionValidate4(String serviceName, String functionName, String aliasName) {
+        try {
+            // create provision config
+            Integer target = 3;
+            Integer scheduledActionTarget = 5;
+            PutProvisionConfigRequest provisionConfigRequest = new PutProvisionConfigRequest(serviceName, aliasName, functionName);
+            ScheduledAction[] scheduledActions = new ScheduledAction[110];
+            for (int index = 0; index < 110; index++) {
+                scheduledActions[index] = new ScheduledAction("action_" + index, "2020-10-10T10:10:10Z",
+                        "2030-10-10T10:10:10Z", scheduledActionTarget, "cron(0 */30 * * * *)");
+            }
+            provisionConfigRequest.setTarget(target);
+            provisionConfigRequest.setScheduledActions(scheduledActions);
+
+            client.putProvisionConfig(provisionConfigRequest);
+        } catch (ClientException clientException) {
+            assertEquals("ScheduledActions contains too many values (max: 100, actual: 110)",
+                    clientException.getErrorMessage());
+        }
     }
 
     @Test

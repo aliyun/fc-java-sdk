@@ -28,6 +28,9 @@ public class ProvisionTarget {
     @SerializedName("target")
     private Integer target;
 
+    @SerializedName("scheduledActions")
+    private ScheduledAction[] scheduledActions;
+
     public ProvisionTarget(String resource, Integer target) {
         this.resource = resource;
         this.target = target;
@@ -49,5 +52,13 @@ public class ProvisionTarget {
     public ProvisionTarget setTarget(Integer target) {
         this.target = target;
         return this;
+    }
+
+    public ScheduledAction[] getScheduledActions() {
+        return scheduledActions;
+    }
+
+    public void setScheduledActions(ScheduledAction[] scheduledActions) {
+        this.scheduledActions = scheduledActions;
     }
 }
