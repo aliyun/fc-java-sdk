@@ -24,6 +24,7 @@ import com.aliyuncs.fc.http.FormatType;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.Code;
 import com.aliyuncs.fc.model.CustomContainerConfig;
+import com.aliyuncs.fc.model.InstanceLifecycleConfig;
 import com.aliyuncs.fc.response.CreateFunctionResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 
@@ -76,6 +77,9 @@ public class CreateFunctionRequest extends HttpRequest {
 
     @SerializedName("customContainerConfig")
     private CustomContainerConfig customContainerConfig;
+
+    @SerializedName("instanceLifecycleConfig")
+    private InstanceLifecycleConfig instanceLifecycleConfig;
 
     @SerializedName("caPort")
     private Integer caPort;
@@ -236,5 +240,14 @@ public class CreateFunctionRequest extends HttpRequest {
 
     public void setInstanceConcurrency(Integer instanceConcurrency) {
         this.instanceConcurrency = instanceConcurrency;
+    }
+
+    public CreateFunctionRequest setInstanceLifecycleConfig(InstanceLifecycleConfig instanceLifecycleConfig) {
+        this.instanceLifecycleConfig = instanceLifecycleConfig;
+        return this;
+    }
+
+    public InstanceLifecycleConfig getInstanceLifecycleConfig(){
+        return instanceLifecycleConfig;
     }
 }

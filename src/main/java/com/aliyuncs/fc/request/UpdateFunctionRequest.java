@@ -26,6 +26,7 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.Code;
 import com.aliyuncs.fc.model.CustomContainerConfig;
+import com.aliyuncs.fc.model.InstanceLifecycleConfig;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Strings;
@@ -78,6 +79,9 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     @SerializedName("caPort")
     private Integer caPort;
+
+    @SerializedName("instanceLifecycleConfig")
+    private InstanceLifecycleConfig instanceLifecycleConfig;
 
     private transient String ifMatch;
 
@@ -246,5 +250,10 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     public void setInstanceConcurrency(Integer instanceConcurrency) {
         this.instanceConcurrency = instanceConcurrency;
+    }
+
+    public UpdateFunctionRequest setInstanceLifecycleConfig(InstanceLifecycleConfig instanceLifecycleConfig) {
+        this.instanceLifecycleConfig = instanceLifecycleConfig;
+        return this;
     }
 }
