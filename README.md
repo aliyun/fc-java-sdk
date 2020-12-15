@@ -29,7 +29,7 @@ Add Maven dependencies into pom.xml
 </dependency>
 ```
 
-## Example
+## Examples
 
 Create the code directory and write counter nodejs code
 
