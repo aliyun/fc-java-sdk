@@ -7,10 +7,12 @@ public class LogConfig {
 
     private String project;
     private String logstore;
+    private Boolean enableRequestMetrics;
 
-    public LogConfig(String project, String logStore) {
+    public LogConfig(String project, String logStore, Boolean enableRequestMetrics) {
         this.project = project;
         this.logstore = logStore;
+        this.enableRequestMetrics = enableRequestMetrics;
     }
 
     public LogConfig setProject(String project) {
@@ -29,5 +31,14 @@ public class LogConfig {
 
     public String getLogStore() {
         return logstore;
+    }
+
+    public LogConfig setEnableRequestMetrics(Boolean enableRequestMetrics) {
+        this.enableRequestMetrics = enableRequestMetrics;
+        return this;
+    }
+
+    public Boolean getEnableRequestMetrics() {
+        return enableRequestMetrics;
     }
 }
