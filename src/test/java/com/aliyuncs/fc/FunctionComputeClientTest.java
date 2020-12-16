@@ -545,7 +545,6 @@ public class FunctionComputeClientTest {
             req.setServiceName(serviceName);
             req.setTracingConfig(tracingConfig);
             CreateServiceResponse resp = client.createService(req);
-
             assertNotNull(resp.getTracingConfig());
             assertNotNull(resp.getTracingConfig().getJaegerConfig());
             assertEquals(JAEGER_ENDPOINT, resp.getTracingConfig().getJaegerConfig().getEndpoint());
@@ -593,6 +592,56 @@ public class FunctionComputeClientTest {
             assertNull(updateServiceResponse.getTracingConfig().getType());
             assertNull(updateServiceResponse.getTracingConfig().getParams());
         } catch (Exception e){
+            e.printStackTrace();
+            // assert case fail
+            assertNull(e);
+        } finally {
+            cleanUpFunctions(serviceName);
+            cleanupService(serviceName);
+        }
+    }
+
+    @Test
+    public void testServiceWithRequestMetrics() {
+        String serviceName = SERVICE_NAME + "-requestMetrics";
+        LogConfig logConfig = new LogConfig(LOG_PROJECT, LOG_STORE, true);
+
+        try {
+            // create service with enableRequestMetrics
+            CreateServiceRequest req = new CreateServiceRequest();
+            req.setServiceName(serviceName);
+            req.setRole(ROLE);
+            req.setLogConfig(logConfig);
+            CreateServiceResponse resp = client.createService(req);
+            assertNotNull(resp.getLogConfig());
+            assertTrue(resp.getLogConfig().getEnableRequestMetrics());
+
+            // get service
+            GetServiceRequest getServiceRequest = new GetServiceRequest(serviceName);
+            GetServiceResponse getServiceResponse = client.getService(getServiceRequest);
+            assertNotNull(getServiceResponse.getLogConfig());
+            assertTrue(getServiceResponse.getLogConfig().getEnableRequestMetrics());
+
+            // update service and disable requestMetrics
+            logConfig.setEnableRequestMetrics(false);
+            UpdateServiceRequest updateServiceRequest = new UpdateServiceRequest(serviceName);
+            updateServiceRequest.setLogConfig(logConfig);
+            UpdateServiceResponse updateServiceResponse = client.updateService(updateServiceRequest);
+            assertNotNull(updateServiceResponse.getLogConfig());
+            assertEquals(LOG_PROJECT, updateServiceResponse.getLogConfig().getProject());
+            assertEquals(LOG_STORE, updateServiceResponse.getLogConfig().getLogStore());
+            assertFalse(updateServiceResponse.getLogConfig().getEnableRequestMetrics());
+
+            // update service and disable logs
+            logConfig = new LogConfig("", "", false);
+            updateServiceRequest = new UpdateServiceRequest(serviceName);
+            updateServiceRequest.setLogConfig(logConfig);
+            updateServiceResponse = client.updateService(updateServiceRequest);
+            assertNotNull(updateServiceResponse.getLogConfig());
+            assertEquals("", updateServiceResponse.getLogConfig().getProject());
+            assertEquals("", updateServiceResponse.getLogConfig().getLogStore());
+            assertFalse(updateServiceResponse.getLogConfig().getEnableRequestMetrics());
+        } catch (Exception e) {
             e.printStackTrace();
             // assert case fail
             assertNull(e);
