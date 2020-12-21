@@ -1,17 +1,14 @@
 package com.aliyuncs.fc.model;
 
-import com.aliyuncs.fc.utils.Base64Helper;
-import com.aliyuncs.fc.utils.ZipUtils;
 import com.google.gson.annotations.SerializedName;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.UUID;
 
 /**
  * TODO: add javadoc
  */
 public class CustomContainerConfig {
+
+    public final static String AccelerationTypeDefault = "Default";
+    public final static String AccelerationTypeNone = "None";
 
     @SerializedName("image")
     public String image;
@@ -21,6 +18,10 @@ public class CustomContainerConfig {
 
     @SerializedName("args")
     public String args;
+
+    @SerializedName("accelerationType")
+    public String accelerationType;
+
 
     public CustomContainerConfig setImage(String image) {
         this.image = image;
@@ -47,5 +48,14 @@ public class CustomContainerConfig {
 
     public String getArgs() {
         return args;
+    }
+
+    public CustomContainerConfig setAccelerationType(String accelerationType) {
+        this.accelerationType = accelerationType;
+        return this;
+    }
+
+    public String getAccelerationType() {
+        return accelerationType;
     }
 }

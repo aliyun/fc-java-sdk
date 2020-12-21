@@ -27,13 +27,11 @@ import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
-import com.aliyuncs.fc.exceptions.ServerException;
 import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.model.NasConfig.NasMountConfig;
 import com.aliyuncs.fc.request.*;
 import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.Util;
-import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
 import com.aliyuncs.profile.DefaultProfile;
@@ -46,11 +44,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -65,7 +61,6 @@ import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.junit.Assert;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -301,10 +296,10 @@ public class FunctionComputeClientTest {
     }
 
     private CreateServiceResponse createService(String serviceName) {
-        return createSerivce(serviceName, true);
+        return createService(serviceName, true);
     }
 
-    private CreateServiceResponse createSerivce(String serviceName, boolean check) {
+    private CreateServiceResponse createService(String serviceName, boolean check) {
         CreateServiceRequest createSReq = new CreateServiceRequest();
         createSReq.setServiceName(serviceName);
         createSReq.setDescription(SERVICE_DESC_OLD);
@@ -2956,7 +2951,7 @@ public class FunctionComputeClientTest {
 
         // Create a service
         try{
-            createSerivce(SERVICE_NAME, false);
+            createService(SERVICE_NAME, false);
         }catch (Exception e) {
             e.printStackTrace();
         }

@@ -18,6 +18,7 @@
  */
 package com.aliyuncs.fc.response;
 
+import com.aliyuncs.fc.model.CustomContainerConfig;
 import com.aliyuncs.fc.model.FunctionMetadata;
 import com.aliyuncs.fc.http.HttpResponse;
 
@@ -103,5 +104,10 @@ public class UpdateFunctionResponse extends HttpResponse {
     public Integer getInstanceConcurrency() {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getInstanceConcurrency();
+    }
+
+    public CustomContainerConfig getCustomContainerConfig() {
+        Preconditions.checkArgument(functionMetadata != null);
+        return functionMetadata.getCustomContainerConfig();
     }
 }
