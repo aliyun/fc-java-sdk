@@ -86,8 +86,8 @@ public class CreateUpdateFunctionTest {
     @After
     public void cleanup() {
         try {
-            // cleanUpFunctions(SERVICE_NAME);
-            // cleanupService(SERVICE_NAME);
+            cleanUpFunctions(SERVICE_NAME);
+            cleanupService(SERVICE_NAME);
         } catch (ClientException e) {
             if (!ErrorCodes.SERVICE_NOT_FOUND.equals(e.getErrorCode())) {
                 throw e;

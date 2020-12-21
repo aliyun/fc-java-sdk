@@ -752,26 +752,26 @@ public class FunctionComputeClientTest {
     public void testListServices() {
         final int numServices = 10;
         final int limit = 3;
-
+        final String serviceNamePrefix = SERVICE_NAME + "_listService_test_";
         // Create multiple services
         for (int i = 0; i < numServices; i++) {
             try {
-                client.getService(new GetServiceRequest(SERVICE_NAME + i));
-                cleanupService(SERVICE_NAME + i);
+                client.getService(new GetServiceRequest(serviceNamePrefix + i));
+                cleanupService(serviceNamePrefix + i);
             } catch (ClientException e) {
                 if (!ErrorCodes.SERVICE_NOT_FOUND.equals(e.getErrorCode())) {
                     throw new RuntimeException("Cleanup failed");
                 }
             }
             CreateServiceRequest request = new CreateServiceRequest();
-            request.setServiceName(SERVICE_NAME + i);
+            request.setServiceName(serviceNamePrefix + i);
             request.setDescription(SERVICE_DESC_OLD);
             request.setRole(ROLE);
             CreateServiceResponse response = client.createService(request);
             assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
 
             TagResourceRequest req  = new TagResourceRequest();
-            req.setResourceArn(String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, SERVICE_NAME + i));
+            req.setResourceArn(String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, serviceNamePrefix + i));
             Map<String, String> tags = new HashMap<String, String>();
             if(i % 2 == 0){
                 tags.put("k1", "v1");
@@ -785,7 +785,7 @@ public class FunctionComputeClientTest {
         }
         ListServicesRequest listRequest = new ListServicesRequest();
         listRequest.setLimit(limit);
-        listRequest.setPrefix(SERVICE_NAME);
+        listRequest.setPrefix(serviceNamePrefix);
         ListServicesResponse listResponse = client.listServices(listRequest);
         int numCalled = 1;
         String nextToken = listResponse.getNextToken();
@@ -798,7 +798,7 @@ public class FunctionComputeClientTest {
         assertEquals(numServices / limit + 1, numCalled);
 
         listRequest = new ListServicesRequest();
-        listRequest.setPrefix(SERVICE_NAME);
+        listRequest.setPrefix(serviceNamePrefix);
         Map<String, String> tags = new HashMap<String, String>();
         tags.put("k3", "v3");
         listRequest.setTags(tags);
@@ -817,7 +817,7 @@ public class FunctionComputeClientTest {
 
         // Delete services
         for (int i = 0; i < numServices; i++) {
-            String resourceArn = String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, SERVICE_NAME + i);
+            String resourceArn = String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, serviceNamePrefix + i);
             UntagResourceRequest req  = new UntagResourceRequest();
             req.setResourceArn(resourceArn);
             String[] tagKeys = new String[] {};
@@ -825,7 +825,7 @@ public class FunctionComputeClientTest {
             req.setAll(true);
             UntagResourceResponse resp = client.untagResource(req);
             assertFalse(Strings.isNullOrEmpty(resp.getRequestId()));
-            cleanupService(SERVICE_NAME + i);
+            cleanupService(serviceNamePrefix + i);
         }
     }
 
