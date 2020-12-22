@@ -27,13 +27,11 @@ import com.aliyuncs.fc.config.Config;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
-import com.aliyuncs.fc.exceptions.ServerException;
 import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.model.NasConfig.NasMountConfig;
 import com.aliyuncs.fc.request.*;
 import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.Util;
-import com.aliyuncs.fc.utils.ZipUtils;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
 import com.aliyuncs.profile.DefaultProfile;
@@ -46,11 +44,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -65,7 +61,6 @@ import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.junit.Assert;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -301,10 +296,10 @@ public class FunctionComputeClientTest {
     }
 
     private CreateServiceResponse createService(String serviceName) {
-        return createSerivce(serviceName, true);
+        return createService(serviceName, true);
     }
 
-    private CreateServiceResponse createSerivce(String serviceName, boolean check) {
+    private CreateServiceResponse createService(String serviceName, boolean check) {
         CreateServiceRequest createSReq = new CreateServiceRequest();
         createSReq.setServiceName(serviceName);
         createSReq.setDescription(SERVICE_DESC_OLD);
@@ -757,26 +752,26 @@ public class FunctionComputeClientTest {
     public void testListServices() {
         final int numServices = 10;
         final int limit = 3;
-
+        final String serviceNamePrefix = SERVICE_NAME + "_listService_test_";
         // Create multiple services
         for (int i = 0; i < numServices; i++) {
             try {
-                client.getService(new GetServiceRequest(SERVICE_NAME + i));
-                cleanupService(SERVICE_NAME + i);
+                client.getService(new GetServiceRequest(serviceNamePrefix + i));
+                cleanupService(serviceNamePrefix + i);
             } catch (ClientException e) {
                 if (!ErrorCodes.SERVICE_NOT_FOUND.equals(e.getErrorCode())) {
                     throw new RuntimeException("Cleanup failed");
                 }
             }
             CreateServiceRequest request = new CreateServiceRequest();
-            request.setServiceName(SERVICE_NAME + i);
+            request.setServiceName(serviceNamePrefix + i);
             request.setDescription(SERVICE_DESC_OLD);
             request.setRole(ROLE);
             CreateServiceResponse response = client.createService(request);
             assertFalse(Strings.isNullOrEmpty(response.getRequestId()));
 
             TagResourceRequest req  = new TagResourceRequest();
-            req.setResourceArn(String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, SERVICE_NAME + i));
+            req.setResourceArn(String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, serviceNamePrefix + i));
             Map<String, String> tags = new HashMap<String, String>();
             if(i % 2 == 0){
                 tags.put("k1", "v1");
@@ -790,7 +785,7 @@ public class FunctionComputeClientTest {
         }
         ListServicesRequest listRequest = new ListServicesRequest();
         listRequest.setLimit(limit);
-        listRequest.setPrefix(SERVICE_NAME);
+        listRequest.setPrefix(serviceNamePrefix);
         ListServicesResponse listResponse = client.listServices(listRequest);
         int numCalled = 1;
         String nextToken = listResponse.getNextToken();
@@ -803,7 +798,7 @@ public class FunctionComputeClientTest {
         assertEquals(numServices / limit + 1, numCalled);
 
         listRequest = new ListServicesRequest();
-        listRequest.setPrefix(SERVICE_NAME);
+        listRequest.setPrefix(serviceNamePrefix);
         Map<String, String> tags = new HashMap<String, String>();
         tags.put("k3", "v3");
         listRequest.setTags(tags);
@@ -822,7 +817,7 @@ public class FunctionComputeClientTest {
 
         // Delete services
         for (int i = 0; i < numServices; i++) {
-            String resourceArn = String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, SERVICE_NAME + i);
+            String resourceArn = String.format("acs:fc:%s:%s:services/%s", REGION, ACCOUNT_ID, serviceNamePrefix + i);
             UntagResourceRequest req  = new UntagResourceRequest();
             req.setResourceArn(resourceArn);
             String[] tagKeys = new String[] {};
@@ -830,7 +825,7 @@ public class FunctionComputeClientTest {
             req.setAll(true);
             UntagResourceResponse resp = client.untagResource(req);
             assertFalse(Strings.isNullOrEmpty(resp.getRequestId()));
-            cleanupService(SERVICE_NAME + i);
+            cleanupService(serviceNamePrefix + i);
         }
     }
 
@@ -2956,7 +2951,7 @@ public class FunctionComputeClientTest {
 
         // Create a service
         try{
-            createSerivce(SERVICE_NAME, false);
+            createService(SERVICE_NAME, false);
         }catch (Exception e) {
             e.printStackTrace();
         }
