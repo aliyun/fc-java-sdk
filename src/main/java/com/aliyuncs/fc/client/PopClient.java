@@ -45,8 +45,7 @@ public class PopClient {
             response.setOrderId(openFCServiceResponse.getOrderId());
             return response;
         } catch (com.aliyuncs.exceptions.ClientException e) {
-            if (StringUtils.equals(e.getErrCode(), "SYSTEM.SALE_VALIDATE_NO_SPECIFIC_CODE_FAILED") &&
-                StringUtils.startsWith(e.getErrMsg(), "您已开通")) {
+            if (StringUtils.contains(e.getErrMsg(), "已开通")) {
                 OpenFunctionComputeResponse response = new OpenFunctionComputeResponse();
                 response.setRequestId(e.getRequestId());
                 response.setCode(ERROR_CODE_ORDER_OPENED);
