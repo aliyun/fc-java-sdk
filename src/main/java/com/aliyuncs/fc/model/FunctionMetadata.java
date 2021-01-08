@@ -62,10 +62,14 @@ public class FunctionMetadata {
     @SerializedName("caPort")
     private Integer caPort;
 
+    @SerializedName("instanceLifecycleConfig")
+    private InstanceLifecycleConfig instanceLifecycleConfig;
+
     public FunctionMetadata(){
         this.codeSize = 0;
         this.caPort = 9000;
         this.customContainerConfig = new CustomContainerConfig();
+        this.instanceLifecycleConfig = new InstanceLifecycleConfig();
     }
 
     public FunctionMetadata(String functionId, String functionName, String description,
@@ -166,5 +170,12 @@ public class FunctionMetadata {
             customContainerConfig = new CustomContainerConfig();
         }
         return customContainerConfig;
+    }
+
+    public InstanceLifecycleConfig getInstanceLifecycleConfig(){
+        if(instanceLifecycleConfig == null){
+            instanceLifecycleConfig = new InstanceLifecycleConfig();
+        }
+        return instanceLifecycleConfig;
     }
 }
