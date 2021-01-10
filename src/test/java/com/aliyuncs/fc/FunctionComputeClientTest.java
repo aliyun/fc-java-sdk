@@ -726,6 +726,62 @@ public class FunctionComputeClientTest {
         }
     }
 
+    @Test
+    public void testProvisionConfigWithTargetTrackingPolicies() {
+        String serviceName = SERVICE_NAME + UUID.randomUUID().toString().substring(0, 5);
+        String functionName = "hello_world" + UUID.randomUUID().toString().substring(0, 5);
+        String aliasName = "myAlias";
+
+        try {
+            preTestProvisionConfig(serviceName, functionName, aliasName);
+
+            try {
+                // create provision config
+                Integer target = 3;
+                PutProvisionConfigRequest provisionConfigRequest = new PutProvisionConfigRequest(serviceName, aliasName, functionName);
+                TargetTrackingPolicy[] policies = new TargetTrackingPolicy[1];
+                policies[0] = new TargetTrackingPolicy("p1", "2020-10-10T10:10:10Z",
+                        "2030-10-10T10:10:10Z", "ProvisionedConcurrencyUtilization", new Double(0.6f), 5, 200);
+                provisionConfigRequest.setTarget(target);
+                provisionConfigRequest.setTargetTrackingPolicies(policies);
+
+                PutProvisionConfigResponse provisionConfigResponse =client.putProvisionConfig(provisionConfigRequest);
+                assertEquals(HttpURLConnection.HTTP_OK, provisionConfigResponse.getStatus());
+                assertEquals(target, provisionConfigResponse.getTarget());
+                assertEquals(1, provisionConfigResponse.getTargetTrackingPolicies().length);
+                assertEquals("p1", provisionConfigResponse.getTargetTrackingPolicies()[0].getName());
+                assertEquals("2020-10-10T10:10:10Z", provisionConfigResponse.getTargetTrackingPolicies()[0].getStartTime());
+                assertEquals("2030-10-10T10:10:10Z", provisionConfigResponse.getTargetTrackingPolicies()[0].getEndTime());
+                assertEquals("ProvisionedConcurrencyUtilization", provisionConfigResponse.getTargetTrackingPolicies()[0].getMetricType());
+                assertEquals(new Double(0.6f), provisionConfigResponse.getTargetTrackingPolicies()[0].getMetricTarget());
+                assertEquals(5, provisionConfigResponse.getTargetTrackingPolicies()[0].getMinCapacity().intValue());
+                assertEquals(200, provisionConfigResponse.getTargetTrackingPolicies()[0].getMaxCapacity().intValue());
+
+                // set targetTrackingPolicies to null, assert targetTrackingPolicies will not be modified
+                provisionConfigRequest.setTargetTrackingPolicies(null);
+                PutProvisionConfigResponse provisionConfigResponse2 =client.putProvisionConfig(provisionConfigRequest);
+                assertEquals(HttpURLConnection.HTTP_OK, provisionConfigResponse2.getStatus());
+                assertEquals(1, provisionConfigResponse2.getTargetTrackingPolicies().length);
+
+                // set targetTrackingPolicies to [], assert targetTrackingPolicies will be modified to empty
+                provisionConfigRequest.setTargetTrackingPolicies(new TargetTrackingPolicy[0]);
+                PutProvisionConfigResponse provisionConfigResponse3 =client.putProvisionConfig(provisionConfigRequest);
+                assertEquals(HttpURLConnection.HTTP_OK, provisionConfigResponse3.getStatus());
+                assertEquals(0, provisionConfigResponse3.getTargetTrackingPolicies().length);
+            } catch (Exception e0) {
+                e0.printStackTrace();
+                assertNull(e0);
+            } finally {
+                cleanupProvision(serviceName, aliasName, functionName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertNull(e);
+        } finally {
+            afterTestProvisionConfig(serviceName);
+        }
+    }
+
     // actionName repeated
     private void scheduledActionValidate1(String serviceName, String functionName, String aliasName) {
         String actionName = "action1";
