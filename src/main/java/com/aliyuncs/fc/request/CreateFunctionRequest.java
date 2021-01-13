@@ -84,6 +84,9 @@ public class CreateFunctionRequest extends HttpRequest {
     @SerializedName("caPort")
     private Integer caPort;
 
+    @SerializedName("layers")
+    private String[] layers;
+
     public CreateFunctionRequest(String serviceName) {
         this.serviceName = serviceName;
     }
@@ -249,5 +252,13 @@ public class CreateFunctionRequest extends HttpRequest {
 
     public InstanceLifecycleConfig getInstanceLifecycleConfig(){
         return instanceLifecycleConfig;
+    }
+
+    public String[] getLayers() {
+        return layers;
+    }
+
+    public void setLayers(String[] layers) {
+        this.layers = layers;
     }
 }

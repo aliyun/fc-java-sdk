@@ -25,6 +25,8 @@ import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.ListRequestUrlHelper;
 import com.aliyuncs.fc.response.ListFunctionsResponse;
 import com.google.common.base.Strings;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Map;
 
 /**
@@ -38,6 +40,7 @@ public class ListFunctionsRequest extends HttpRequest {
     private String nextToken;
     private Integer limit;
     private String qualifier;
+    private String[] layers;
 
     public ListFunctionsRequest(String serviceName) {
         this.serviceName = serviceName;
@@ -86,6 +89,14 @@ public class ListFunctionsRequest extends HttpRequest {
     public ListFunctionsRequest setQualifier(String qualifier) {
         this.qualifier = qualifier;
         return this;
+    }
+
+    public String[] getLayers() {
+        return layers;
+    }
+
+    public void setLayers(String[] layers) {
+        this.layers = layers;
     }
 
     public String getPath() {

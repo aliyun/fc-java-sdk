@@ -65,6 +65,9 @@ public class FunctionMetadata {
     @SerializedName("instanceLifecycleConfig")
     private InstanceLifecycleConfig instanceLifecycleConfig;
 
+    @SerializedName("layers")
+    private String[] layers;
+
     public FunctionMetadata(){
         this.codeSize = 0;
         this.caPort = 9000;
@@ -177,5 +180,13 @@ public class FunctionMetadata {
             instanceLifecycleConfig = new InstanceLifecycleConfig();
         }
         return instanceLifecycleConfig;
+    }
+
+    public String[] getLayers() {
+        return layers;
+    }
+
+    public void setLayers(String[] layers) {
+        this.layers = layers;
     }
 }
