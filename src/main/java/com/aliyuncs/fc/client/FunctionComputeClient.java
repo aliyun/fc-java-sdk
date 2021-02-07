@@ -84,6 +84,17 @@ public class FunctionComputeClient {
         return getAccountSettingsOutput;
     }
 
+    public GetALBSettingsResponse getALBSettings(GetALBSettingsRequest request) throws ClientException, ServerException {
+
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        GetALBSettingsResponse getALBSettingsResponse = new GetALBSettingsResponse();
+        ALBSettings albSettings = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ALBSettings.class);
+        getALBSettingsResponse.setHeaders(response.getHeaders());
+        getALBSettingsResponse.setStatus(response.getStatus());
+        getALBSettingsResponse.setAlbSettings(albSettings);
+        return getALBSettingsResponse;
+    }
+
     public DeleteServiceResponse deleteService(DeleteServiceRequest request)
         throws ClientException, ServerException {
         HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);

@@ -6,6 +6,7 @@ package com.aliyuncs.fc.constants;
 public class Const {
 
     public final static String ACCOUNT_SETTING_PATH = "/%s/account-settings";
+    public final static String ALB_SETTING_PATH = "/%s/alb-settings";
     public final static String SERVICE_PATH = "/%s/services";
     public final static String ON_DEMAND_CONFIGS = "/%s/on-demand-configs";
     public final static String PROVISION_CONFIG_PATH = "/%s/provision-configs";
