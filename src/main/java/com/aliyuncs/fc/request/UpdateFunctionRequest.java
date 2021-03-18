@@ -83,6 +83,9 @@ public class UpdateFunctionRequest extends HttpRequest {
     @SerializedName("instanceLifecycleConfig")
     private InstanceLifecycleConfig instanceLifecycleConfig;
 
+    @SerializedName("layers")
+    private String[] layers;
+
     private transient String ifMatch;
 
 
@@ -255,5 +258,13 @@ public class UpdateFunctionRequest extends HttpRequest {
     public UpdateFunctionRequest setInstanceLifecycleConfig(InstanceLifecycleConfig instanceLifecycleConfig) {
         this.instanceLifecycleConfig = instanceLifecycleConfig;
         return this;
+    }
+
+    public String[] getLayers() {
+        return layers;
+    }
+
+    public void setLayers(String[] layers) {
+        this.layers = layers;
     }
 }

@@ -30,6 +30,10 @@ public class Const {
     public final static String HTTP_INVOKE_FUNCTION_PATH = "/%s/proxy/%s/%s/%s";
     public final static String HTTP_INVOKE_FUNCTION_WITH_QUALIFIER_PATH = "/%s/proxy/%s.%s/%s/%s";
 
+    public final static String LAYERS_PATH = "/%s/layers";
+    public final static String LAYER_PATH = "/%s/layers/%s/versions";
+    public final static String LAYER_VERSION_PATH = LAYER_PATH + "/%s";
+
     public final static String SINGLE_SERVICE_WITH_QUALIFIER_PATH = SERVICE_PATH + "/%s.%s";
     public final static String FUNCTION_WITH_QUALIFIER_PATH =
         SINGLE_SERVICE_WITH_QUALIFIER_PATH + "/functions";

@@ -573,6 +573,52 @@ public class FunctionComputeClient {
         return response;
     }
 
+
+    public PublishLayerVersionResponse publishLayerVersion(PublishLayerVersionRequest request) throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, POST);
+        PublishLayerVersionResponse publishLayerVersionResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), PublishLayerVersionResponse.class);
+        publishLayerVersionResponse.setHeaders(response.getHeaders());
+        publishLayerVersionResponse.setContent(response.getContent());
+        publishLayerVersionResponse.setStatus(response.getStatus());
+        return publishLayerVersionResponse;
+    }
+
+    public GetLayerVersionResponse getLayerVerion(GetLayerVersionRequest request) throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        GetLayerVersionResponse getLayerVersionResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), GetLayerVersionResponse.class);
+        getLayerVersionResponse.setHeaders(response.getHeaders());
+        getLayerVersionResponse.setContent(response.getContent());
+        getLayerVersionResponse.setStatus(response.getStatus());
+        return getLayerVersionResponse;
+    }
+
+    public DeleteLayerVersionReponse deleteLayerVersion(DeleteLayerVersionRequest request) throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, DELETE);
+        DeleteLayerVersionReponse deleteLayerVersionReponse = new DeleteLayerVersionReponse();
+        deleteLayerVersionReponse.setHeaders(response.getHeaders());
+        deleteLayerVersionReponse.setContent(response.getContent());
+        deleteLayerVersionReponse.setStatus(response.getStatus());
+        return deleteLayerVersionReponse;
+    }
+
+    public ListLayerVersionResponse listLayerVersion(ListLayerVersionRequest request) throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        ListLayerVersionResponse listLayerVersionResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListLayerVersionResponse.class);
+        listLayerVersionResponse.setHeaders(response.getHeaders());
+        listLayerVersionResponse.setContent(response.getContent());
+        listLayerVersionResponse.setStatus(response.getStatus());
+        return listLayerVersionResponse;
+    }
+
+    public ListLayerResponse listLayer(ListLayerRequest request)  throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        ListLayerResponse listLayerResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListLayerResponse.class);
+        listLayerResponse.setHeaders(response.getHeaders());
+        listLayerResponse.setContent(response.getContent());
+        listLayerResponse.setStatus(response.getStatus());
+        return listLayerResponse;
+    }
+
     public String SignURL(SignURLConfig input) throws Exception {
         return input.signURL(this.config.getApiVersion(),
                 this.config.getEndpoint(),
