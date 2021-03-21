@@ -7,7 +7,13 @@ public class AccountSettings {
 
     private String[] availableAZs;
 
+    private String[] albEndpoints;
+
     public String[] getAvailableAZs() {
         return availableAZs;
+    }
+
+    public String[] getAlbEndpoints() {
+        return albEndpoints;
     }
 }

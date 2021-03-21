@@ -553,6 +553,12 @@ public class FunctionComputeClientTest {
         client.deleteService(new DeleteServiceRequest(service_name));
     }
 
+    @Test
+    public void testGetAccountSettings() {
+        GetAccountSettingsResponse response = client.getAccountSettings(new GetAccountSettingsRequest());
+        assertTrue(response.getAccountSettings().getAvailableAZs().length > 0);
+    }
+
     private void preTestProvisionConfig(String serviceName, String functionName, String aliasName) throws Exception {
         // create service
         createService(serviceName, false);
