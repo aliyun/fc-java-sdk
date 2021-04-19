@@ -8,11 +8,24 @@ public class LogConfig {
     private String project;
     private String logstore;
     private Boolean enableRequestMetrics;
+    private Boolean enableInstanceMetrics;
+
+    public LogConfig(String project, String logStore) {
+        this.project = project;
+        this.logstore = logStore;
+    }
 
     public LogConfig(String project, String logStore, Boolean enableRequestMetrics) {
         this.project = project;
         this.logstore = logStore;
         this.enableRequestMetrics = enableRequestMetrics;
+    }
+
+    public LogConfig(String project, String logStore, Boolean enableRequestMetrics, Boolean enableInstanceMetrics) {
+        this.project = project;
+        this.logstore = logStore;
+        this.enableRequestMetrics = enableRequestMetrics;
+        this.enableInstanceMetrics = enableInstanceMetrics;
     }
 
     public LogConfig setProject(String project) {
@@ -40,5 +53,14 @@ public class LogConfig {
 
     public Boolean getEnableRequestMetrics() {
         return enableRequestMetrics;
+    }
+
+    public LogConfig setEnableInstanceMetrics(Boolean enableInstanceMetrics) {
+        this.enableInstanceMetrics = enableInstanceMetrics;
+        return this;
+    }
+
+    public Boolean getEnableInstanceMetrics() {
+        return enableInstanceMetrics;
     }
 }
