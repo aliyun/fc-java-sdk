@@ -56,10 +56,7 @@ import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * Validation for FunctionComputeClient, tests including create/list/get/update
@@ -1479,6 +1476,100 @@ public class FunctionComputeClientTest {
         lResp = client.listFunctionAsyncConfigs(listFunctionAsyncConfigsRequest3);
         assertNotEquals("", lResp.getRequestId());
         assertEquals(null, lResp.getAsyncConfigs());
+    }
+
+    @Test
+    @Ignore
+    public void testStatefulAsyncInvocation() throws Exception {
+
+        long timeNow = System.currentTimeMillis();
+        String invocationID = String.format("stateful-invocationId-%d-1", timeNow);
+        String invocationID2 = String.format("stateful-invocationId-%d-2", timeNow);
+        createService(SERVICE_NAME);
+        createFunction(FUNCTION_NAME);
+
+        AsyncConfig config = new AsyncConfig();
+        config.setStatefulInvocation(true);
+
+        PutFunctionAsyncConfigRequest putFunctionAsyncConfigRequest = new PutFunctionAsyncConfigRequest(SERVICE_NAME, "", FUNCTION_NAME);
+        putFunctionAsyncConfigRequest.setAsyncConfig(config);
+        PutFunctionAsyncConfigResponse pResp = client.putFunctionAsyncConfig(putFunctionAsyncConfigRequest);
+
+        // validate put response
+        assertTrue(pResp.getAsyncConfig().getStatefulInvocation());
+
+        // validate get response
+        GetFunctionAsyncConfigRequest getFunctionAsyncConfigRequest = new GetFunctionAsyncConfigRequest(SERVICE_NAME, "", FUNCTION_NAME);
+        GetFunctionAsyncConfigResponse gResp = client.getFunctionAsyncConfig(getFunctionAsyncConfigRequest);
+        assertTrue(gResp.getAsyncConfig().getStatefulInvocation());
+
+        // async invocation
+        // Headers passed in through setHeader should be respected
+        InvokeFunctionRequest request = new InvokeFunctionRequest(SERVICE_NAME, FUNCTION_NAME);
+        request.setHeader("x-fc-invocation-type", Const.INVOCATION_TYPE_ASYNC);
+        request.setStatefulAsyncInvocationId(invocationID);
+        InvokeFunctionResponse ivkResp = client.invokeFunction(request);
+        request.setStatefulAsyncInvocationId(invocationID2);
+        client.invokeFunction(request);
+
+        // get stateful invocation
+        GetStatefulAsyncInvocationRequest req = new GetStatefulAsyncInvocationRequest(SERVICE_NAME, "", FUNCTION_NAME, invocationID);
+        GetStatefulAsyncInvocationResponse resp = client.getStatefulAsyncInvocation(req);
+        while (!resp.getStatefulAsyncInvocation().status.equals(StatefulInvocationStatus.Failed.toString()) &&
+                !resp.getStatefulAsyncInvocation().status.equals(StatefulInvocationStatus.Succeeded.toString()) &&
+                !resp.getStatefulAsyncInvocation().status.equals(StatefulInvocationStatus.Stopped.toString())) {
+            resp = client.getStatefulAsyncInvocation(req);
+            assertEquals(invocationID, resp.getStatefulAsyncInvocation().invocationId);
+        }
+        assertNotNull(resp.getStatefulAsyncInvocation());
+        assertEquals(StatefulInvocationStatus.Succeeded.toString(), resp.getStatefulAsyncInvocation().status);
+        assertEquals(ivkResp.getRequestId(), resp.getStatefulAsyncInvocation().getRequestId());
+
+        GetStatefulAsyncInvocationResponse resp2 = client.getStatefulAsyncInvocation(req);
+
+        // get stateful invocation 2
+        while (!resp2.getStatefulAsyncInvocation().status.equals(StatefulInvocationStatus.Failed.toString()) &&
+                !resp2.getStatefulAsyncInvocation().status.equals(StatefulInvocationStatus.Succeeded.toString()) &&
+                !resp2.getStatefulAsyncInvocation().status.equals(StatefulInvocationStatus.Stopped.toString())) {
+            GetStatefulAsyncInvocationRequest req2 = new GetStatefulAsyncInvocationRequest(SERVICE_NAME, "", FUNCTION_NAME, invocationID2);
+            resp2 = client.getStatefulAsyncInvocation(req2);
+            assertEquals(invocationID2, resp2.getStatefulAsyncInvocation().invocationId);
+        }
+        assertNotNull(resp2.getStatefulAsyncInvocation());
+        assertEquals(StatefulInvocationStatus.Succeeded.toString(), resp2.getStatefulAsyncInvocation().status);
+
+
+        Thread.sleep(5000);
+        // list stateful invocation
+        ListStatefulAsyncInvocationsRequest lReq = new ListStatefulAsyncInvocationsRequest(SERVICE_NAME, FUNCTION_NAME);
+        lReq.setInvocationIdPrefix(String.format("stateful-invocationId-%d", timeNow));
+        lReq.setIncludePayload(true);
+        lReq.setLimit(100);
+        lReq.setSortOrderByTime(SortOrder.desc);
+        lReq.setStartedTimeBegin(String.format("%d", timeNow-5*1000));
+        ListStatefulAsyncInvocationsResponse lResp = client.listStatefulAsyncInvocations(lReq);
+        assertNotNull(lResp.getStatefulAsyncInvocations());
+        assertEquals(2, lResp.getStatefulAsyncInvocations().length);
+
+        long timeNowx = System.currentTimeMillis();
+        lReq.setStartedTimeBegin(String.format("%d", timeNowx));
+        ListStatefulAsyncInvocationsResponse lResp2 = client.listStatefulAsyncInvocations(lReq);
+        assertNull(lResp2.getStatefulAsyncInvocations());
+
+        // stop an unsupported status invocation
+        StopStatefulAsyncInvocationRequest sReq = new StopStatefulAsyncInvocationRequest(SERVICE_NAME, "", FUNCTION_NAME, invocationID);
+        StopStatefulAsyncInvocationResponse sResp = new StopStatefulAsyncInvocationResponse();
+        try {
+            sResp = client.stopStatefulAsyncInvocation(sReq);
+            fail("should get InvalidArgument");
+        } catch (ClientException ex) {
+            assertEquals("InvalidArgument", ex.getErrorCode());
+        }
+
+        // delete async config for stateful async invocation
+        DeleteFunctionAsyncConfigRequest deleteFunctionAsyncConfigRequest = new DeleteFunctionAsyncConfigRequest(SERVICE_NAME, "", FUNCTION_NAME);
+        DeleteFunctionAsyncConfigResponse deleteFunctionAsyncConfigResponse = client.deleteFunctionAsyncConfig(deleteFunctionAsyncConfigRequest);
+        assertNotEquals("", deleteFunctionAsyncConfigResponse.getRequestId());
     }
 
     @Test

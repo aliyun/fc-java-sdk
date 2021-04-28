@@ -40,6 +40,7 @@ public class InvokeFunctionRequest extends HttpRequest {
     private String invocationType;
     private String logType;
     private String qualifier;
+    private String statefulAsyncInvocationId;
 
     private byte[] payload;
 
@@ -83,6 +84,17 @@ public class InvokeFunctionRequest extends HttpRequest {
         return this;
     }
 
+    public String getStatefulAsyncInvocationId() {
+        return statefulAsyncInvocationId;
+    }
+
+    // setStatefulAsyncInvocationId will set invocationType to async as well
+    public InvokeFunctionRequest setStatefulAsyncInvocationId(String statefulAsyncInvocationId) {
+        this.invocationType = Const.INVOCATION_TYPE_ASYNC;
+        this.statefulAsyncInvocationId = statefulAsyncInvocationId;
+        return this;
+    }
+
     public Map<String, String> getQueryParams() {
         return null;
     }
@@ -104,6 +116,10 @@ public class InvokeFunctionRequest extends HttpRequest {
 
         if (!isNullOrEmpty(logType)) {
             headers.put(HeaderKeys.INVOCATION_LOG_TYPE, logType);
+        }
+
+        if (!isNullOrEmpty(statefulAsyncInvocationId)) {
+            headers.put(HeaderKeys.STATEFUL_ASYNC_INVOCATIONID, statefulAsyncInvocationId);
         }
 
         return headers;
