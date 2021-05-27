@@ -20,8 +20,8 @@ public class ListLayerVersionRequest extends HttpRequest {
     @SerializedName("startVersion")
     private String startVersion;
 
-    @SerializedName("maxItems")
-    private Integer maxItems;
+    @SerializedName("limit")
+    private Integer limit;
 
     @Override
     public String getPath() {
@@ -41,8 +41,8 @@ public class ListLayerVersionRequest extends HttpRequest {
         if (StringUtils.isNotBlank(startVersion)) {
             queryParams.put("startVersion", startVersion);
         }
-        if (maxItems != null) {
-            queryParams.put("maxItems", String.valueOf(maxItems));
+        if (limit != null) {
+            queryParams.put("limit", String.valueOf(limit));
         }
         return queryParams;
     }
@@ -63,11 +63,11 @@ public class ListLayerVersionRequest extends HttpRequest {
         this.startVersion = startVersion;
     }
 
-    public Integer getMaxItems() {
-        return maxItems;
+    public Integer getLimit() {
+        return limit;
     }
 
-    public void setMaxItems(Integer maxItems) {
-        this.maxItems = maxItems;
+    public void setLimit(Integer limit) {
+        this.limit = limit;
     }
 }
