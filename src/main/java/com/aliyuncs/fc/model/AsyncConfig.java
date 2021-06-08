@@ -1,6 +1,7 @@
 package com.aliyuncs.fc.model;
 
 import com.google.gson.annotations.SerializedName;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.Data;
 
 /**
@@ -41,6 +42,9 @@ public class AsyncConfig {
     @SerializedName("maxAsyncRetryAttempts")
     public Integer maxAsyncRetryAttempts;
 
+    @SerializedName("statefulInvocation")
+    public boolean statefulInvocation;
+
     public String getService() {
         return service;
     }
@@ -71,6 +75,10 @@ public class AsyncConfig {
 
     public Integer getMaxAsyncRetryAttempts() {
         return maxAsyncRetryAttempts;
+    }
+
+    public Boolean getStatefulInvocation() {
+        return statefulInvocation;
     }
 
     public AsyncConfig setService(String service) {
@@ -110,6 +118,11 @@ public class AsyncConfig {
 
     public AsyncConfig setMaxAsyncRetryAttempts(Integer maxAsyncRetryAttempts) {
         this.maxAsyncRetryAttempts = maxAsyncRetryAttempts;
+        return this;
+    }
+
+    public AsyncConfig setStatefulInvocation(boolean statefulInvocation) {
+        this.statefulInvocation = statefulInvocation;
         return this;
     }
 }

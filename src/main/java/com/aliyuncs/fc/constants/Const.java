@@ -54,6 +54,15 @@ public class Const {
     public final static String LIST_FUNCTION_ASYNC_CONFIGS_PATH =
             SINGLE_FUNCTION_PATH + "/async-invoke-configs";
 
+    public final static String GET_FUNCTION_STATEFUL_ASYNC_INVOCATION_PATH =
+            SINGLE_FUNCTION_PATH + "/stateful-async-invocations/%s";
+    public final static String GET_FUNCTION_WITH_QUALIFIER_STATEFUL_ASYNC_INVOCATION_PATH =
+            SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/stateful-async-invocations/%s";
+    public final static String LIST_FUNCTION_STATEFUL_ASYNC_INVOCATIONS_PATH =
+            SINGLE_FUNCTION_PATH + "/stateful-async-invocations";
+    public final static String LIST_FUNCTION_WITH_QUALIFIER_STATEFUL_ASYNC_INVOCATIONS_PATH =
+            SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/stateful-async-invocations";
+
     /**
      * 3 seconds
      *

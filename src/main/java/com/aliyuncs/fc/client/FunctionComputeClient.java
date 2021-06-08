@@ -626,4 +626,36 @@ public class FunctionComputeClient {
                 this.config.getAccessKeySecret(),
                 this.config.getSecurityToken());
     }
+
+    public GetStatefulAsyncInvocationResponse getStatefulAsyncInvocation(GetStatefulAsyncInvocationRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        StatefulAsyncInvocation invocation = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), StatefulAsyncInvocation.class);
+        GetStatefulAsyncInvocationResponse getStatefulAsyncInvocationResponse = new GetStatefulAsyncInvocationResponse(invocation);
+        getStatefulAsyncInvocationResponse.setStatefulAsyncInvocation(invocation);
+        getStatefulAsyncInvocationResponse.setHeaders(response.getHeaders());
+        getStatefulAsyncInvocationResponse.setContent(response.getContent());
+        getStatefulAsyncInvocationResponse.setStatus(response.getStatus());
+        return getStatefulAsyncInvocationResponse;
+    }
+
+    public ListStatefulAsyncInvocationsResponse listStatefulAsyncInvocations(ListStatefulAsyncInvocationsRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        ListStatefulAsyncInvocationsResponse listStatefulAsyncInvocationsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListStatefulAsyncInvocationsResponse.class);
+        listStatefulAsyncInvocationsResponse.setHeaders(response.getHeaders());
+        listStatefulAsyncInvocationsResponse.setContent(response.getContent());
+        listStatefulAsyncInvocationsResponse.setStatus(response.getStatus());
+        return listStatefulAsyncInvocationsResponse;
+    }
+
+    public StopStatefulAsyncInvocationResponse stopStatefulAsyncInvocation(StopStatefulAsyncInvocationRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, PUT);
+        StopStatefulAsyncInvocationResponse stopStatefulAsyncInvocationResponse = new StopStatefulAsyncInvocationResponse();
+        stopStatefulAsyncInvocationResponse.setHeaders(response.getHeaders());
+        stopStatefulAsyncInvocationResponse.setContent(response.getContent());
+        stopStatefulAsyncInvocationResponse.setStatus(response.getStatus());
+        return stopStatefulAsyncInvocationResponse;
+    }
 }
