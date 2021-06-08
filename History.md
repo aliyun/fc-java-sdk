@@ -1,3 +1,7 @@
+1.8.20 / 2021-06-08
+==================
+  * support stateful async invocation
+
 1.8.18 / 2021-04-19
 ==================
   * add instance metrics support

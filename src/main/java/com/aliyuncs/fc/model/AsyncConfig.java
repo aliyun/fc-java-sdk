@@ -1,7 +1,6 @@
 package com.aliyuncs.fc.model;
 
 import com.google.gson.annotations.SerializedName;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.Data;
 
 /**
