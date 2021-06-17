@@ -1,3 +1,7 @@
+1.8.21 / 2021-06-17
+==================
+  * add acree instanceID for customContainerConfig
+
 1.8.18 / 2021-04-19
 ==================
   * add instance metrics support
