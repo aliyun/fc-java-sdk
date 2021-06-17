@@ -28,8 +28,11 @@ public class ZipUtils {
         ZipOutputStream zos = new ZipOutputStream(fos);
         for (String filePath : fileNames) {
             // for ZipEntry we need to keep only relative file path, so we used substring on absolute path
-            ZipEntry ze = new ZipEntry(
-                filePath.substring(dir.getAbsolutePath().length() + 1, filePath.length()));
+            String zipFilePath = filePath.substring(dir.getAbsolutePath().length() + 1, filePath.length());
+            if (File.separatorChar != '/') {
+                zipFilePath = zipFilePath.replace("\\", "/");
+            }
+            ZipEntry ze = new ZipEntry(zipFilePath);
             zos.putNextEntry(ze);
             // read the file and write to ZipOutputStream
             FileInputStream fis = new FileInputStream(filePath);
