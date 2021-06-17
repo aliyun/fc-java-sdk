@@ -22,6 +22,8 @@ public class CustomContainerConfig {
     @SerializedName("accelerationType")
     public String accelerationType;
 
+    @SerializedName("instanceID")
+    public String instanceID;
 
     public CustomContainerConfig setImage(String image) {
         this.image = image;
@@ -58,4 +60,14 @@ public class CustomContainerConfig {
     public String getAccelerationType() {
         return accelerationType;
     }
+
+    public CustomContainerConfig setInstanceID(String instanceID) {
+        this.instanceID = instanceID;
+        return this;
+    }
+
+    public String getInstanceID() {
+        return instanceID;
+    }
+
 }
