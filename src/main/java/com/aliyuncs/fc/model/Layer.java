@@ -1,5 +1,7 @@
 package com.aliyuncs.fc.model;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Arrays;
 
 public class Layer {
@@ -13,6 +15,7 @@ public class Layer {
     private String[] compatibleRuntime;
     private Integer acl;
     private String Arn;
+    private String arn;
 
     public String getLayerName() {
         return layerName;
@@ -87,11 +90,15 @@ public class Layer {
     }
 
     public String getArn() {
+        if (StringUtils.isNotBlank(arn)) {
+            return arn;
+        }
         return Arn;
     }
 
     public void setArn(String arn) {
         this.Arn = arn;
+        this.arn = arn;
     }
 
     @Override
@@ -106,7 +113,7 @@ public class Layer {
                 ", createTime='" + createTime + '\'' +
                 ", compatibleRuntime=" + Arrays.toString(compatibleRuntime) +
                 ", acl=" + acl +
-                ", Arn='" + Arn + '\'' +
+                ", arn='" + arn + '\'' +
                 '}';
     }
 }
