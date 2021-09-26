@@ -84,25 +84,6 @@ public class UpdateFunctionRequest extends HttpRequest {
     private Integer caPort;
 
     @SerializedName("instanceLifecycleConfig")
-    @SerializedName("code")
-    private Code code;
-
-    @SerializedName("environmentVariables")
-    private Map<String, String> environmentVariables;
-
-    @SerializedName("instanceConcurrency")
-    private Integer instanceConcurrency;
-
-    @SerializedName("instanceType")
-    private String instanceType;
-
-    @SerializedName("customContainerConfig")
-    private CustomContainerConfig customContainerConfig;
-
-    @SerializedName("caPort")
-    private Integer caPort;
-
-    @SerializedName("instanceLifecycleConfig")
     private InstanceLifecycleConfig instanceLifecycleConfig;
 
     @SerializedName("layers")
