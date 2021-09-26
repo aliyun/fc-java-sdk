@@ -35,6 +35,9 @@ public class FunctionMetadata {
     @SerializedName("memorySize")
     private Integer memorySize;
 
+    @SerializedName("gpuMemorySize")
+    private Integer gpuMemorySize;
+
     @SerializedName("codeSize")
     private Integer codeSize;
 
@@ -128,6 +131,10 @@ public class FunctionMetadata {
 
     public Integer getMemorySize() {
         return memorySize;
+    }
+
+    public Integer getGpuMemorySize() {
+        return gpuMemorySize;
     }
 
     public String getCreatedTime() {

@@ -62,6 +62,28 @@ public class UpdateFunctionRequest extends HttpRequest {
     @SerializedName("memorySize")
     private Integer memorySize;
 
+    @SerializedName("gpuMemorySize")
+    private Integer gpuMemorySize;
+
+    @SerializedName("code")
+    private Code code;
+
+    @SerializedName("environmentVariables")
+    private Map<String, String> environmentVariables;
+
+    @SerializedName("instanceConcurrency")
+    private Integer instanceConcurrency;
+
+    @SerializedName("instanceType")
+    private String instanceType;
+
+    @SerializedName("customContainerConfig")
+    private CustomContainerConfig customContainerConfig;
+
+    @SerializedName("caPort")
+    private Integer caPort;
+
+    @SerializedName("instanceLifecycleConfig")
     @SerializedName("code")
     private Code code;
 
@@ -162,6 +184,15 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     public UpdateFunctionRequest setMemorySize(Integer memorySize) {
         this.memorySize = memorySize;
+        return this;
+    }
+
+    public Integer getGpuMemorySize() {
+        return gpuMemorySize;
+    }
+
+    public UpdateFunctionRequest setGpuMemorySize(Integer gpuMemorySize) {
+        this.gpuMemorySize = gpuMemorySize;
         return this;
     }
 
