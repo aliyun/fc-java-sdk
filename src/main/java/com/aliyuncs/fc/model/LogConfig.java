@@ -9,6 +9,7 @@ public class LogConfig {
     private String logstore;
     private Boolean enableRequestMetrics;
     private Boolean enableInstanceMetrics;
+    private String logBeginRule;
 
     public LogConfig(String project, String logStore) {
         this.project = project;
@@ -26,6 +27,14 @@ public class LogConfig {
         this.logstore = logStore;
         this.enableRequestMetrics = enableRequestMetrics;
         this.enableInstanceMetrics = enableInstanceMetrics;
+    }
+
+    public LogConfig(String project, String logStore, Boolean enableRequestMetrics, Boolean enableInstanceMetrics, String logBeginRule) {
+        this.project = project;
+        this.logstore = logStore;
+        this.enableRequestMetrics = enableRequestMetrics;
+        this.enableInstanceMetrics = enableInstanceMetrics;
+        this.logBeginRule = logBeginRule;
     }
 
     public LogConfig setProject(String project) {
@@ -62,5 +71,14 @@ public class LogConfig {
 
     public Boolean getEnableInstanceMetrics() {
         return enableInstanceMetrics;
+    }
+
+    public LogConfig setLogBeginRule(String logBeginRule) {
+        this.logBeginRule = logBeginRule;
+        return this;
+    }
+
+    public String getLogBeginRule() {
+        return logBeginRule;
     }
 }

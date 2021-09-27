@@ -85,4 +85,13 @@ public class Const {
     public final static String DEFAULT_CHARSET="utf-8";
 
     public final static String TAG_QUERY_PREFIX="tag_";
+
+    /**
+     * split log by default regex
+     */
+    public static final String DEFAULT_REGEX = "DefaultRegex";
+    /**
+     * disable splitting logs
+     */
+    public static final String NONE = "None";
 }
