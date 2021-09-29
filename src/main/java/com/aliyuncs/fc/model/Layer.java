@@ -14,6 +14,7 @@ public class Layer {
     private String createTime;
     private String[] compatibleRuntime;
     private Integer acl;
+    private String arn;
     private String Arn;
     private String arn;
 
