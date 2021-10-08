@@ -1,3 +1,7 @@
+1.8.23 / 2021-10-08
+==================
+  * add logBeginRule for logConfig
+
 1.8.21 / 2021-06-17
 ==================
   * add acree instanceID for customContainerConfig
