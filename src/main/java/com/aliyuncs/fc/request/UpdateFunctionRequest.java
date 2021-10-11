@@ -62,6 +62,9 @@ public class UpdateFunctionRequest extends HttpRequest {
     @SerializedName("memorySize")
     private Integer memorySize;
 
+    @SerializedName("gpuMemorySize")
+    private Integer gpuMemorySize;
+
     @SerializedName("code")
     private Code code;
 
@@ -162,6 +165,15 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     public UpdateFunctionRequest setMemorySize(Integer memorySize) {
         this.memorySize = memorySize;
+        return this;
+    }
+
+    public Integer getGpuMemorySize() {
+        return gpuMemorySize;
+    }
+
+    public UpdateFunctionRequest setGpuMemorySize(Integer gpuMemorySize) {
+        this.gpuMemorySize = gpuMemorySize;
         return this;
     }
 

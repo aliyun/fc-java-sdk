@@ -76,6 +76,11 @@ public class UpdateFunctionResponse extends HttpResponse {
         return functionMetadata.getMemorySize();
     }
 
+    public Integer getGpuMemorySize() {
+        Preconditions.checkArgument(functionMetadata != null);
+        return functionMetadata.getGpuMemorySize();
+    }
+
     public int getCodeSize() {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getCodeSize();

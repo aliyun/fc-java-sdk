@@ -72,6 +72,11 @@ public class CreateFunctionResponse extends HttpResponse {
         return functionMetadata.getMemorySize();
     }
 
+    public Integer getGpuMemorySize() {
+        Preconditions.checkArgument(functionMetadata != null);
+        return functionMetadata.getGpuMemorySize();
+    }
+
     public String getCreatedTime() {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getCreatedTime();
