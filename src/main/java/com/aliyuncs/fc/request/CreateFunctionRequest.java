@@ -63,6 +63,9 @@ public class CreateFunctionRequest extends HttpRequest {
     @SerializedName("memorySize")
     private Integer memorySize;
 
+    @SerializedName("gpuMemorySize")
+    private Integer gpuMemorySize;
+
     @SerializedName("code")
     private Code code;
 
@@ -174,6 +177,15 @@ public class CreateFunctionRequest extends HttpRequest {
 
     public Integer getMemorySize() {
         return memorySize;
+    }
+
+    public CreateFunctionRequest setGpuMemorySize(Integer gpuMemorySize) {
+        this.gpuMemorySize = gpuMemorySize;
+        return this;
+    }
+
+    public Integer getGpuMemorySize() {
+        return gpuMemorySize;
     }
 
     public CreateFunctionRequest setInstanceType(String instanceType) {
