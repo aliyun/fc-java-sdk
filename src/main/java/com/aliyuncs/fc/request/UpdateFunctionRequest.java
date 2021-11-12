@@ -26,6 +26,7 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.Code;
 import com.aliyuncs.fc.model.CustomContainerConfig;
+import com.aliyuncs.fc.model.CustomDNS;
 import com.aliyuncs.fc.model.InstanceLifecycleConfig;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
@@ -88,6 +89,9 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     @SerializedName("layers")
     private String[] layers;
+
+    @SerializedName("customDNS")
+    private CustomDNS customDNS;
 
     private transient String ifMatch;
 
@@ -279,4 +283,13 @@ public class UpdateFunctionRequest extends HttpRequest {
     public void setLayers(String[] layers) {
         this.layers = layers;
     }
+
+    public CustomDNS getCustomDNS() {
+        return customDNS;
+    }
+
+    public void setCustomDNS(CustomDNS customDNS) {
+        this.customDNS = customDNS;
+    }
+
 }

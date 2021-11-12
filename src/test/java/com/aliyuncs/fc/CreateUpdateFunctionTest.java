@@ -1,22 +1,12 @@
 package com.aliyuncs.fc;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
-
 import com.aliyuncs.fc.client.FunctionComputeClient;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.exceptions.ErrorCodes;
-import com.aliyuncs.fc.model.CustomContainerConfig;
-import com.aliyuncs.fc.model.FunctionMetadata;
-import com.aliyuncs.fc.request.CreateFunctionRequest;
-import com.aliyuncs.fc.request.CreateServiceRequest;
-import com.aliyuncs.fc.request.DeleteFunctionRequest;
-import com.aliyuncs.fc.request.DeleteServiceRequest;
-import com.aliyuncs.fc.request.GetServiceRequest;
-import com.aliyuncs.fc.request.ListFunctionsRequest;
-import com.aliyuncs.fc.request.UpdateFunctionRequest;
+import com.aliyuncs.fc.model.*;
+import com.aliyuncs.fc.request.*;
 import com.aliyuncs.fc.response.CreateFunctionResponse;
+import com.aliyuncs.fc.response.GetFunctionResponse;
 import com.aliyuncs.fc.response.ListFunctionsResponse;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.google.common.base.Strings;
@@ -24,6 +14,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.After;
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import static junit.framework.TestCase.*;
 
 /**
  * Create and update function related tests
@@ -38,6 +37,10 @@ public class CreateUpdateFunctionTest {
     private static final String CUSTOM_CONTAINER_IMAGE = System.getenv("TEST_CUSTOM_CONTAINER_IMAGE");
     private static final String SERVICE_NAME = "fcJavaSdkCITest";
     private static final String FUNCTION_DESC_OLD = "function desc";
+
+    private static final String PY3_CODE = "def handler(evt, ctx):" +
+            "    print(\"bye\")" +
+            "    return \"done\"";
 
     private FunctionComputeClient client;
 
@@ -119,6 +122,20 @@ public class CreateUpdateFunctionTest {
         }
     }
 
+    public byte[] createZipCodePython(String indexFile) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
+        try {
+            ZipEntry zipEntry = new ZipEntry("index.py");
+            zipOutputStream.putNextEntry(zipEntry);
+            zipOutputStream.write(indexFile.getBytes());
+            zipOutputStream.closeEntry();
+        } finally {
+            zipOutputStream.close();
+        }
+        return byteArrayOutputStream.toByteArray();
+    }
+
     @Test
     public void testCreateUpdateFunctionCustomContainer() {
         String functionName = "testFCJavaSdkCITestFunction";
@@ -182,6 +199,79 @@ public class CreateUpdateFunctionTest {
         assertTrue(Strings.isNullOrEmpty(respUCCC1.getCommand()));
         assertTrue(Strings.isNullOrEmpty(respUCCC1.getArgs()));
         assertEquals(functionName, responseU1.getFunctionName());
+    }
+
+    private boolean isEqualDNS(CustomDNS a, CustomDNS b) {
+        if (!Arrays.equals(a.getNameServers(), b.getNameServers())) {
+            return false;
+        }
+        if (!Arrays.equals(a.getSearches(), b.getSearches())) {
+            return false;
+        }
+
+        boolean dnsOptionEq = true;
+        DNSOption[] dnsOpts1 = a.getDnsOptions();
+        DNSOption[] dnsOpts2 = b.getDnsOptions();
+        if (dnsOpts1 == null && dnsOpts2 == null) {
+            dnsOptionEq = true;
+        } else if (dnsOpts1 == null ^ dnsOpts2 == null || dnsOpts1.length != dnsOpts2.length) {
+            dnsOptionEq = false;
+        } else {
+            boolean eq = true;
+            for (int i = 0; i < dnsOpts1.length && eq; i++) {
+                eq = dnsOpts1[i].getName() == dnsOpts1[i].getName() && dnsOpts2[i].getValue() == dnsOpts2[i].getValue();
+            }
+            dnsOptionEq = dnsOptionEq && eq;
+        }
+        return dnsOptionEq;
+    }
+
+    @Test
+    public void testCreateUpdateFunctionCustomDNS() {
+        String functionName = "testCreateUpdateFunctionCustomDNS";
+        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
+        createFuncReq.setFunctionName(functionName);
+        createFuncReq.setHandler("index.handler");
+        createFuncReq.setRuntime("python3");
+        createFuncReq.setTimeout(5);
+        createFuncReq.setMemorySize(256);
+
+        CustomDNS customDNS = new CustomDNS();
+        DNSOption dnsOption = new DNSOption();
+        dnsOption.setName("ndots");
+        dnsOption.setValue("2");
+        DNSOption[] dnsOptions = new DNSOption[]{
+                dnsOption
+        };
+        customDNS.setDnsOptions(dnsOptions);
+        customDNS.setNameServers(new String[]{
+                "8.8.8.8", "114.114.114.114"
+        });
+        customDNS.setSearches(new String[]{ "www.google.com" });
+        try {
+            createFuncReq.setCode(new Code().setZipFile(createZipCodePython(PY3_CODE)));
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
+        createFuncReq.setCustomDNS(customDNS);
+
+        // create function
+        CreateFunctionResponse createResp = client.createFunction(createFuncReq);
+        assertTrue(isEqualDNS(createResp.getCustomDNS(), customDNS));
+
+        // get function
+        GetFunctionRequest getFuncReq = new GetFunctionRequest(SERVICE_NAME, functionName);
+        GetFunctionResponse getResp = client.getFunction(getFuncReq);
+        assertTrue(isEqualDNS(getResp.getCustomDNS(), customDNS));
+
+        // update function
+        customDNS.setNameServers(new String[]{
+                "114.114.114.114", "8.8.8.8", "1.1.1.1"
+        });
+        UpdateFunctionRequest updateFuncReq = new UpdateFunctionRequest(SERVICE_NAME, functionName);
+        updateFuncReq.setCustomDNS(customDNS);
+        UpdateFunctionResponse updateResp = client.updateFunction(updateFuncReq);
+        assertTrue(isEqualDNS(updateResp.getCustomDNS(), customDNS));
     }
 }
 
