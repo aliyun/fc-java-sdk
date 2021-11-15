@@ -71,6 +71,9 @@ public class FunctionMetadata {
     @SerializedName("layers")
     private String[] layers;
 
+    @SerializedName("customDNS")
+    private CustomDNS customDNS;
+
     public FunctionMetadata(){
         this.codeSize = 0;
         this.caPort = 9000;
@@ -196,4 +199,9 @@ public class FunctionMetadata {
     public void setLayers(String[] layers) {
         this.layers = layers;
     }
+
+    public CustomDNS getCustomDNS() {
+        return customDNS;
+    }
+
 }
