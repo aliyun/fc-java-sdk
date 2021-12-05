@@ -74,6 +74,9 @@ public class FunctionMetadata {
     @SerializedName("customDNS")
     private CustomDNS customDNS;
 
+    @SerializedName("customRuntimeConfig")
+    private CustomRuntimeConfig customRuntimeConfig;
+
     public FunctionMetadata(){
         this.codeSize = 0;
         this.caPort = 9000;
@@ -202,6 +205,14 @@ public class FunctionMetadata {
 
     public CustomDNS getCustomDNS() {
         return customDNS;
+    }
+
+    public CustomRuntimeConfig getCustomRuntimeConfig() {
+        return customRuntimeConfig;
+    }
+
+    public void setCustomRuntimeConfig(CustomRuntimeConfig customRuntimeConfig) {
+        this.customRuntimeConfig = customRuntimeConfig;
     }
 
 }

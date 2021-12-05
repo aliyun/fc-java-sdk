@@ -24,10 +24,7 @@ import static com.aliyuncs.fc.constants.Const.IF_MATCH_HEADER;
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
-import com.aliyuncs.fc.model.Code;
-import com.aliyuncs.fc.model.CustomContainerConfig;
-import com.aliyuncs.fc.model.CustomDNS;
-import com.aliyuncs.fc.model.InstanceLifecycleConfig;
+import com.aliyuncs.fc.model.*;
 import com.aliyuncs.fc.response.UpdateFunctionResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Strings;
@@ -92,6 +89,9 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     @SerializedName("customDNS")
     private CustomDNS customDNS;
+
+    @SerializedName("customRuntimeConfig")
+    private CustomRuntimeConfig customRuntimeConfig;
 
     private transient String ifMatch;
 
@@ -290,6 +290,14 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     public void setCustomDNS(CustomDNS customDNS) {
         this.customDNS = customDNS;
+    }
+
+    public CustomRuntimeConfig getCustomRuntimeConfig() {
+        return customRuntimeConfig;
+    }
+
+    public void setCustomRuntimeConfig(CustomRuntimeConfig customRuntimeConfig) {
+        this.customRuntimeConfig = customRuntimeConfig;
     }
 
 }
