@@ -67,4 +67,8 @@ public class GetProvisionConfigResponse extends HttpResponse {
         return provisionConfig.getTargetTrackingPolicies();
     }
 
+    public String getCurrentError() {
+        Preconditions.checkArgument(provisionConfig != null);
+        return provisionConfig.getCurrentError();
+    }
 }
