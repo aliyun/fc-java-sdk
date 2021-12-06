@@ -26,9 +26,18 @@ public class ProvisionConfig extends ProvisionTarget {
     @SerializedName("current")
     private Integer current;
 
+    @SerializedName("currentError")
+    private String currentError;
+
     public ProvisionConfig(String resource, Integer target, Integer current) {
         super(resource, target);
         this.current = current;
+    }
+
+    public ProvisionConfig(String resource, Integer target, Integer current, String currentError) {
+        super(resource, target);
+        this.current = current;
+        this.currentError = currentError;
     }
 
     public Integer getCurrent() {
@@ -38,5 +47,13 @@ public class ProvisionConfig extends ProvisionTarget {
     public ProvisionConfig setCurrent(Integer current) {
         this.current = current;
         return this;
+    }
+
+    public String getCurrentError() {
+        return currentError;
+    }
+
+    public void setCurrentError(String currentError) {
+        this.currentError = currentError;
     }
 }
