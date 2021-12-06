@@ -122,11 +122,11 @@ public class CreateUpdateFunctionTest {
         }
     }
 
-    public byte[] createZipCodePython(String indexFile) throws IOException {
+    public byte[] createZipCodePython(String indexFile, String filename) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
         try {
-            ZipEntry zipEntry = new ZipEntry("index.py");
+            ZipEntry zipEntry = new ZipEntry(filename);
             zipOutputStream.putNextEntry(zipEntry);
             zipOutputStream.write(indexFile.getBytes());
             zipOutputStream.closeEntry();
@@ -226,6 +226,69 @@ public class CreateUpdateFunctionTest {
         return dnsOptionEq;
     }
 
+    private boolean isEqualCustomRuntimeConfig(CustomRuntimeConfig a, CustomRuntimeConfig b) {
+        System.out.println(a);
+        System.out.println(b);
+        if (a == b) return true;
+        if (a == null ^ b == null) return false;
+
+        String[] command1 = a.getCommand();
+        String[] command2 = b.getCommand();
+        String[] arg1 = a.getArgs();
+        String[] arg2 = b.getArgs();
+
+        if (command1.length != command2.length || arg1.length != arg2.length) {
+            return false;
+        }
+
+        return Arrays.equals(command1, command2) && Arrays.equals(arg1, arg2);
+    }
+
+    @Test
+    public void testCreateUpdateFunctionCustomRuntimeConfig() {
+        String functionName = "testCreateUpdateFunctionCustomRuntimeConfig";
+        CreateFunctionRequest createFuncReq = new CreateFunctionRequest(SERVICE_NAME);
+        createFuncReq.setFunctionName(functionName);
+        createFuncReq.setHandler("index.handler");
+        createFuncReq.setRuntime("custom");
+        createFuncReq.setTimeout(5);
+        createFuncReq.setMemorySize(256);
+
+        CustomRuntimeConfig customRuntimeConfig = new CustomRuntimeConfig();
+        customRuntimeConfig.setCommand(new String[]{
+            "/code/bootcmd"
+        });
+        customRuntimeConfig.setArgs(new String[]{
+            "1111", "3333", "4444", "2222"
+        });
+        createFuncReq.setCustomRuntimeConfig(customRuntimeConfig);
+
+        // we don't really run function, it is ok to use arbitrary code file here
+        try {
+            createFuncReq.setCode(new Code().setZipFile(createZipCodePython(PY3_CODE, "bootcmd")));
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
+
+        // create function
+        CreateFunctionResponse createResp = client.createFunction(createFuncReq);
+        assertTrue(isEqualCustomRuntimeConfig(createResp.getCustomRuntimeConfig(), customRuntimeConfig));
+
+        // get function
+        GetFunctionRequest getFuncReq = new GetFunctionRequest(SERVICE_NAME, functionName);
+        GetFunctionResponse getResp = client.getFunction(getFuncReq);
+        assertTrue(isEqualCustomRuntimeConfig(getResp.getCustomRuntimeConfig(), customRuntimeConfig));
+
+        // update function
+        customRuntimeConfig.setArgs(new String[]{
+                "1111", "3333"
+        });
+        UpdateFunctionRequest updateFuncReq = new UpdateFunctionRequest(SERVICE_NAME, functionName);
+        updateFuncReq.setCustomRuntimeConfig(customRuntimeConfig);
+        UpdateFunctionResponse updateResp = client.updateFunction(updateFuncReq);
+        assertTrue(isEqualCustomRuntimeConfig(updateResp.getCustomRuntimeConfig(), customRuntimeConfig));
+    }
+
     @Test
     public void testCreateUpdateFunctionCustomDNS() {
         String functionName = "testCreateUpdateFunctionCustomDNS";
@@ -249,7 +312,7 @@ public class CreateUpdateFunctionTest {
         });
         customDNS.setSearches(new String[]{ "www.google.com" });
         try {
-            createFuncReq.setCode(new Code().setZipFile(createZipCodePython(PY3_CODE)));
+            createFuncReq.setCode(new Code().setZipFile(createZipCodePython(PY3_CODE, "index.py")));
         } catch (IOException e) {
             fail(e.getMessage());
         }

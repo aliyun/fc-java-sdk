@@ -20,6 +20,7 @@ package com.aliyuncs.fc.response;
 
 import com.aliyuncs.fc.model.CustomContainerConfig;
 import com.aliyuncs.fc.model.CustomDNS;
+import com.aliyuncs.fc.model.CustomRuntimeConfig;
 import com.aliyuncs.fc.model.FunctionMetadata;
 import com.aliyuncs.fc.http.HttpResponse;
 
@@ -125,5 +126,10 @@ public class GetFunctionResponse extends HttpResponse {
     public CustomDNS getCustomDNS() {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getCustomDNS();
+    }
+
+    public CustomRuntimeConfig getCustomRuntimeConfig() {
+        Preconditions.checkArgument(functionMetadata != null);
+        return functionMetadata.getCustomRuntimeConfig();
     }
 }
