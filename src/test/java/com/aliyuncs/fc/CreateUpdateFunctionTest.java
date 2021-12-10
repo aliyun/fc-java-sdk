@@ -199,6 +199,15 @@ public class CreateUpdateFunctionTest {
         assertTrue(Strings.isNullOrEmpty(respUCCC1.getCommand()));
         assertTrue(Strings.isNullOrEmpty(respUCCC1.getArgs()));
         assertEquals(functionName, responseU1.getFunctionName());
+
+        // GetFunction should have acceleration info
+        final GetFunctionRequest getFuncReq = new GetFunctionRequest(SERVICE_NAME, functionName);
+        final GetFunctionResponse getResp = client.getFunction(getFuncReq);
+        final CustomContainerConfig getRespCcc = getResp.getCustomContainerConfig();
+        assertNotNull(getRespCcc);
+        final AccelerationInfo acclInfo = getRespCcc.getAccelerationInfo();
+        assertNotNull(acclInfo);
+        assertFalse(acclInfo.getStatus().isEmpty());
     }
 
     private boolean isEqualDNS(CustomDNS a, CustomDNS b) {
