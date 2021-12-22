@@ -158,4 +158,12 @@ public class ResponseFactory {
         deleteServiceResponse.setStatus(response.getStatus());
         return deleteServiceResponse;
     }
+
+        public static ListInstancesResponse genListInstancesResponse(HttpResponse response) throws ClientException, ServerException {
+        ListInstancesResponse listInstancesResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListInstancesResponse.class);
+        listInstancesResponse.setHeaders(response.getHeaders());
+        listInstancesResponse.setContent(response.getContent());
+        listInstancesResponse.setStatus(response.getStatus());
+        return listInstancesResponse;
+    }
 }

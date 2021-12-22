@@ -63,6 +63,10 @@ public class Const {
     public final static String LIST_FUNCTION_WITH_QUALIFIER_STATEFUL_ASYNC_INVOCATIONS_PATH =
             SINGLE_FUNCTION_WITH_QUALIFIER_PATH + "/stateful-async-invocations";
 
+    public final static String LIST_INSTANCES_PATH = SINGLE_FUNCTION_PATH+"/instances";
+    public final static String INSTANCE_EXEC_PATH = SINGLE_FUNCTION_PATH +"/instances/%s/exec";
+    public final static String LIST_INSTANCES_WITH_QUALIFIER_PATH = SINGLE_FUNCTION_WITH_QUALIFIER_PATH +"/instances";
+    public final static String INSTANCE_EXEC_WITH_QUALIFIER_PATH = SINGLE_FUNCTION_WITH_QUALIFIER_PATH +"/instances/%s/exec";
     /**
      * 3 seconds
      *

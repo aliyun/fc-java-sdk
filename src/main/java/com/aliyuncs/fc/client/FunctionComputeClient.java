@@ -35,6 +35,10 @@ import com.aliyuncs.fc.response.*;
 import com.aliyuncs.fc.utils.FcUtil;
 import com.google.gson.Gson;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
 /**
@@ -657,5 +661,25 @@ public class FunctionComputeClient {
         stopStatefulAsyncInvocationResponse.setContent(response.getContent());
         stopStatefulAsyncInvocationResponse.setStatus(response.getStatus());
         return stopStatefulAsyncInvocationResponse;
+    }
+
+    public ListInstancesResponse listInstances(ListInstancesRequest request) throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        return ResponseFactory.genListInstancesResponse(response);
+    }
+
+    public InstanceExecResponse instanceExec(InstanceExecRequest request)
+            throws ClientException, ServerException, UnsupportedEncodingException, InvalidKeyException,
+            IllegalStateException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        StringBuilder sb = new StringBuilder();
+        sb.append(config.getEndpoint().replace("http", "ws")).append(request.getPath()).append("?")
+                .append(request.getQueries());
+        URI uri = URI.create(sb.toString());
+
+        FcUtil.signRequest(config, request, "", GET, false);
+
+        ExecWebsocket ws = new ExecWebsocket(uri, request.getHeaders());
+        InstanceExecResponse response = new InstanceExecResponse(ws);
+        return response;
     }
 }
