@@ -48,6 +48,9 @@ public class StatefulAsyncInvocation {
     @SerializedName("alreadyRetriedTimes")
     public String alreadyRetriedTimes;
 
+    @SerializedName("instanceId")
+    public String instanceId;
+
     public String getServiceName() {
         return serviceName;
     }
@@ -90,6 +93,7 @@ public class StatefulAsyncInvocation {
 
     public String getRequestId() { return requestId; }
 
+    public String getInstanceId() { return instanceId; }
 
     public StatefulAsyncInvocation setServiceName(String serviceName) {
         this.serviceName = serviceName;
@@ -148,6 +152,11 @@ public class StatefulAsyncInvocation {
 
     public StatefulAsyncInvocation setRequestId(String requestId) {
         this.requestId = requestId;
+        return this;
+    }
+
+    public StatefulAsyncInvocation setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
         return this;
     }
 }
