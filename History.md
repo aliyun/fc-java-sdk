@@ -1,3 +1,7 @@
+1.8.31 / 2021-12-29
+==================
+  * add UrlInternet&UrlIntranet for http trigger meta
+
 1.8.23 / 2021-10-08
 ==================
   * add logBeginRule for logConfig

@@ -31,9 +31,13 @@ public class TriggerMetadata {
     @SerializedName("triggerConfig")
     private Object triggerConfig;
 
-    public TriggerMetadata(String triggerName, String sourceArn, String triggerType,
-        String invocationRole, String createdTime, String lastModifiedTime, String qualifier,
-        Object triggerConfig) {
+    @SerializedName("urlInternet")
+    private String urlInternet;
+
+    @SerializedName("urlIntranet")
+    private String urlIntranet;
+
+    public TriggerMetadata(String triggerName, String sourceArn, String triggerType, String invocationRole, String createdTime, String lastModifiedTime, String qualifier, Object triggerConfig, String urlInternet, String urlIntranet) {
         this.triggerName = triggerName;
         this.sourceArn = sourceArn;
         this.triggerType = triggerType;
@@ -42,6 +46,8 @@ public class TriggerMetadata {
         this.lastModifiedTime = lastModifiedTime;
         this.qualifier = qualifier;
         this.triggerConfig = triggerConfig;
+        this.urlInternet = urlInternet;
+        this.urlIntranet = urlIntranet;
     }
 
     public String getTriggerName() {
@@ -74,5 +80,13 @@ public class TriggerMetadata {
 
     public Object getTriggerConfig() {
         return triggerConfig;
+    }
+
+    public String getUrlInternet() {
+        return urlInternet;
+    }
+
+    public String getUrlIntranet() {
+        return urlIntranet;
     }
 }

@@ -73,4 +73,14 @@ public class CreateTriggerResponse extends HttpResponse {
         Preconditions.checkArgument(triggerMetadata != null);
         return triggerMetadata.getTriggerConfig();
     }
+
+    public String getUrlInternet() {
+        Preconditions.checkArgument(triggerMetadata != null);
+        return triggerMetadata.getUrlInternet();
+    }
+
+    public String getUrlIntranet() {
+        Preconditions.checkArgument(triggerMetadata != null);
+        return triggerMetadata.getUrlIntranet();
+    }
 }
