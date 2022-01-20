@@ -72,6 +72,9 @@ public class UpdateFunctionRequest extends HttpRequest {
     @SerializedName("instanceConcurrency")
     private Integer instanceConcurrency;
 
+    @SerializedName("instanceSoftConcurrency")
+    private Integer instanceSoftConcurrency;
+
     @SerializedName("instanceType")
     private String instanceType;
 
@@ -269,6 +272,14 @@ public class UpdateFunctionRequest extends HttpRequest {
 
     public void setInstanceConcurrency(Integer instanceConcurrency) {
         this.instanceConcurrency = instanceConcurrency;
+    }
+
+    public Integer getInstanceSoftConcurrency() {
+        return instanceSoftConcurrency;
+    }
+
+    public void setInstanceSoftConcurrency(Integer instanceSoftConcurrency) {
+        this.instanceSoftConcurrency = instanceSoftConcurrency;
     }
 
     public UpdateFunctionRequest setInstanceLifecycleConfig(InstanceLifecycleConfig instanceLifecycleConfig) {
