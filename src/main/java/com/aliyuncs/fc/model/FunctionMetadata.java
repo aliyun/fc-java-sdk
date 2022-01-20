@@ -56,6 +56,9 @@ public class FunctionMetadata {
     @SerializedName("instanceConcurrency")
     private Integer instanceConcurrency;
 
+    @SerializedName("instanceSoftConcurrency")
+    private Integer instanceSoftConcurrency;
+
     @SerializedName("instanceType")
     private String instanceType;
 
@@ -215,4 +218,11 @@ public class FunctionMetadata {
         this.customRuntimeConfig = customRuntimeConfig;
     }
 
+    public Integer getInstanceSoftConcurrency() {
+        return instanceSoftConcurrency;
+    }
+
+    public void setInstanceSoftConcurrency(Integer instanceSoftConcurrency) {
+        this.instanceSoftConcurrency = instanceSoftConcurrency;
+    }
 }

@@ -109,6 +109,11 @@ public class CreateFunctionResponse extends HttpResponse {
         return functionMetadata.getInstanceConcurrency();
     }
 
+    public Integer getInstanceSoftConcurrency() {
+        Preconditions.checkArgument(functionMetadata != null);
+        return functionMetadata.getInstanceSoftConcurrency();
+    }
+
     public CustomContainerConfig getCustomContainerConfig() {
         Preconditions.checkArgument(functionMetadata != null);
         return functionMetadata.getCustomContainerConfig();
