@@ -25,6 +25,7 @@ import com.aliyuncs.fc.http.FormatType;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.CertConfig;
 import com.aliyuncs.fc.model.RouteConfig;
+import com.aliyuncs.fc.model.TLSConfig;
 import com.aliyuncs.fc.response.CreateCustomDomainResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.gson.annotations.SerializedName;
@@ -43,6 +44,9 @@ public class CreateCustomDomainRequest extends HttpRequest {
 
     @SerializedName("certConfig")
     private CertConfig certConfig;
+
+    @SerializedName("tlsConfig")
+    private TLSConfig tlsConfig;
 
     public CreateCustomDomainRequest(String domainName, String protocol, RouteConfig routes) {
         this.domainName = domainName;
@@ -84,6 +88,15 @@ public class CreateCustomDomainRequest extends HttpRequest {
 
     public CreateCustomDomainRequest setRouteConfig(RouteConfig routes) {
         this.routes = routes;
+        return this;
+    }
+
+    public TLSConfig getTlsConfig() {
+        return tlsConfig;
+    }
+
+    public CreateCustomDomainRequest setTlsConfig(TLSConfig tlsConfig) {
+        this.tlsConfig = tlsConfig;
         return this;
     }
 

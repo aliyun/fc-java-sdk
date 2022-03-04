@@ -9,6 +9,7 @@ public class CustomDomainMetaData {
     private String createdTime;
     private String lastModifiedTime;
     private CertConfig certConfig;
+    private TLSConfig tlsConfig;
 
     public CustomDomainMetaData(String domainName, String accountId, String protocol, String apiVersion, RouteConfig routeConfig, String createdTime, String lastModifiedTime) {
         this.domainName = domainName;
@@ -20,7 +21,7 @@ public class CustomDomainMetaData {
         this.lastModifiedTime = lastModifiedTime;
     }
 
-    public CustomDomainMetaData(String domainName, String accountId, String protocol, String apiVersion, RouteConfig routeConfig, String createdTime, String lastModifiedTime, CertConfig certConfig) {
+    public CustomDomainMetaData(String domainName, String accountId, String protocol, String apiVersion, RouteConfig routeConfig, String createdTime, String lastModifiedTime, CertConfig certConfig, TLSConfig tlsConfig) {
         this.domainName = domainName;
         this.accountId = accountId;
         this.protocol = protocol;
@@ -29,6 +30,7 @@ public class CustomDomainMetaData {
         this.createdTime = createdTime;
         this.lastModifiedTime = lastModifiedTime;
         this.certConfig = certConfig;
+        this.tlsConfig = tlsConfig;
     }
 
     public String getDomainName() {
@@ -61,5 +63,9 @@ public class CustomDomainMetaData {
 
     public CertConfig getCertConfig() {
         return certConfig;
+    }
+
+    public TLSConfig getTlsConfig() {
+        return tlsConfig;
     }
 }
