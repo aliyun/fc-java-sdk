@@ -658,4 +658,14 @@ public class FunctionComputeClient {
         stopStatefulAsyncInvocationResponse.setStatus(response.getStatus());
         return stopStatefulAsyncInvocationResponse;
     }
+
+    public ListStatefulAsyncInvocationFunctionsResponse listStatefulAsyncInvocationFunctions(ListStatefulAsyncInvocationFunctionsRequest request)
+            throws ClientException, ServerException {
+        HttpResponse response = client.doAction(request, CONTENT_TYPE_APPLICATION_JSON, GET);
+        ListStatefulAsyncInvocationFunctionsResponse listStatefulAsyncInvocationFunctionsResponse = GSON.fromJson(FcUtil.toDefaultCharset(response.getContent()), ListStatefulAsyncInvocationFunctionsResponse.class);
+        listStatefulAsyncInvocationFunctionsResponse.setHeaders(response.getHeaders());
+        listStatefulAsyncInvocationFunctionsResponse.setContent(response.getContent());
+        listStatefulAsyncInvocationFunctionsResponse.setStatus(response.getStatus());
+        return listStatefulAsyncInvocationFunctionsResponse;
+    }
 }
