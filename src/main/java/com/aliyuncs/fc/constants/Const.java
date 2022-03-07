@@ -53,6 +53,8 @@ public class Const {
             SINGLE_FUNCTION_PATH + "/async-invoke-config";
     public final static String LIST_FUNCTION_ASYNC_CONFIGS_PATH =
             SINGLE_FUNCTION_PATH + "/async-invoke-configs";
+    public final static String LIST_STATEFUL_ASYNC_INVOCATION_FUNCTIONS_PATH =
+            "/%s/stateful-async-invocation-functions";
 
     public final static String GET_FUNCTION_STATEFUL_ASYNC_INVOCATION_PATH =
             SINGLE_FUNCTION_PATH + "/stateful-async-invocations/%s";

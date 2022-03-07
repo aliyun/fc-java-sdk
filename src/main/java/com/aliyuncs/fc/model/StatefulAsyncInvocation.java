@@ -51,8 +51,8 @@ public class StatefulAsyncInvocation {
     @SerializedName("instanceId")
     public String instanceId;
 
-    @SerializedName("statusTransferredTime")
-    public String statusTransferredTime;
+    @SerializedName("events")
+    public StatefulAsyncInvocationEvent[] events;
 
     public String getServiceName() {
         return serviceName;
@@ -98,7 +98,7 @@ public class StatefulAsyncInvocation {
 
     public String getInstanceId() { return instanceId; }
 
-    public String getstatuSTransferredTime() { return statusTransferredTime; }
+    public StatefulAsyncInvocationEvent[] getEvents() { return events; }
 
     public StatefulAsyncInvocation setServiceName(String serviceName) {
         this.serviceName = serviceName;
@@ -165,8 +165,8 @@ public class StatefulAsyncInvocation {
         return this;
     }
 
-    public StatefulAsyncInvocation setStatusTransferredTime(String statusTransferredTime) {
-        this.statusTransferredTime = statusTransferredTime;
+    public StatefulAsyncInvocation setEvents(StatefulAsyncInvocationEvent[] events) {
+        this.events = events;
         return this;
     }
 }
