@@ -46,10 +46,14 @@ public class PutProvisionConfigRequest extends HttpRequest {
     @SerializedName("targetTrackingPolicies")
     private TargetTrackingPolicy[] targetTrackingPolicies;
 
+    @SerializedName("alwaysAllocateCPU")
+    private boolean alwaysAllocateCPU;
+
     public PutProvisionConfigRequest(String serviceName, String qualifier, String functionName) {
         this.serviceName = serviceName;
         this.qualifier = qualifier;
         this.functionName = functionName;
+        this.alwaysAllocateCPU = true;
     }
 
     public String getServiceName() {
@@ -87,6 +91,14 @@ public class PutProvisionConfigRequest extends HttpRequest {
 
     public void setTargetTrackingPolicies(TargetTrackingPolicy[] targetTrackingPolicies) {
         this.targetTrackingPolicies = targetTrackingPolicies;
+    }
+
+    public boolean isAlwaysAllocateCPU() {
+        return alwaysAllocateCPU;
+    }
+
+    public void setAlwaysAllocateCPU(boolean alwaysAllocateCPU) {
+        this.alwaysAllocateCPU = alwaysAllocateCPU;
     }
 
     public String getIfMatch() {

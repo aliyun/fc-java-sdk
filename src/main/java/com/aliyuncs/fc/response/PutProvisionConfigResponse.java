@@ -61,6 +61,11 @@ public class PutProvisionConfigResponse extends HttpResponse {
         return provisionTarget.getTargetTrackingPolicies();
     }
 
+    public boolean isAlwaysAllocateCPU() {
+        Preconditions.checkArgument(provisionTarget != null);
+        return provisionTarget.isAlwaysAllocateCPU();
+    }
+
     @Override
     public String toString() {
         return "PutProvisionConfigResponse{" +

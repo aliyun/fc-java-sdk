@@ -71,4 +71,9 @@ public class GetProvisionConfigResponse extends HttpResponse {
         Preconditions.checkArgument(provisionConfig != null);
         return provisionConfig.getCurrentError();
     }
+
+    public boolean isAlwaysAllocateCPU() {
+        Preconditions.checkArgument(provisionConfig != null);
+        return provisionConfig.isAlwaysAllocateCPU();
+    }
 }

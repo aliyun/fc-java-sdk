@@ -36,6 +36,9 @@ public class ProvisionTarget {
     @SerializedName("targetTrackingPolicies")
     private TargetTrackingPolicy[] targetTrackingPolicies;
 
+    @SerializedName("alwaysAllocateCPU")
+    private boolean alwaysAllocateCPU;
+
     public ProvisionTarget(String resource, Integer target) {
         this.resource = resource;
         this.target = target;
@@ -67,13 +70,20 @@ public class ProvisionTarget {
         this.scheduledActions = scheduledActions;
     }
 
-
     public TargetTrackingPolicy[] getTargetTrackingPolicies() {
         return targetTrackingPolicies;
     }
 
     public void setTargetTrackingPolicies(TargetTrackingPolicy[] targetTrackingPolicies) {
         this.targetTrackingPolicies = targetTrackingPolicies;
+    }
+
+    public boolean isAlwaysAllocateCPU() {
+        return alwaysAllocateCPU;
+    }
+
+    public void setAlwaysAllocateCPU(boolean alwaysAllocateCPU) {
+        this.alwaysAllocateCPU = alwaysAllocateCPU;
     }
 
     @Override
@@ -83,6 +93,7 @@ public class ProvisionTarget {
                 ", target=" + target +
                 ", scheduledActions=" + Arrays.toString(scheduledActions) +
                 ", targetTrackingPolicies=" + Arrays.toString(targetTrackingPolicies) +
+                ", alwaysAllocateCPU=" + alwaysAllocateCPU +
                 '}';
     }
 }
