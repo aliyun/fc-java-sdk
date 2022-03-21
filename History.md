@@ -1,3 +1,7 @@
+1.8.34 / 2022-03-21
+==================
+  * add HTTPInvokeFunctionV2Request for fcapp.run
+
 1.8.31 / 2021-12-29
 ==================
   * add UrlInternet&UrlIntranet for http trigger meta
