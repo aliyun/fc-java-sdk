@@ -1,25 +1,26 @@
 package com.aliyuncs.fc.request;
 
-import static com.aliyuncs.fc.auth.AcsURLEncoder.decode;
-import static java.lang.String.format;
-
 import com.aliyuncs.fc.constants.Const;
 import com.aliyuncs.fc.model.HttpAuthType;
 import com.aliyuncs.fc.model.HttpMethod;
 import com.google.common.base.Strings;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
+
+import static com.aliyuncs.fc.auth.AcsURLEncoder.decode;
+import static java.lang.String.format;
 
 /**
  * used for http invocation
  */
 public class HttpInvokeFunctionRequest extends InvokeFunctionRequest {
 
-    private final String path;
+    protected final String path;
 
     private final HttpMethod method;
 
@@ -28,14 +29,13 @@ public class HttpInvokeFunctionRequest extends InvokeFunctionRequest {
     private final Map<String, String> queryParams = new HashMap<String, String>();
 
     public HttpInvokeFunctionRequest(String serviceName, String functionName, HttpAuthType authType,
-        HttpMethod method) {
+                                     HttpMethod method) {
         this(serviceName, functionName, authType, method, "");
     }
 
     public HttpInvokeFunctionRequest(String serviceName, String functionName, HttpAuthType authType,
-        HttpMethod method, String path) {
+                                     HttpMethod method, String path) {
         super(serviceName, functionName);
-
         this.setInvocationType(Const.INVOCATION_TYPE_HTTP);
 
         try {
@@ -77,10 +77,10 @@ public class HttpInvokeFunctionRequest extends InvokeFunctionRequest {
     public String getPath() {
         if (Strings.isNullOrEmpty(getQualifier())) {
             return format(Const.HTTP_INVOKE_FUNCTION_PATH, Const.API_VERSION, getServiceName(),
-                getFunctionName(), path);
+                    getFunctionName(), path);
         } else {
             return format(Const.HTTP_INVOKE_FUNCTION_WITH_QUALIFIER_PATH, Const.API_VERSION,
-                getServiceName(), getQualifier(), getFunctionName(), path);
+                    getServiceName(), getQualifier(), getFunctionName(), path);
         }
     }
 
