@@ -1,6 +1,7 @@
-1.8.34 / 2022-03-21
+1.8.35 / 2022-03-21
 ==================
   * add HTTPInvokeFunctionV2Request for fcapp.run
+  * NOTE: this version will not be released to public
 
 1.8.31 / 2021-12-29
 ==================
