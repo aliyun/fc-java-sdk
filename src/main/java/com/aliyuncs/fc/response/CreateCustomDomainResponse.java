@@ -52,4 +52,9 @@ public class CreateCustomDomainResponse extends HttpResponse {
         Preconditions.checkArgument(customDomainMetaData != null);
         return customDomainMetaData.getCertConfig();
     }
+
+    public TLSConfig getTLSConfig() {
+        Preconditions.checkArgument(customDomainMetaData != null);
+        return customDomainMetaData.getTlsConfig();
+    }
 }

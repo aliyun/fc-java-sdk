@@ -24,6 +24,7 @@ import com.aliyuncs.fc.exceptions.ClientException;
 import com.aliyuncs.fc.http.HttpRequest;
 import com.aliyuncs.fc.model.CertConfig;
 import com.aliyuncs.fc.model.RouteConfig;
+import com.aliyuncs.fc.model.TLSConfig;
 import com.aliyuncs.fc.response.UpdateCustomDomainResponse;
 import com.aliyuncs.fc.utils.ParameterHelper;
 import com.google.common.base.Strings;
@@ -42,6 +43,9 @@ public class UpdateCustomDomainRequest extends HttpRequest {
 
     @SerializedName("certConfig")
     private CertConfig certConfig;
+
+    @SerializedName("tlsConfig")
+    private TLSConfig tlsConfig;
 
     public UpdateCustomDomainRequest(String domainName, String protocol, RouteConfig routeConfig) {
         this.domainName = domainName;
@@ -88,6 +92,15 @@ public class UpdateCustomDomainRequest extends HttpRequest {
 
     public void setCertConfig(CertConfig certConfig) {
         this.certConfig = certConfig;
+    }
+
+    public TLSConfig getTlsConfig() {
+        return tlsConfig;
+    }
+
+    public UpdateCustomDomainRequest setTlsConfig(TLSConfig tlsConfig) {
+        this.tlsConfig = tlsConfig;
+        return this;
     }
 
     public Map<String, String> getQueryParams() {

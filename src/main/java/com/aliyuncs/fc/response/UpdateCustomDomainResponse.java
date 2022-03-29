@@ -1,10 +1,7 @@
 package com.aliyuncs.fc.response;
 
 import com.aliyuncs.fc.http.HttpResponse;
-import com.aliyuncs.fc.model.CertConfig;
-import com.aliyuncs.fc.model.CustomDomainMetaData;
-import com.aliyuncs.fc.model.PathConfig;
-import com.aliyuncs.fc.model.RouteConfig;
+import com.aliyuncs.fc.model.*;
 import com.google.common.base.Preconditions;
 
 public class UpdateCustomDomainResponse extends HttpResponse {
@@ -53,5 +50,10 @@ public class UpdateCustomDomainResponse extends HttpResponse {
     public CertConfig getCertConfig() {
         Preconditions.checkArgument(customDomainMetaData != null);
         return customDomainMetaData.getCertConfig();
+    }
+
+    public TLSConfig getTLSConfig() {
+        Preconditions.checkArgument(customDomainMetaData != null);
+        return customDomainMetaData.getTlsConfig();
     }
 }
