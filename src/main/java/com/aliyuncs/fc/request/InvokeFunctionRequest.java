@@ -41,6 +41,7 @@ public class InvokeFunctionRequest extends HttpRequest {
     private String logType;
     private String qualifier;
     private String statefulAsyncInvocationId;
+    private String invokerIdentity;
 
     private byte[] payload;
 
@@ -63,6 +64,15 @@ public class InvokeFunctionRequest extends HttpRequest {
 
     public InvokeFunctionRequest setInvocationType(String invocationType) {
         this.invocationType = invocationType;
+        return this;
+    }
+
+    public String getInvokerIdentity() {
+        return invokerIdentity;
+    }
+
+    public InvokeFunctionRequest setInvokerIdentity(String invokerIdentity) {
+        this.invokerIdentity = invokerIdentity;
         return this;
     }
 
@@ -120,6 +130,10 @@ public class InvokeFunctionRequest extends HttpRequest {
 
         if (!isNullOrEmpty(statefulAsyncInvocationId)) {
             headers.put(HeaderKeys.STATEFUL_ASYNC_INVOCATIONID, statefulAsyncInvocationId);
+        }
+
+        if (!isNullOrEmpty(invokerIdentity)) {
+            headers.put(HeaderKeys.INVOKER_IDENTITY, invokerIdentity);
         }
 
         return headers;
