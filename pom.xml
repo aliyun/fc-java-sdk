@@ -50,7 +50,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>24.1.1-jre</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -108,8 +108,8 @@
     <licenses>
         <license>
             <name>MIT</name>
-            <url></url>
-            <distribution></distribution>
+            <url/>
+            <distribution/>
         </license>
     </licenses>
     <developers>
