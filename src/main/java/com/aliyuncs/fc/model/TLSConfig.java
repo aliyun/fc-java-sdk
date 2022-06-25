@@ -12,6 +12,9 @@ public class TLSConfig {
     @SerializedName("minVersion")
     public String minVersion;
 
+    @SerializedName("maxVersion")
+    public String maxVersion;
+
     public TLSConfig (String minVersion, java.util.List<String> cipherSuites) {
         this.cipherSuites = cipherSuites;
         this.minVersion = minVersion;
@@ -32,6 +35,11 @@ public class TLSConfig {
 
     public TLSConfig setMinVersion(String minVersion) {
         this.minVersion = minVersion;
+        return this;
+    }
+
+    public TLSConfig setMaxVersion(String maxVersion) {
+        this.maxVersion = maxVersion;
         return this;
     }
 }
