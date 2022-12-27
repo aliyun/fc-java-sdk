@@ -2,6 +2,7 @@ package com.aliyuncs.fc.model;
 
 public class PathConfig {
     private String path;
+    private String accountId;
     private String serviceName;
     private String functionName;
     private String qualifier;
@@ -14,7 +15,7 @@ public class PathConfig {
     }
 
     public String getPath() {
-        return path;
+        return this.path;
     }
 
     public PathConfig setPath(String path) {
@@ -23,7 +24,7 @@ public class PathConfig {
     }
 
     public String getServiceName() {
-        return serviceName;
+        return this.serviceName;
     }
 
     public PathConfig setServiceName(String serviceName) {
@@ -32,7 +33,7 @@ public class PathConfig {
     }
 
     public String getFunctionName() {
-        return functionName;
+        return this.functionName;
     }
 
     public PathConfig setFunctionName(String functionName) {
@@ -41,11 +42,20 @@ public class PathConfig {
     }
 
     public String getQualifier() {
-        return qualifier;
+        return this.qualifier;
     }
 
     public PathConfig setQualifier(String qualifier) {
         this.qualifier = qualifier;
+        return this;
+    }
+
+    public String getAccountId() {
+        return this.accountId;
+    }
+
+    public PathConfig setAccountId(String accountId) {
+        this.accountId = accountId;
         return this;
     }
 }
